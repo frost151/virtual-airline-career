@@ -1,0 +1,91 @@
+[
+  {
+    "id": "fenix-a32x",
+    "name": "Fenix A319/A320/A321",
+    "match": ["fenix"],
+    "types": [
+      { "match": "a319", "type": "A319" },
+      { "match": "a321", "type": "A321" },
+      { "match": "a320", "type": "A320" }
+    ],
+    "defaultType": "A320",
+    "lights": "lvars",
+    "lvars": {
+      "beacon": { "name": "L:S_OH_EXT_LT_BEACON", "onIfAtLeast": 1 },
+      "strobe": { "name": "L:S_OH_EXT_LT_STROBE", "onIfAtLeast": 1 },
+      "landing": { "name": "L:S_OH_EXT_LT_LANDING_L", "onIfAtLeast": 2 },
+      "nav": { "name": "L:S_OH_EXT_LT_NAV_LOGO", "onIfAtLeast": 1 },
+      "taxi": { "name": "L:S_OH_EXT_LT_NOSE", "onIfAtLeast": 1 }
+    },
+    "verified": false,
+    "notes": "Имена L-переменных и положения переключателей не проверены на MSFS 2024"
+  },
+  {
+    "id": "pmdg-737",
+    "name": "PMDG 737",
+    "match": ["pmdg 737", "pmdg-737", "pmdg boeing 737"],
+    "types": [
+      { "match": "bcf", "type": "B738F" },
+      { "match": "bdsf", "type": "B738F" },
+      { "match": "bbj", "type": "BBJ" },
+      { "match": "600", "type": "B736" },
+      { "match": "700", "type": "B737" },
+      { "match": "900", "type": "B739" },
+      { "match": "800", "type": "B738" }
+    ],
+    "defaultType": "B738",
+    "lights": "standard",
+    "verified": false,
+    "notes": "Возможно, потребуется PMDG SDK (EnableDataBroadcast=1 в 737_Options.ini)"
+  },
+  {
+    "id": "pmdg-777",
+    "name": "PMDG 777",
+    "match": ["pmdg 777", "pmdg-777", "pmdg boeing 777"],
+    "types": [
+      { "match": "777f", "type": "B77F" },
+      { "match": "freighter", "type": "B77F" },
+      { "match": "200lr", "type": "B77L" },
+      { "match": "300er", "type": "B77W" },
+      { "match": "200er", "type": "B772" }
+    ],
+    "defaultType": "B77W",
+    "lights": "standard",
+    "verified": false,
+    "notes": "Возможно, потребуется PMDG SDK (EnableDataBroadcast=1 в 777_Options.ini)"
+  },
+  {
+    "id": "inibuilds-a350",
+    "name": "iniBuilds A350",
+    "match": ["inibuilds a350", "a350-900", "a350-1000", "a350 "],
+    "types": [
+      { "match": "1000", "type": "A35K" },
+      { "match": "ulr", "type": "A359ULR" },
+      { "match": "900", "type": "A359" }
+    ],
+    "defaultType": "A359",
+    "lights": "standard",
+    "verified": false,
+    "notes": ""
+  },
+  {
+    "id": "inibuilds-a380",
+    "name": "iniBuilds A380",
+    "match": ["a380"],
+    "types": [],
+    "defaultType": "A388",
+    "lights": "standard",
+    "verified": false,
+    "notes": ""
+  },
+  {
+    "id": "citation-x",
+    "name": "Cessna Citation X",
+    "match": ["citation x", "citation 750", "c750"],
+    "types": [],
+    "defaultType": "C750",
+    "lights": "standard",
+    "verified": false,
+    "notes": ""
+  }
+]

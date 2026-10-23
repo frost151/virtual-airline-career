@@ -1,0 +1,132 @@
+[
+  {
+    "icao": "VDA", "iata": "VI", "name": "Volga-Dnepr Airlines", "callsign": "VOLGA-DNEPR", "country": "RU",
+    "archetype": "cargo", "reputation": 66,
+    "fleet": [ { "type": "A124", "count": 10 }, { "type": "IL76", "count": 5 } ],
+    "network": [
+      { "hub": "UWLW", "destinations": [
+        "UUEE", "UUDD", "ULLI", "USSS", "UNNT", "UNKL", "UIII", "UHHH", "UHWW", "UHPP", "UEEE", "UHMM", "UOOO", "USRR", "USDD",
+        "UZTT", "UAAA", "UACC", "OMDB", "ZBAA", "ZSPD", "ZGGG", "ZUUU", "VIDP"
+      ] }
+    ]
+  },
+  {
+    "icao": "TUP", "iata": "4B", "name": "Aviastar-TU", "callsign": "TUPOLEVAIR", "country": "RU",
+    "archetype": "cargo", "reputation": 55,
+    "fleet": [ { "type": "T204F", "count": 10 } ],
+    "network": [
+      { "hub": "UUDD", "destinations": [
+        "ULLI", "USSS", "UNNT", "UNKL", "UIII", "UEEE", "USRR", "UWKD", "URSS", "UMKK", "UZTT", "UAAA", "ZWWW"
+      ] },
+      { "hub": "UNNT", "destinations": [ "UUDD", "UHHH", "UHWW", "UHSS", "UHMM", "UEEE", "UIII", "ZBAA", "ZSPD", "ZGGG", "ZYHB", "ZWWW", "UAAA" ] }
+    ]
+  },
+  {
+    "icao": "VAS", "iata": "V8", "name": "Atran", "callsign": "ATRAN", "country": "RU",
+    "archetype": "cargo", "reputation": 52,
+    "fleet": [ { "type": "B738F", "count": 6 } ],
+    "network": [
+      { "hub": "UUWW", "destinations": [
+        "ULLI", "USSS", "UNNT", "UWKD", "URSS", "URMM", "UMKK", "ULMM", "USRR", "USTR", "UWUU", "UMMS", "UBBB", "UDYZ", "UZTT",
+        "UAAA", "UACC", "UCFM", "LTFM", "OMDB"
+      ] }
+    ]
+  },
+  {
+    "icao": "CKK", "iata": "CK", "name": "China Cargo Airlines", "callsign": "CARGO KING", "country": "CN",
+    "archetype": "cargo", "reputation": 64,
+    "fleet": [ { "type": "B77F", "count": 15 } ],
+    "network": [
+      { "hub": "ZSPD", "destinations": [
+        "ZBAA", "ZGGG", "ZGSZ", "ZUUU", "ZHHH", "ZHEC", "PANC", "KLAX", "KORD", "EHAM", "EDDF", "LFPG", "EBLG",
+        "LIMC", "LKPR", "ELLX", "EDDP", "UUEE", "OMDB", "VIDP", "VHHH", "RJAA", "RKSI", "WSSS", "VTBS", "WMKK"
+      ] }
+    ]
+  },
+  {
+    "icao": "CSS", "iata": "O3", "name": "SF Airlines", "callsign": "SHUN FENG", "country": "CN",
+    "archetype": "cargo", "reputation": 63,
+    "fleet": [
+      { "type": "B738F", "count": 10 }, { "type": "B752F", "count": 40 }, { "type": "B763F", "count": 30 }, { "type": "A332F", "count": 8 },
+      { "type": "B744F", "count": 2 }
+    ],
+    "network": [
+      { "hub": "ZHEC", "destinations": [
+        "ZBAA", "ZBAD", "ZSPD", "ZSHC", "ZSNJ", "ZGGG", "ZGSZ", "ZUUU", "ZUCK", "ZPPP", "ZLXY", "ZSAM", "ZSQD", "ZYTL", "ZYTX",
+        "ZYHB", "ZWWW", "ZJHK", "ZHCC", "ZBTJ", "ZSJN", "ZSFZ", "ZGNN", "VHHH", "RCTP", "RJAA", "RJBB", "RKSI", "WSSS", "VTBS",
+        "VVNB", "VVTS", "WMKK", "VIDP", "VABB", "VCBI", "VGHS", "OMDB", "LTFM", "EDDF", "EBLG", "LHBP", "UUEE", "UNNT", "UZTT",
+        "UAAA"
+      ] },
+      { "hub": "ZGSZ", "destinations": [
+        "ZBAA", "ZSPD", "ZSHC", "ZHEC", "ZUUU", "ZUCK", "ZLXY", "ZYTX", "ZYHB", "ZWWW", "VHHH", "RCTP", "RJAA", "RKSI", "WSSS",
+        "VTBS", "VVNB", "WMKK", "RPLL", "VIDP", "OMDB"
+      ] }
+    ]
+  },
+  {
+    "icao": "HYT", "iata": "YG", "name": "YTO Cargo Airlines", "callsign": "QUICK BIRD", "country": "CN",
+    "archetype": "cargo", "reputation": 56,
+    "fleet": [ { "type": "B738F", "count": 5 }, { "type": "B752F", "count": 10 }, { "type": "B763F", "count": 4 } ],
+    "network": [
+      { "hub": "ZSHC", "destinations": [
+        "ZBAA", "ZGGG", "ZGSZ", "ZUUU", "ZUCK", "ZHHH", "ZHEC", "ZLXY", "ZYHB", "ZWWW", "ZPPP", "VHHH", "RJAA", "RJBB", "RKSI",
+        "WSSS", "VTBS", "VVNB", "WMKK", "WIII", "RPLL", "VIDP", "UZTT", "UAAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "CYZ", "iata": "CF", "name": "China Postal Airlines", "callsign": "CHINA POST", "country": "CN",
+    "archetype": "cargo", "reputation": 58,
+    "fleet": [ { "type": "B738F", "count": 15 }, { "type": "B752F", "count": 15 } ],
+    "network": [
+      { "hub": "ZSNJ", "destinations": [
+        "ZBAA", "ZSPD", "ZSHC", "ZGGG", "ZGSZ", "ZUUU", "ZUCK", "ZHHH", "ZLXY", "ZSAM", "ZSQD", "ZYTL", "ZYTX", "ZYHB", "ZWWW",
+        "ZPPP", "ZHCC", "ZBTJ", "ZSJN", "ZSFZ", "ZGNN", "ZJHK", "VHHH", "RJAA", "RKSI", "WSSS", "VTBS"
+      ] }
+    ]
+  },
+  {
+    "icao": "UPS", "iata": "5X", "name": "UPS Airlines", "callsign": "UPS", "country": "US",
+    "archetype": "cargo", "reputation": 70,
+    "fleet": [ { "type": "B752F", "count": 70 }, { "type": "B763F", "count": 100 }, { "type": "B744F", "count": 11 }, { "type": "B748F", "count": 30 } ],
+    "network": [
+      { "hub": "KSDF", "destinations": [
+        "KONT", "KLAX", "KOAK", "KSEA", "KPDX", "KPHX", "KSLC", "KDEN", "KDFW", "KIAH", "KSAT", "KMSP", "KORD", "KRFD", "KDTW",
+        "KCVG", "KPHL", "KEWR", "KJFK", "KBOS", "KBWI", "KATL", "KCLT", "KMIA", "KMCO", "KMEM", "PANC", "PHNL", "CYYZ", "CYUL",
+        "CYVR", "MMMX", "MMGL", "TJSJ", "SBKP", "SKBO", "EDDK", "EGSS", "EGNX", "LFPG", "EBLG", "LEMD", "LIMC"
+      ] },
+      { "hub": "EDDK", "destinations": [
+        "KSDF", "KPHL", "KEWR", "EGSS", "EGNX", "LFPG", "LEMD", "LEBL", "LIMC", "LIRF", "LHBP", "EPWA", "LKPR", "LOWW", "LTFM",
+        "OMDB", "OERK", "VIDP", "VABB", "VHHH", "ZGSZ", "ZSPD", "HKJK", "FAOR", "DNMM"
+      ] },
+      { "hub": "PANC", "destinations": [ "KSDF", "KONT", "KLAX", "KOAK", "KSEA", "KDFW", "KRFD", "RJAA", "RJBB", "RKSI", "ZSPD", "ZGSZ", "VHHH", "RCTP", "RPLC" ] }
+    ]
+  },
+  {
+    "icao": "BCS", "iata": "QY", "name": "DHL (European Air Transport)", "callsign": "DOTTA", "country": "DE",
+    "archetype": "cargo", "reputation": 69,
+    "fleet": [ { "type": "B752F", "count": 20 }, { "type": "A332F", "count": 15 }, { "type": "B77F", "count": 20 } ],
+    "network": [
+      { "hub": "EDDP", "destinations": [
+        "EGNX", "EGSS", "EIDW", "LFPG", "EBBR", "EHAM", "EDDF", "EDDM", "EDDH", "EDDS", "LEMD", "LEBL", "LEVT", "LPPT", "LIMC",
+        "LIRF", "LIPZ", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA", "ENGM", "EFHK", "EPWA", "LKPR", "LHBP", "LROP", "LBSF", "LGAV",
+        "LTFM", "LCLK", "LLBG", "OBBI", "OMDB", "OTHH", "OERK", "HECA", "GMMN", "DAAG", "HAAB", "HKJK", "FAOR", "DNMM", "VIDP",
+        "VABB", "VHHH", "ZSPD", "RJAA", "RKSI", "KCVG", "KJFK", "KORD", "KLAX", "KMIA", "CYYZ", "MMMX", "SBGR"
+      ] },
+      { "hub": "EBBR", "destinations": [ "EDDP", "EGNX", "EHAM", "LFPG", "LEMD", "LIMC", "OMDB", "OBBI", "KCVG", "KJFK", "HKJK", "DNMM" ] }
+    ]
+  },
+  {
+    "icao": "CLX", "iata": "CV", "name": "Cargolux", "callsign": "CARGOLUX", "country": "LU",
+    "archetype": "cargo", "reputation": 74,
+    "fleet": [ { "type": "B748F", "count": 14 }, { "type": "B744F", "count": 16 } ],
+    "network": [
+      { "hub": "ELLX", "destinations": [
+        "EGSS", "EGPK", "LIMC", "LEZG", "LTFM", "LLBG", "OMDB", "OTHH", "OBBI", "OOMS", "OERK", "OKKK", "HAAB", "HKJK", "FAOR",
+        "DNMM", "FZAA", "VIDP", "VABB", "VOMM", "VHHH", "ZSPD", "ZBAA", "ZGZJ", "RCTP", "RKSI", "RJAA", "WMKK", "VTBS",
+        "UAAA", "UACC", "UBBB", "PANC", "KORD", "KIAH", "KDFW", "KLAX", "KSEA", "KJFK", "KATL", "KMIA", "MMMX", "MMGL", "SKBO",
+        "SEQM", "SBKP", "SBGR"
+      ] }
+    ]
+  }
+]

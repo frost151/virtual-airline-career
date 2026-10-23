@@ -1,0 +1,211 @@
+[
+  {
+    "icao": "UAE", "iata": "EK", "name": "Emirates", "callsign": "EMIRATES", "country": "AE",
+    "archetype": "legacy", "reputation": 84,
+    "fleet": [ { "type": "A388", "count": 116 }, { "type": "B77W", "count": 130 }, { "type": "A359", "count": 10 }, { "type": "B77F", "count": 11 } ],
+    "network": [
+      { "hub": "OMDB", "destinations": [
+        "EGLL", "EGKK", "EGCC", "EGBB", "EGNT", "EGPH", "EGGW", "EIDW", "LFPG", "LFMN", "LFLL", "EHAM", "EBBR", "EDDF", "EDDM",
+        "EDDL", "EDDH", "LEMD", "LEBL", "LPPT", "LIRF", "LIMC", "LIPZ", "LIRN", "LIPE", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA",
+        "ENGM", "EPWA", "LKPR", "LHBP", "LGAV", "LCLK", "LTFM", "UUEE", "UUDD", "ULLI", "OERK", "OEJN", "OEDF", "OEMA", "OKKK",
+        "OBBI", "OTHH", "OOMS", "OJAI", "OLBA", "ORBI", "OIIE", "HECA", "GMMN", "DTTA", "DAAG", "HAAB", "HKJK", "HTDA", "HUEN",
+        "FAOR", "FACT", "FALE", "DNMM", "DNAA", "DGAA", "GOBD", "FIMP", "FSIA", "FQMA", "FLKK", "FVRG",
+        "VIDP", "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "OPKC", "OPLA", "OPIS", "VCBI", "VRMM", "VGHS",
+        "VNKT", "VTBS", "VTSP", "WSSS", "WMKK", "WIII", "WADD", "VVNB", "VVTS", "RPLL", "RPVM", "VHHH", "RCTP", "ZBAA", "ZSPD",
+        "ZGGG", "RJAA", "RJTT", "RJBB", "RKSI", "YSSY", "YMML", "YBBN", "YPPH", "YPAD", "NZAA", "NZCH",
+        "KJFK", "KEWR", "KBOS", "KIAD", "KORD", "KDFW", "KIAH", "KMIA", "KMCO", "KLAX", "KSFO", "KSEA", "CYYZ", "MMMX", "SBGR",
+        "SAEZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "QTR", "iata": "QR", "name": "Qatar Airways", "callsign": "QATARI", "country": "QA",
+    "archetype": "legacy", "reputation": 85,
+    "fleet": [
+      { "type": "A320", "count": 28 }, { "type": "B38M", "count": 20 }, { "type": "A359", "count": 34 }, { "type": "A35K", "count": 24 },
+      { "type": "A388", "count": 8 }, { "type": "B77W", "count": 57 }, { "type": "B77L", "count": 7 }, { "type": "B788", "count": 30 },
+      { "type": "B789", "count": 7 }, { "type": "B77F", "count": 30 }
+    ],
+    "network": [
+      { "hub": "OTHH", "destinations": [
+        "EGLL", "EGKK", "EGCC", "EGBB", "EGPH", "EIDW", "LFPG", "LFMN", "EHAM", "EBBR", "EDDF", "EDDM", "EDDB", "EDDL", "LEMD",
+        "LEBL", "LEMG", "LPPT", "LIRF", "LIMC", "LIPZ", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA", "ENGM", "EFHK", "EPWA", "LKPR",
+        "LHBP", "LROP", "LBSF", "LGAV", "LTFM", "LTAC", "UUEE", "UBBB", "UGTB", "UDYZ", "UZTT", "UAAA", "OERK", "OEJN", "OEDF",
+        "OEMA", "OKKK", "OBBI", "OMDB", "OMAA", "OOMS", "OJAI", "OLBA", "ORBI", "ORER", "OIIE", "HECA", "GMMN", "DTTA", "DAAG",
+        "HAAB", "HKJK", "HTDA", "HUEN", "HRYR", "FAOR", "FACT", "FALE", "DNMM", "DNAA", "DGAA", "FIMP", "FSIA", "FQMA", "FLKK",
+        "VIDP", "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "OPKC", "OPLA", "OPIS", "VCBI", "VRMM",
+        "VGHS", "VNKT", "VTBS", "VTSP", "WSSS", "WMKK", "WIII", "WADD", "VVNB", "VVTS", "RPLL", "VHHH", "ZBAA", "ZSPD", "ZGGG",
+        "ZUUU", "RJAA", "RJTT", "RJBB", "RKSI", "YSSY", "YMML", "YBBN", "YPPH", "YPAD", "NZAA",
+        "KJFK", "KBOS", "KIAD", "KPHL", "KORD", "KATL", "KDFW", "KIAH", "KMIA", "KLAX", "KSFO", "KSEA", "CYUL", "SBGR", "SAEZ",
+        "SKBO"
+      ] }
+    ]
+  },
+  {
+    "icao": "ETD", "iata": "EY", "name": "Etihad Airways", "callsign": "ETIHAD", "country": "AE",
+    "archetype": "legacy", "reputation": 78,
+    "fleet": [
+      { "type": "A320", "count": 20 }, { "type": "A21N", "count": 10 }, { "type": "A35K", "count": 5 }, { "type": "A388", "count": 4 },
+      { "type": "B77W", "count": 10 }, { "type": "B789", "count": 30 }, { "type": "B78X", "count": 30 }, { "type": "B77F", "count": 6 }
+    ],
+    "network": [
+      { "hub": "OMAA", "destinations": [
+        "EGLL", "EGCC", "EIDW", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "EDDL", "LEMD", "LEBL", "LIRF", "LIMC", "LSZH", "LSGG",
+        "LOWW", "EKCH", "ESSA", "EPWA", "LKPR", "LGAV", "LTFM", "UUEE", "UBBB", "UZTT", "UAAA", "OERK", "OEJN", "OEDF", "OEMA",
+        "OKKK", "OBBI", "OOMS", "OJAI", "OLBA", "HECA", "GMMN", "HAAB", "HKJK", "FAOR", "FSIA", "VIDP", "VABB", "VOBL", "VOMM",
+        "VOHS", "VOCI", "VOTV", "VECC", "OPKC", "OPLA", "OPIS", "VCBI", "VRMM", "VNKT", "VTBS", "VTSP", "WSSS", "WMKK", "WIII",
+        "WADD", "VVNB", "RPLL", "VHHH", "ZBAA", "ZSPD", "RJAA", "RKSI", "YSSY", "YMML", "KJFK", "KBOS", "KIAD", "KORD", "KATL",
+        "KCLT", "CYYZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "SVA", "iata": "SV", "name": "Saudia", "callsign": "SAUDIA", "country": "SA",
+    "archetype": "legacy", "reputation": 68,
+    "fleet": [
+      { "type": "A320", "count": 40 }, { "type": "A20N", "count": 30 }, { "type": "A21N", "count": 15 }, { "type": "A333", "count": 20 },
+      { "type": "B77W", "count": 35 }, { "type": "B789", "count": 13 }, { "type": "B78X", "count": 10 }
+    ],
+    "network": [
+      { "hub": "OEJN", "destinations": [
+        "OERK", "OEMA", "OEDF", "OEAB", "OETF", "OEGS", "OEHL", "OETB", "OEGN", "OEPA", "OEYN", "OMDB", "OMAA", "OTHH", "OKKK",
+        "OBBI", "OOMS", "OJAI", "OLBA", "HECA", "HEMA", "HESN", "GMMN", "DTTA", "DAAG", "HAAB", "HKJK", "HSPN", "HCMM",
+        "FAOR", "DNAA", "DNKN", "DGAA", "GOBD", "EGLL", "LFPG", "EDDF", "LIRF", "LIMC", "LSGG", "LEMD", "LTFM", "VIDP", "VABB",
+        "VOHS", "VOCI", "VOMM", "VECC", "VOCL", "OPKC", "OPLA", "OPIS", "OPPS", "VGHS", "VCBI", "WSSS", "WMKK", "WIII", "WARR",
+        "RPLL", "ZGGG", "KJFK", "KIAD"
+      ] },
+      { "hub": "OERK", "destinations": [
+        "OEJN", "OEMA", "OEDF", "OEAB", "OETB", "OEGN", "OEHL", "OMDB", "OMAA", "OTHH", "OKKK", "OBBI", "OJAI", "HECA", "EGLL",
+        "LFPG", "EDDF", "LEMD", "LIRF", "LTFM", "VIDP", "VABB", "OPKC", "OPLA", "WSSS", "WMKK", "WIII", "RPLL", "KJFK", "KIAD"
+      ] }
+    ]
+  },
+  {
+    "icao": "FDB", "iata": "FZ", "name": "flydubai", "callsign": "SKYDUBAI", "country": "AE",
+    "archetype": "lowcost", "reputation": 64,
+    "fleet": [ { "type": "B738", "count": 25 }, { "type": "B38M", "count": 60 }, { "type": "B39M", "count": 6 } ],
+    "network": [
+      { "hub": "OMDB", "destinations": [
+        "UUWW", "UUEE", "ULLI", "URKK", "URSS", "URMM", "URRP", "UWKD", "UWUU", "UWWW", "USSS", "UNNT", "UMMS", "UBBB", "UGTB",
+        "UGKO", "UDYZ", "UZTT", "UZSS", "UAAA", "UACC", "UCFM", "UTDD", "UTAA", "OERK", "OEJN", "OEDF", "OEMA", "OKKK", "OBBI",
+        "OTHH", "OOMS", "OJAI", "OLBA", "ORBI", "ORER", "OIIE", "OISS", "OIMM", "HECA", "HESX", "HAAB", "HKJK", "HTDA", "HUEN",
+        "HSPN", "HDAM", "HCMM", "LTFM", "LTAI", "LTBJ", "LHBP", "LKPR", "LZIB", "LBSF", "LROP", "LYBE", "LDZA", "LQSA", "LATI",
+        "EPKK", "EPWA", "LIMC", "LIPE", "LGTS", "LCLK", "VIDP", "VABB", "VOCI", "VAAH", "VECC", "OPKC", "OPLA", "OPIS", "OPMT",
+        "VCBI", "VRMM", "VGHS", "VNKT", "VTBS", "VTSP"
+      ] }
+    ]
+  },
+  {
+    "icao": "ELY", "iata": "LY", "name": "El Al", "callsign": "ELAL", "country": "IL",
+    "archetype": "legacy", "reputation": 63,
+    "fleet": [ { "type": "B738", "count": 15 }, { "type": "B739", "count": 8 }, { "type": "B788", "count": 7 }, { "type": "B789", "count": 10 } ],
+    "network": [
+      { "hub": "LLBG", "destinations": [
+        "LLER", "EGLL", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "EDDB", "LEMD", "LEBL", "LPPT", "LIRF", "LIMC", "LSZH",
+        "LSGG", "LOWW", "EKCH", "ESSA", "EPWA", "LKPR", "LHBP", "LROP", "LBSF", "LYBE", "LGAV", "LGTS", "LGRP", "LCLK", "LCPH",
+        "LMML", "UMMS", "UBBB", "UGTB", "UDYZ", "UZTT", "UAAA", "OMDB", "KJFK", "KEWR", "KBOS", "KMIA", "KLAX", "CYYZ", "VABB",
+        "VTBS", "RJAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "RJA", "iata": "RJ", "name": "Royal Jordanian", "callsign": "JORDANIAN", "country": "JO",
+    "archetype": "legacy", "reputation": 60,
+    "fleet": [
+      { "type": "A319", "count": 4 }, { "type": "A320", "count": 6 }, { "type": "A321", "count": 4 }, { "type": "A20N", "count": 4 },
+      { "type": "E175", "count": 2 }, { "type": "E195", "count": 4 }, { "type": "B788", "count": 7 }
+    ],
+    "network": [
+      { "hub": "OJAI", "destinations": [
+        "OJAQ", "OLBA", "ORBI", "ORER", "ORMM", "OMDB", "OMAA", "OTHH", "OKKK", "OBBI", "OOMS", "OERK", "OEJN", "OEDF", "OEMA",
+        "HECA", "HESH", "GMMN", "DTTA", "DAAG", "LCLK", "LGAV", "LTFM", "EGLL", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "LIRF",
+        "LIMC", "LEMD", "LSGG", "LOWW", "EKCH", "ESSA", "LKPR", "LHBP", "LROP", "UBBB", "UGTB", "KJFK", "KORD", "KDTW", "CYUL",
+        "VIDP", "VTBS"
+      ] }
+    ]
+  },
+  {
+    "icao": "OMA", "iata": "WY", "name": "Oman Air", "callsign": "OMAN AIR", "country": "OM",
+    "archetype": "legacy", "reputation": 67,
+    "fleet": [ { "type": "B738", "count": 10 }, { "type": "B38M", "count": 15 }, { "type": "A333", "count": 4 }, { "type": "B788", "count": 4 }, { "type": "B789", "count": 8 } ],
+    "network": [
+      { "hub": "OOMS", "destinations": [
+        "OOSA", "OOKB", "OMDB", "OTHH", "OKKK", "OBBI", "OERK", "OEJN", "OEDF", "OEMA", "HECA", "HKJK", "HTZA", "HTDA",
+        "LTFM", "EGLL", "LFPG", "EHAM", "EDDF", "EDDM", "LIMC", "LSZH", "EKCH", "LKPR", "UUEE", "UBBB", "UAAA", "VIDP", "VABB",
+        "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VOCL", "VECC", "OPKC", "OPLA", "OPIS", "OPMT", "VCBI", "VRMM", "VGHS", "VNKT",
+        "VTBS", "VTSP", "WMKK", "ZGGG"
+      ] }
+    ]
+  },
+  {
+    "icao": "ETH", "iata": "ET", "name": "Ethiopian Airlines", "callsign": "ETHIOPIAN", "country": "ET",
+    "archetype": "legacy", "reputation": 70,
+    "fleet": [
+      { "type": "DH8D", "count": 30 }, { "type": "B738", "count": 8 }, { "type": "B38M", "count": 25 }, { "type": "A359", "count": 22 },
+      { "type": "B77L", "count": 6 }, { "type": "B77W", "count": 4 }, { "type": "B788", "count": 20 }, { "type": "B789", "count": 11 },
+      { "type": "B77F", "count": 10 }
+    ],
+    "network": [
+      { "hub": "HAAB", "destinations": [
+        "HADR", "HAMK", "HABD", "HAGN", "HALL", "HAJM", "HKJK", "HKMO", "HUEN", "HRYR", "HBBA", "HTDA", "HTKJ", "HTZA", "HSPN",
+        "HJJJ", "HCMM", "HDAM", "HHAS", "FAOR", "FACT", "FALE", "FQMA", "FVRG", "FLKK", "FWKI", "FBSK", "FYWH", "FNLU", "FZAA",
+        "FZNA", "FCBB", "FCPP", "FOOL", "FKKD", "FKYS", "DNMM", "DNAA", "DNKN", "DNEN", "DGAA", "DXXX", "DBBB", "DIAP", "GLRB",
+        "GUCY", "GFLL", "GOBD", "GABS", "DFFD", "DRRN", "FMMI", "FIMP", "FSIA", "FMCH", "HECA", "OEJN", "OERK", "OEDF", "OMDB",
+        "OTHH", "OKKK", "OBBI", "OOMS", "OJAI", "OLBA", "LLBG", "LTFM", "EGLL", "EGCC", "EIDW", "LFPG", "EBBR", "EDDF", "LIRF",
+        "LIMC", "LSGG", "LOWW", "ESSA", "VIDP", "VABB", "VOBL", "VTBS", "WSSS", "WMKK", "WIII", "VHHH", "ZBAA", "ZSPD", "ZGGG",
+        "ZUUU", "RJAA", "RKSI", "KJFK", "KEWR", "KIAD", "KORD", "KATL", "KIAH", "KLAX", "CYYZ", "SBGR", "SAEZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "MSR", "iata": "MS", "name": "EgyptAir", "callsign": "EGYPTAIR", "country": "EG",
+    "archetype": "legacy", "reputation": 55,
+    "fleet": [ { "type": "A20N", "count": 15 }, { "type": "A21N", "count": 7 }, { "type": "B738", "count": 29 }, { "type": "A333", "count": 4 }, { "type": "B77W", "count": 6 }, { "type": "B789", "count": 8 } ],
+    "network": [
+      { "hub": "HECA", "destinations": [
+        "HEGN", "HESH", "HELX", "HESN", "HEMA", "HEAR", "OEJN", "OERK", "OEMA", "OEDF", "OETB", "OMDB", "OMAA", "OTHH",
+        "OKKK", "OBBI", "OOMS", "OJAI", "OLBA", "ORBI", "ORER", "LLBG", "HLLM", "DTTA", "DAAG", "GMMN", "HSPN", "HAAB", "HKJK",
+        "HUEN", "HTDA", "FAOR", "DNMM", "DNAA", "DGAA", "GOBD", "FZAA", "FKYS", "LTFM", "LCLK", "LGAV", "EGLL", "EGCC", "LFPG",
+        "EHAM", "EBBR", "EDDF", "EDDM", "EDDB", "LEMD", "LEBL", "LIRF", "LIMC", "LSGG", "LSZH", "LOWW", "EKCH", "ESSA", "LKPR",
+        "UUEE", "VIDP", "VABB", "VTBS", "WMKK", "VHHH", "ZBAA", "ZGGG", "RJAA", "RKSI", "KJFK", "KIAD", "CYYZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "RAM", "iata": "AT", "name": "Royal Air Maroc", "callsign": "ROYALAIR MAROC", "country": "MA",
+    "archetype": "legacy", "reputation": 57,
+    "fleet": [ { "type": "B738", "count": 30 }, { "type": "B38M", "count": 8 }, { "type": "B788", "count": 5 }, { "type": "B789", "count": 5 }, { "type": "E190", "count": 2 }, { "type": "AT76", "count": 6 } ],
+    "network": [
+      { "hub": "GMMN", "destinations": [
+        "GMMX", "GMAD", "GMFF", "GMTT", "GMFO", "GMME", "GMMW", "GMMH", "GMML", "DAAG", "DTTA", "HECA", "GOBD", "GUCY", "GLRB",
+        "DIAP", "DGAA", "DNMM", "DNAA", "DBBB", "DXXX", "DFFD", "DRRN", "GABS", "GQNO", "FKYS", "FKKD", "FOOL", "FCBB", "FZAA",
+        "HKJK", "HAAB", "FAOR", "OEJN", "OERK", "OMDB", "OTHH", "LTFM", "LLBG", "EGLL", "EGKK", "EGCC", "EIDW", "LFPG", "LFPO",
+        "LFML", "LFLL", "LFBO", "LFMN", "LFBD", "LFRS", "LFSB", "EBBR", "EHAM", "EDDF", "EDDL", "LEMD", "LEBL", "LEMG", "LEVC",
+        "LPPT", "LIRF", "LIMC", "LIPE", "LIPZ", "LSGG", "LSZH", "KJFK", "KIAD", "KMIA", "KBOS", "CYUL", "SBGR"
+      ] }
+    ]
+  },
+  {
+    "icao": "KQA", "iata": "KQ", "name": "Kenya Airways", "callsign": "KENYA", "country": "KE",
+    "archetype": "legacy", "reputation": 56,
+    "fleet": [ { "type": "B738", "count": 8 }, { "type": "E190", "count": 12 }, { "type": "B788", "count": 9 } ],
+    "network": [
+      { "hub": "HKJK", "destinations": [
+        "HKMO", "HKKI", "HKEL", "HUEN", "HRYR", "HBBA", "HTDA", "HTKJ", "HTZA", "HAAB", "HJJJ", "HCMM", "FAOR",
+        "FACT", "FQMA", "FLKK", "FVRG", "FWKI", "FNLU", "FZAA", "FZNA", "FKKD", "DNMM", "DGAA", "GOBD", "FMMI", "FSIA", "FMCH",
+        "OMDB", "OMSJ", "OOMS", "EGLL", "LFPG", "EHAM", "LIRF", "KJFK", "VABB", "VIDP", "VTBS", "ZGGG"
+      ] }
+    ]
+  },
+  {
+    "icao": "SAA", "iata": "SA", "name": "South African Airways", "callsign": "SPRINGBOK", "country": "ZA",
+    "archetype": "legacy", "reputation": 55,
+    "fleet": [ { "type": "A320", "count": 7 }, { "type": "A333", "count": 4 }, { "type": "A359", "count": 2 } ],
+    "network": [
+      { "hub": "FAOR", "destinations": [
+        "FACT", "FALE", "FAPE", "FAEL", "FQMA", "FVRG", "FLKK", "FWKI", "FBSK", "FYWH", "FNLU", "FZAA", "FDMS", "FXMM", "FMMI",
+        "FIMP", "DNMM", "DGAA", "HKJK", "HUEN", "HTDA", "SBGR", "YPPH"
+      ] }
+    ]
+  }
+]

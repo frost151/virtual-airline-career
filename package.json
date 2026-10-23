@@ -1,0 +1,39 @@
+{
+  "name": "virtual-airline-career",
+  "productName": "Virtual Airline Career",
+  "version": "0.1.0",
+  "description": "Соло-карьера виртуальной авиакомпании для MSFS 2024",
+  "main": "./out/main/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit",
+    "data:airports": "node scripts/build-airports.mjs",
+    "data:validate": "node scripts/validate-data.mjs"
+  },
+  "dependencies": {
+    "@mantine/core": "7.15.2",
+    "@mantine/hooks": "7.15.2",
+    "node-simconnect": "4.2.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "18.3.17",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.3.4",
+    "electron": "44.9.3",
+    "electron-vite": "2.3.0",
+    "typescript": "5.7.2",
+    "vite": "5.4.11",
+    "vitest": "3.2.7"
+  },
+  "allowScripts": {
+    "electron@44.9.3": true,
+    "esbuild@0.21.5": true
+  }
+}

@@ -1,0 +1,390 @@
+[
+  {
+    "icao": "DLH", "iata": "LH", "name": "Lufthansa", "callsign": "LUFTHANSA", "country": "DE",
+    "archetype": "legacy", "reputation": 74,
+    "fleet": [
+      { "type": "A319", "count": 25 }, { "type": "A320", "count": 45 }, { "type": "A20N", "count": 35 }, { "type": "A321", "count": 40 },
+      { "type": "A21N", "count": 20 }, { "type": "A333", "count": 10 }, { "type": "A359", "count": 28 }, { "type": "A388", "count": 8 },
+      { "type": "B748", "count": 19 }, { "type": "B789", "count": 10 }, { "type": "CRJ9", "count": 20 }, { "type": "E190", "count": 10 }
+    ],
+    "network": [
+      { "hub": "EDDF", "destinations": [
+        "EGLL", "LFPG", "EHAM", "LEMD", "LEBL", "LIRF", "LIMC", "LSZH", "LOWW", "EKCH", "ESSA", "ENGM", "EFHK", "EPWA", "LKPR",
+        "LHBP", "LROP", "LBSF", "LGAV", "LTFM", "LPPT", "EIDW", "EBBR", "EDDB", "EDDH", "EDDL", "EDDM",
+        "KJFK", "KEWR", "KORD", "KIAD", "KLAX", "KSFO", "KMIA", "KBOS", "KATL", "KDEN", "KIAH", "CYYZ", "CYUL", "SBGR", "MMMX",
+        "OMDB", "OERK", "LLBG", "HECA", "FAOR", "HAAB", "VIDP", "VABB", "VOBL", "VTBS", "WSSS", "ZBAA", "ZSPD", "VHHH", "RJTT",
+        "RKSI"
+      ] },
+      { "hub": "EDDM", "destinations": [
+        "EGLL", "LFPG", "EHAM", "LEMD", "LEBL", "LIRF", "LIMC", "LOWW", "LSZH", "EKCH", "EPWA", "LGAV", "LTFM", "LPPT", "EDDB",
+        "EDDH", "EDDL", "KJFK", "KEWR", "KORD", "KLAX", "KSFO", "KBOS", "KDEN", "CYYZ", "OMDB", "LLBG", "VTBS", "WSSS", "ZSPD",
+        "RJTT", "RKSI", "VIDP", "VOBL"
+      ] }
+    ]
+  },
+  {
+    "icao": "AFR", "iata": "AF", "name": "Air France", "callsign": "AIRFRANS", "country": "FR",
+    "archetype": "legacy", "reputation": 70,
+    "fleet": [
+      { "type": "A319", "count": 15 }, { "type": "A320", "count": 25 }, { "type": "A321", "count": 10 }, { "type": "A20N", "count": 10 },
+      { "type": "BCS3", "count": 40 }, { "type": "A359", "count": 40 }, { "type": "B772", "count": 18 }, { "type": "B77W", "count": 43 },
+      { "type": "B789", "count": 10 }
+    ],
+    "network": [
+      { "hub": "LFPG", "destinations": [
+        "EGLL", "EHAM", "EDDF", "EDDM", "LEMD", "LEBL", "LIRF", "LIMC", "LSGG", "LSZH", "EKCH", "ESSA", "EPWA", "LKPR", "LHBP",
+        "LGAV", "LPPT", "LFML", "LFMN", "LFBO", "LFBD", "LFLL", "LFRS", "DAAG", "GMMN", "DTTA", "HECA", "LLBG", "OMDB", "FAOR",
+        "GOBD", "DNMM", "FMEE", "TFFR", "TFFF", "SOCA", "KJFK", "KBOS", "KIAD", "KATL", "KLAX", "KSFO", "KMIA", "KORD", "CYUL",
+        "CYYZ", "MMMX", "SBGR", "SAEZ", "SCEL", "SKBO", "MUHA", "VIDP", "VABB", "VTBS", "WSSS", "VHHH", "RJTT", "RKSI", "ZBAA",
+        "ZSPD"
+      ] }
+    ]
+  },
+  {
+    "icao": "KLM", "iata": "KL", "name": "KLM", "callsign": "KLM", "country": "NL",
+    "archetype": "legacy", "reputation": 71,
+    "fleet": [
+      { "type": "B737", "count": 15 }, { "type": "B738", "count": 30 }, { "type": "B739", "count": 5 }, { "type": "A21N", "count": 10 },
+      { "type": "E175", "count": 17 }, { "type": "E190", "count": 25 }, { "type": "E295", "count": 25 }, { "type": "A332", "count": 6 },
+      { "type": "A333", "count": 5 }, { "type": "B772", "count": 15 }, { "type": "B77W", "count": 16 }, { "type": "B789", "count": 13 },
+      { "type": "B78X", "count": 15 }
+    ],
+    "network": [
+      { "hub": "EHAM", "destinations": [
+        "EGLL", "EGCC", "EGPH", "EGBB", "EGNX", "LFPG", "EDDF", "EDDM", "EDDB", "EDDH", "EDDL", "LEMD", "LEBL", "LIRF", "LIMC",
+        "LSZH", "LSGG", "LOWW", "EKCH", "ESSA", "ENGM", "ENBR", "EFHK", "EPWA", "LKPR", "LHBP", "LGAV", "LPPT", "EIDW", "LTFM",
+        "KJFK", "KATL", "KDTW", "KMSP", "KLAX", "KSFO", "KSEA", "KIAD", "KBOS", "KORD", "KIAH", "CYYZ", "CYVR", "MMMX", "SBGR",
+        "SKBO", "TNCC", "SMJP", "FAOR", "FACT", "HKJK", "DNMM", "OMDB", "WSSS", "WIII", "VHHH", "RJAA", "RKSI", "ZBAA", "ZSPD"
+      ] }
+    ]
+  },
+  {
+    "icao": "BAW", "iata": "BA", "name": "British Airways", "callsign": "SPEEDBIRD", "country": "GB",
+    "archetype": "legacy", "reputation": 69,
+    "fleet": [
+      { "type": "A319", "count": 30 }, { "type": "A320", "count": 60 }, { "type": "A20N", "count": 30 }, { "type": "A321", "count": 15 },
+      { "type": "A21N", "count": 25 }, { "type": "A388", "count": 12 }, { "type": "B772", "count": 40 }, { "type": "B77W", "count": 16 },
+      { "type": "B788", "count": 12 }, { "type": "B789", "count": 18 }, { "type": "B78X", "count": 12 }, { "type": "A35K", "count": 18 },
+      { "type": "E190", "count": 20 }
+    ],
+    "network": [
+      { "hub": "EGLL", "destinations": [
+        "EGPH", "EGPF", "EGCC", "EGAC", "LFPG", "EHAM", "EDDF", "EDDM", "EDDB", "LEMD", "LEBL", "LEMG", "LIRF", "LIMC", "LSZH",
+        "LSGG", "LOWW", "EKCH", "ESSA", "ENGM", "EFHK", "EPWA", "LKPR", "LHBP", "LGAV", "LPPT", "EIDW", "LTFM",
+        "KJFK", "KBOS", "KIAD", "KORD", "KATL", "KMIA", "KLAX", "KSFO", "KSEA", "KDFW", "KIAH", "KDEN", "KLAS", "CYYZ", "CYVR",
+        "CYUL", "MMMX", "SBGR", "SAEZ", "OMDB", "OTHH", "OERK", "OKKK", "LLBG", "HECA", "FAOR", "FACT", "HKJK", "DNMM", "VIDP",
+        "VABB", "VOBL", "VTBS", "WSSS", "WMKK", "VHHH", "RJTT", "RKSI", "ZSPD"
+      ] },
+      { "hub": "EGKK", "destinations": [ "LEMG", "LPFR", "LEPA", "LGIR", "LCLK", "GMMX", "TBPB", "MKJS", "TFFR", "MDPC", "MMUN", "KMCO" ] }
+    ]
+  },
+  {
+    "icao": "IBE", "iata": "IB", "name": "Iberia", "callsign": "IBERIA", "country": "ES",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [
+      { "type": "A319", "count": 5 }, { "type": "A320", "count": 15 }, { "type": "A20N", "count": 20 }, { "type": "A321", "count": 10 },
+      { "type": "A21N", "count": 20 }, { "type": "A332", "count": 12 }, { "type": "A333", "count": 8 }, { "type": "A359", "count": 20 }
+    ],
+    "network": [
+      { "hub": "LEMD", "destinations": [
+        "LEBL", "LEMG", "LEPA", "GCLP", "GCXO", "LEVC", "LEZL", "LEBB", "LEST", "LPPT", "LFPG", "EGLL", "EHAM", "EDDF", "EDDM",
+        "LIRF", "LIMC", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA", "LGAV", "GMMN", "DAAG", "KJFK", "KBOS", "KMIA", "KORD", "KLAX",
+        "KSFO", "KDFW", "MMMX", "MMUN", "MDSD", "MDPC", "MUHA", "MROC", "MGGT", "SKBO", "SEQM", "SPJC", "SCEL", "SAEZ", "SBGR",
+        "SBGL", "MPTO", "SUMU"
+      ] }
+    ]
+  },
+  {
+    "icao": "ITY", "iata": "AZ", "name": "ITA Airways", "callsign": "ITARROW", "country": "IT",
+    "archetype": "legacy", "reputation": 60,
+    "fleet": [
+      { "type": "A319", "count": 15 }, { "type": "A320", "count": 20 }, { "type": "A20N", "count": 20 }, { "type": "BCS3", "count": 10 },
+      { "type": "A21N", "count": 10 }, { "type": "A332", "count": 7 }, { "type": "A339", "count": 10 }, { "type": "A359", "count": 6 }
+    ],
+    "network": [
+      { "hub": "LIRF", "destinations": [
+        "LIML", "LIPZ", "LIPE", "LIRN", "LIEE", "LICC", "LICJ", "LIBD", "LIBR", "LIEO", "LIMF", "LFPG", "EGLL", "EHAM", "EDDF",
+        "EDDM", "LEMD", "LEBL", "LSGG", "LSZH", "LOWW", "EBBR", "LGAV", "LTFM", "HECA", "LLBG", "GMMN", "DTTA", "OMDB", "LPPT",
+        "KJFK", "KBOS", "KMIA", "KLAX", "KSFO", "KIAD", "KORD", "SBGR", "SAEZ", "VIDP", "RJTT"
+      ] },
+      { "hub": "LIML", "destinations": [ "LICC", "LICJ", "LIEE", "LIBD", "LIRN", "LFPG", "EGLL", "EHAM", "EDDF", "LEMD", "LEBL", "EBBR" ] }
+    ]
+  },
+  {
+    "icao": "SWR", "iata": "LX", "name": "Swiss", "callsign": "SWISS", "country": "CH",
+    "archetype": "legacy", "reputation": 76,
+    "fleet": [
+      { "type": "BCS1", "count": 9 }, { "type": "BCS3", "count": 21 }, { "type": "A320", "count": 20 }, { "type": "A20N", "count": 15 },
+      { "type": "A321", "count": 8 }, { "type": "A21N", "count": 10 }, { "type": "A333", "count": 14 }, { "type": "B77W", "count": 12 },
+      { "type": "A359", "count": 2 }
+    ],
+    "network": [
+      { "hub": "LSZH", "destinations": [
+        "EGLL", "LFPG", "EHAM", "EDDF", "EDDM", "EDDB", "EDDH", "EDDL", "LEMD", "LEBL", "LEPA", "LIRF", "LIMC", "LOWW", "EKCH",
+        "ESSA", "ENGM", "EPWA", "LKPR", "LHBP", "LGAV", "LPPT", "LTFM", "LLBG", "HECA", "OMDB", "KJFK", "KEWR", "KBOS", "KORD",
+        "KMIA", "KLAX", "KSFO", "KIAD", "CYUL", "SBGR", "FAOR", "VIDP", "VABB", "VTBS", "WSSS", "VHHH", "RJAA", "ZSPD"
+      ] },
+      { "hub": "LSGG", "destinations": [ "EGLL", "LEMD", "LEBL", "LPPT", "LGAV", "EDDB", "KJFK" ] }
+    ]
+  },
+  {
+    "icao": "AUA", "iata": "OS", "name": "Austrian Airlines", "callsign": "AUSTRIAN", "country": "AT",
+    "archetype": "legacy", "reputation": 68,
+    "fleet": [
+      { "type": "A320", "count": 25 }, { "type": "A20N", "count": 10 }, { "type": "A321", "count": 6 }, { "type": "E195", "count": 17 },
+      { "type": "B763", "count": 3 }, { "type": "B789", "count": 5 }
+    ],
+    "network": [
+      { "hub": "LOWW", "destinations": [
+        "EGLL", "LFPG", "EHAM", "EDDF", "EDDM", "EDDB", "EDDH", "EDDL", "LEMD", "LEBL", "LIRF", "LIMC", "LIPZ", "LSZH", "LSGG",
+        "EKCH", "ESSA", "EPWA", "LKPR", "LROP", "LBSF", "LYBE", "LDZA", "LJLJ", "LQSA", "LWSK", "LATI", "LGAV", "LGTS", "LCLK",
+        "LTFM", "LTAI", "LLBG", "OJAI", "ORER", "OMDB", "KJFK", "KEWR", "KORD", "KIAD", "CYYZ", "VTBS"
+      ] }
+    ]
+  },
+  {
+    "icao": "SAS", "iata": "SK", "name": "SAS", "callsign": "SCANDINAVIAN", "country": "DK",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [
+      { "type": "A319", "count": 5 }, { "type": "A320", "count": 15 }, { "type": "A20N", "count": 60 }, { "type": "A21N", "count": 3 },
+      { "type": "A333", "count": 8 }, { "type": "A359", "count": 4 }, { "type": "CRJ9", "count": 20 }, { "type": "AT76", "count": 15 }
+    ],
+    "network": [
+      { "hub": "EKCH", "destinations": [
+        "ESSA", "ENGM", "ENBR", "ENVA", "ENZV", "ESGG", "EKAH", "EKBI", "EFHK", "BIKF", "EGLL", "EGCC", "EGPH", "LFPG", "EHAM",
+        "EDDF", "EDDM", "EDDB", "EDDH", "LEMD", "LEBL", "LEMG", "LEPA", "LIRF", "LIMC", "LSZH", "LOWW", "EPWA", "LKPR", "LHBP",
+        "LGAV", "LPPT", "EIDW", "KJFK", "KEWR", "KBOS", "KORD", "KMIA", "KLAX", "KSFO", "KIAD", "CYYZ", "RJTT", "ZSPD", "VTBS"
+      ] },
+      { "hub": "ESSA", "destinations": [
+        "EKCH", "ENGM", "EFHK", "ESGG", "ESPA", "ESNQ", "ESMS", "ESNU", "ESNZ", "EGLL", "LFPG", "EHAM", "EDDF", "LEMG", "LEPA",
+        "LIRF", "KJFK", "KEWR", "KMIA"
+      ] },
+      { "hub": "ENGM", "destinations": [
+        "EKCH", "ESSA", "ENBR", "ENVA", "ENZV", "ENTC", "ENBO", "ENEV", "ENAL", "EGLL", "LFPG", "EHAM", "EDDF", "LEMG", "LEAL",
+        "KJFK", "KEWR"
+      ] }
+    ]
+  },
+  {
+    "icao": "FIN", "iata": "AY", "name": "Finnair", "callsign": "FINNAIR", "country": "FI",
+    "archetype": "legacy", "reputation": 72,
+    "fleet": [
+      { "type": "A319", "count": 8 }, { "type": "A320", "count": 10 }, { "type": "A321", "count": 15 }, { "type": "AT76", "count": 12 },
+      { "type": "E190", "count": 12 }, { "type": "A333", "count": 8 }, { "type": "A359", "count": 17 }
+    ],
+    "network": [
+      { "hub": "EFHK", "destinations": [
+        "EFOU", "EFRO", "EFKT", "EFVA", "EFKU", "EFJO", "EFIV", "ESSA", "ENGM", "EKCH", "BIKF", "EGLL", "EGCC", "LFPG", "EHAM",
+        "EDDF", "EDDM", "EDDB", "EDDH", "LEMD", "LEBL", "LEMG", "LIRF", "LIMC", "LSZH", "LOWW", "EPWA", "LKPR", "LHBP", "EVRA",
+        "EETN", "EYVI", "LGAV", "LPPT", "EIDW", "LTFM", "OMDB", "OTHH", "KJFK", "KORD", "KDFW", "KSEA", "KMIA", "KLAX", "VTBS",
+        "VTSP", "VIDP", "WSSS", "VHHH", "RJAA", "RJTT", "RJBB", "RJGG", "RKSI", "ZSPD", "ZBAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "LOT", "iata": "LO", "name": "LOT Polish Airlines", "callsign": "POLLOT", "country": "PL",
+    "archetype": "legacy", "reputation": 64,
+    "fleet": [
+      { "type": "B38M", "count": 15 }, { "type": "B738", "count": 8 }, { "type": "E175", "count": 12 }, { "type": "E195", "count": 15 },
+      { "type": "B788", "count": 8 }, { "type": "B789", "count": 7 }
+    ],
+    "network": [
+      { "hub": "EPWA", "destinations": [
+        "EPKK", "EPGD", "EPWR", "EPPO", "EPKT", "EPRZ", "EPSC", "EPLB", "EGLL", "LFPG", "EHAM", "EDDF", "EDDM", "EDDB", "LEMD",
+        "LEBL", "LIRF", "LIMC", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA", "ENGM", "EFHK", "EVRA", "EYVI", "EETN", "LKPR", "LHBP",
+        "LROP", "LBSF", "LYBE", "LGAV", "LCLK", "LTFM", "LLBG", "OMDB", "UGTB", "UBBB", "UDYZ", "UZTT", "KJFK", "KEWR", "KORD",
+        "KMIA", "KLAX", "CYYZ", "VTBS", "VIDP", "RJTT", "RKSI"
+      ] }
+    ]
+  },
+  {
+    "icao": "TAP", "iata": "TP", "name": "TAP Air Portugal", "callsign": "AIR PORTUGAL", "country": "PT",
+    "archetype": "legacy", "reputation": 63,
+    "fleet": [
+      { "type": "A319", "count": 12 }, { "type": "A320", "count": 15 }, { "type": "A20N", "count": 20 }, { "type": "A321", "count": 5 },
+      { "type": "A21N", "count": 20 }, { "type": "A339", "count": 19 }, { "type": "E195", "count": 13 }, { "type": "AT76", "count": 8 }
+    ],
+    "network": [
+      { "hub": "LPPT", "destinations": [
+        "LPPR", "LPFR", "LPMA", "LPPD", "LPLA", "GVAC", "GVNP", "FPST", "FNLU", "FQMA", "GOBD", "GMMN", "DTTA", "LEMD", "LEBL",
+        "LEMG", "LEVC", "LEBB", "LFPG", "LFPO", "LFML", "LFMN", "LFBO", "LFLL", "LSGG", "LSZH", "EGLL", "EGKK", "EGCC", "EIDW",
+        "EHAM", "EBBR", "EDDF", "EDDM", "EDDB", "EDDH", "LIRF", "LIMC", "LOWW", "EKCH", "ESSA", "EPWA", "LKPR", "LHBP", "LGAV",
+        "LTFM", "KJFK", "KEWR", "KBOS", "KMIA", "KORD", "KIAD", "KSFO", "CYYZ", "CYUL", "SBGR", "SBGL", "SBRF", "SBSV", "SBFZ",
+        "SBBR", "SBBE", "SBCF", "SBNT"
+      ] }
+    ]
+  },
+  {
+    "icao": "AEE", "iata": "A3", "name": "Aegean Airlines", "callsign": "AEGEAN", "country": "GR",
+    "archetype": "legacy", "reputation": 70,
+    "fleet": [
+      { "type": "A320", "count": 15 }, { "type": "A20N", "count": 25 }, { "type": "A321", "count": 4 }, { "type": "A21N", "count": 15 },
+      { "type": "DH8D", "count": 10 }
+    ],
+    "network": [
+      { "hub": "LGAV", "destinations": [
+        "LGTS", "LGIR", "LGRP", "LGKR", "LGSR", "LGMK", "LGKO", "LGZA", "LGKV", "LGSA", "LGSM", "LGMT", "LGIO", "LCLK", "LCPH",
+        "EGLL", "EGKK", "LFPG", "EHAM", "EDDF", "EDDM", "EDDB", "EDDL", "LEMD", "LEBL", "LIRF", "LIMC", "LSZH", "LSGG", "LOWW",
+        "EKCH", "ESSA", "EPWA", "LKPR", "LHBP", "LROP", "LBSF", "LYBE", "EBBR", "LPPT", "LLBG", "OJAI", "OLBA", "HECA", "OMDB",
+        "OKKK", "OERK", "ORER", "UGTB", "UDYZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "THY", "iata": "TK", "name": "Turkish Airlines", "callsign": "TURKISH", "country": "TR",
+    "archetype": "legacy", "reputation": 73,
+    "fleet": [
+      { "type": "A319", "count": 5 }, { "type": "A320", "count": 15 }, { "type": "A20N", "count": 40 }, { "type": "A321", "count": 60 },
+      { "type": "A21N", "count": 60 }, { "type": "B738", "count": 40 }, { "type": "B38M", "count": 30 }, { "type": "A332", "count": 10 },
+      { "type": "A333", "count": 30 }, { "type": "A359", "count": 25 }, { "type": "B77W", "count": 34 }, { "type": "B789", "count": 15 },
+      { "type": "B77F", "count": 8 }
+    ],
+    "network": [
+      { "hub": "LTFM", "destinations": [
+        "LTBJ", "LTAI", "LTAC", "LTFE", "LTCG", "LTCC", "LTCE", "LTAU", "LTAF",
+        "EGLL", "EGKK", "EGCC", "EGBB", "EGPH", "EIDW", "LFPG", "LFML", "LFLL", "LFMN", "EHAM", "EBBR", "EDDF", "EDDM", "EDDB",
+        "EDDH", "EDDL", "EDDS", "EDDK", "LEMD", "LEBL", "LPPT", "LIRF", "LIMC", "LIPZ", "LSZH", "LSGG", "LOWW", "EKCH", "ESSA",
+        "ENGM", "EFHK", "EPWA", "LKPR", "LHBP", "LROP", "LBSF", "LYBE", "LDZA", "LQSA", "LATI", "LWSK", "LGAV",
+        "UUEE", "UUWW", "ULLI", "URSS", "UWKD", "UBBB", "UGTB", "UDYZ", "UZTT", "UAAA", "UACC", "UCFM", "UTDD", "UTAA",
+        "OMDB", "OMAA", "OTHH", "OERK", "OEJN", "OEMA", "OKKK", "OBBI", "OOMS", "OJAI", "OLBA", "ORBI", "ORER", "OIIE",
+        "HECA", "GMMN", "DTTA", "DAAG", "HAAB", "HKJK", "HTDA", "FAOR", "FACT", "DNMM", "DNAA", "DGAA", "GOBD", "FZAA",
+        "VIDP", "VABB", "OPKC", "OPLA", "VTBS", "VTSP", "WSSS", "WMKK", "WIII", "WADD", "VVNB", "VVTS", "RPLL", "VHHH", "ZBAD",
+        "ZSPD", "ZGGG", "RJAA", "RJTT", "RJBB", "RKSI", "VRMM", "VCBI", "VGHS", "VNKT",
+        "KJFK", "KEWR", "KIAD", "KBOS", "KORD", "KATL", "KMIA", "KIAH", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KDTW", "CYYZ",
+        "CYUL", "CYVR", "MMMX", "MMUN", "SBGR", "SAEZ", "SKBO", "MPTO", "MUHA"
+      ] }
+    ]
+  },
+  {
+    "icao": "RYR", "iata": "FR", "name": "Ryanair", "callsign": "RYANAIR", "country": "IE",
+    "archetype": "lowcost", "reputation": 45,
+    "fleet": [ { "type": "B738", "count": 410 }, { "type": "B38M", "count": 180 }, { "type": "A320", "count": 29 } ],
+    "network": [
+      { "hub": "EGSS", "destinations": [
+        "EIDW", "EINN", "EICK", "LFBD", "LFML", "LEMD", "LEBL", "LEMG", "LEAL", "LEPA", "LEIB", "GCRR", "GCLP", "GCTS", "GCFV",
+        "LPPT", "LPPR", "LPFR", "LIRA", "LIME", "LIPH", "LIRP", "LICC", "LICJ", "LIBD", "LGAV", "LGTS", "LGIR", "LMML", "LCPH",
+        "LKPR", "LHBP", "EPKK", "EPMO", "EPGD", "EPWR", "LZIB", "LOWW", "LROP", "LWSK", "EVRA", "EYVI", "EKBI", "ESKN", "EDDB",
+        "EBCI", "EHEH"
+      ] },
+      { "hub": "EIDW", "destinations": [
+        "EGSS", "EGKK", "EGCC", "EGBB", "EGPH", "EGPF", "EGNX", "EGGP", "LFOB", "LEMD", "LEBL", "LEMG", "LEAL", "LEPA", "GCTS",
+        "GCLP", "GCRR", "LPFR", "LPPT", "LIRA", "LIME", "LMML", "EPKK", "EPMO", "EPGD", "LKPR", "LHBP", "EDDB", "EBCI", "EHEH",
+        "LFBD", "LFML"
+      ] },
+      { "hub": "LIME", "destinations": [
+        "LIRA", "LICC", "LICJ", "LIBD", "LIBR", "LIEE", "LIEO", "LIRN", "EGSS", "EIDW", "LEMD", "LEBL", "LEPA", "LEVC", "LEMG",
+        "LPPT", "LFOB", "EBCI", "EHEH", "LKPR", "LHBP", "EPKK", "EPMO", "LROP", "LGAV", "LGTS", "LMML", "GMMX", "GMFF", "GMME"
+      ] },
+      { "hub": "EBCI", "destinations": [
+        "LEMD", "LEBL", "LEMG", "LEAL", "LEPA", "LPPT", "LPPR", "LPFR", "LIME", "LIRA", "LICC", "LICJ", "LIPH", "LGAV", "LMML",
+        "GMMX", "GMFF", "GMTT", "GMAD", "LHBP", "EPKK", "EPMO", "LROP", "LBSF", "EIDW", "LTAI"
+      ] },
+      { "hub": "LEMD", "destinations": [
+        "LEPA", "LEIB", "GCTS", "GCLP", "GCRR", "GCFV", "LEST", "EIDW", "EGSS", "LIME", "LIRA", "LICC", "LIPE", "LFOB", "EBCI",
+        "EPKK", "EPMO", "LROP", "GMME", "GMMX", "GMTT", "LMML", "LGAV"
+      ] }
+    ]
+  },
+  {
+    "icao": "EZY", "iata": "U2", "name": "easyJet", "callsign": "EASY", "country": "GB",
+    "archetype": "lowcost", "reputation": 52,
+    "fleet": [ { "type": "A319", "count": 70 }, { "type": "A320", "count": 160 }, { "type": "A20N", "count": 80 }, { "type": "A21N", "count": 40 } ],
+    "network": [
+      { "hub": "EGKK", "destinations": [
+        "EGPH", "EGPF", "EGAA", "EGJJ", "EIDW", "LFPG", "LFMN", "LFML", "LFBD", "LFLL", "LFLB", "LSGG", "LSZH", "EHAM", "EDDB",
+        "LEMD", "LEBL", "LEMG", "LEAL", "LEPA", "LEIB", "GCTS", "GCLP", "GCRR", "LPPT", "LPPR", "LPFR", "LPMA", "LIRF", "LIMC",
+        "LIPZ", "LIRN", "LICC", "LGAV", "LGIR", "LGKR", "LCLK", "LCPH", "LMML", "LDDU", "LDSP", "LKPR", "LHBP", "LTBS", "GMMX",
+        "HEGN", "HESH"
+      ] },
+      { "hub": "EGGW", "destinations": [
+        "EGPH", "EGPF", "EGAA", "EIDW", "LSGG", "LSZH", "LFMN", "EHAM", "EDDB", "LEBL", "LEMG", "LEAL", "LEPA", "GCTS", "LPFR",
+        "LPPT", "LIMC", "LIRF", "LGAV", "LGIR", "LCLK", "LKPR", "LHBP", "EPKK", "LTAI", "GMMX", "LLBG"
+      ] },
+      { "hub": "LSGG", "destinations": [
+        "EGKK", "EGGW", "EGSS", "EGCC", "EGBB", "EGPH", "EIDW", "EHAM", "EDDB", "EDDH", "LFBD", "LFRS", "LFMN", "LEMD", "LEBL",
+        "LEMG", "LEPA", "LPPT", "LPPR", "LIRF", "LIRN", "LICC", "LIEE", "LGAV", "LGIR", "LKPR", "LHBP", "GMMX", "LLBG"
+      ] },
+      { "hub": "LIMC", "destinations": [
+        "EGKK", "EGGW", "EHAM", "EDDB", "LFPG", "LEMD", "LEBL", "LEPA", "LPPT", "LIRN", "LICC", "LICJ", "LIEE", "LIBD", "LGAV",
+        "LGIR", "LCLK", "LKPR", "LHBP", "GMMX", "HEGN", "HESH"
+      ] }
+    ]
+  },
+  {
+    "icao": "WZZ", "iata": "W6", "name": "Wizz Air", "callsign": "WIZZ AIR", "country": "HU",
+    "archetype": "lowcost", "reputation": 42,
+    "fleet": [ { "type": "A320", "count": 30 }, { "type": "A321", "count": 50 }, { "type": "A21N", "count": 160 } ],
+    "network": [
+      { "hub": "LHBP", "destinations": [
+        "EGGW", "EGKK", "EGSS", "EIDW", "LFOB", "EHEH", "EBCI", "EDLW", "EDDB", "LEMD", "LEBL", "LEMG", "LEAL", "LPPT", "LIRF",
+        "LIMC", "LIRN", "LICC", "LIBD", "LGAV", "LGTS", "LCLK", "LTFJ", "LTAI", "OMAA", "OJAI", "LLBG", "OEJN", "OERK", "GMMX",
+        "UGKO", "UBBB", "UACC", "UAAA", "EKCH", "ESKN", "ENTO", "EVRA", "HECA"
+      ] },
+      { "hub": "EPKT", "destinations": [
+        "EGGW", "EGSS", "EIDW", "EHEH", "EBCI", "EDLW", "LEBL", "LEMG", "LEAL", "LPPT", "LIRF", "LIME", "LICC", "LGAV", "LTAI",
+        "OMAA", "UGKO", "LLBG", "ENTO", "ENBR", "ESKN", "EKBI"
+      ] },
+      { "hub": "LROP", "destinations": [
+        "EGGW", "EGSS", "EIDW", "LFOB", "EHEH", "EBCI", "EDLW", "EDDB", "LEMD", "LEBL", "LEMG", "LEAL", "LEVC", "LPPT", "LIRF",
+        "LIMC", "LIRN", "LIBD", "LICC", "LGAV", "LGTS", "LCLK", "LTFJ", "LTAI", "OMAA", "OJAI", "LLBG", "HEGN", "GMMX", "UGKO"
+      ] },
+      { "hub": "EGGW", "destinations": [
+        "LHBP", "EPKT", "EPWA", "EPGD", "EPWR", "LROP", "LRCL", "LRIA", "LRTR", "LBSF", "LBWN", "EVRA", "EYVI", "LKPR", "LZIB",
+        "LYBE", "LATI", "LQSA", "LWSK", "UGKO", "LPPT", "LPMA", "LCLK", "LGAV", "LTAI"
+      ] }
+    ]
+  },
+  {
+    "icao": "BEL", "iata": "SN", "name": "Brussels Airlines", "callsign": "B-LINE", "country": "BE",
+    "archetype": "legacy", "reputation": 62,
+    "fleet": [ { "type": "A319", "count": 15 }, { "type": "A320", "count": 15 }, { "type": "A20N", "count": 4 }, { "type": "A333", "count": 10 } ],
+    "network": [
+      { "hub": "EBBR", "destinations": [
+        "EGLL", "EGPH", "EIDW", "LFML", "LFMN", "LFLL", "LFBO", "LFBD", "LSGG", "LSZH", "EDDF", "EDDM", "EDDB", "EDDH", "LEMD",
+        "LEBL", "LEMG", "LEAL", "LEPA", "LPPT", "LPPR", "LIRF", "LIMC", "LIPZ", "LICC", "LICJ", "LOWW", "EKCH", "ESSA", "ENGM",
+        "EPWA", "LKPR", "LHBP", "LROP", "LBSF", "LGAV", "LGIR", "LTFM", "LTAI", "LLBG", "GMMN", "GMMX", "DTTA", "DAAG", "GOBD",
+        "GUCY", "GLRB", "DIAP", "DGAA", "DNAA", "FKYS", "FKKD", "FZAA", "HRYR", "HUEN", "GABS", "DFFD", "KJFK", "KIAD"
+      ] }
+    ]
+  },
+  {
+    "icao": "TVS", "iata": "QS", "name": "Smartwings", "callsign": "SKYTRAVEL", "country": "CZ",
+    "archetype": "leisure", "reputation": 52,
+    "fleet": [ { "type": "B738", "count": 15 }, { "type": "B38M", "count": 10 } ],
+    "network": [
+      { "hub": "LKPR", "destinations": [
+        "LKTB", "LKMT", "LEBL", "LEMG", "LEPA", "LEAL", "GCTS", "GCLP", "LPFR", "LICC", "LICJ", "LGAV", "LGIR", "LGRP", "LGKO",
+        "LGZA", "LGKR", "LCLK", "LCPH", "LTAI", "LTBJ", "HEGN", "HESH", "HEMA", "DTMB", "DTTJ", "GMMX", "GMAD", "LBBG", "LBWN",
+        "LDSP", "LDDU", "LWOH", "LYTV", "LATI", "OMDB", "OOMS"
+      ] }
+    ]
+  },
+  {
+    "icao": "ASL", "iata": "JU", "name": "Air Serbia", "callsign": "AIR SERBIA", "country": "RS",
+    "archetype": "legacy", "reputation": 58,
+    "fleet": [ { "type": "A319", "count": 5 }, { "type": "A320", "count": 6 }, { "type": "A332", "count": 2 }, { "type": "AT76", "count": 7 }, { "type": "E195", "count": 2 } ],
+    "network": [
+      { "hub": "LYBE", "destinations": [
+        "LDZA", "LJLJ", "LQSA", "LWSK", "LYPG", "LYTV", "LYNI", "LATI", "LBSF", "LROP", "LHBP", "LOWW", "LKPR", "EPWA", "EDDF",
+        "EDDM", "EDDB", "EDDH", "EDDL", "EDDS", "EGLL", "LFPG", "EHAM", "EBBR", "LSZH", "LSGG", "LIRF", "LIMC", "LEBL", "LEMD",
+        "EKCH", "ESSA", "LGAV", "LGTS", "LGIR", "LCLK", "LTFM", "LTAI", "LLBG", "UUEE", "ULLI", "UGTB", "UBBB", "KJFK", "CYYZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "ICE", "iata": "FI", "name": "Icelandair", "callsign": "ICEAIR", "country": "IS",
+    "archetype": "legacy", "reputation": 67,
+    "fleet": [
+      { "type": "B752", "count": 18 }, { "type": "B763", "count": 4 }, { "type": "B38M", "count": 15 }, { "type": "B39M", "count": 4 },
+      { "type": "A21N", "count": 6 }, { "type": "DH8D", "count": 4 }
+    ],
+    "network": [
+      { "hub": "BIKF", "destinations": [
+        "BIAR", "BIEG", "BIIS", "BGGH", "BGSF", "EGLL", "EGCC", "EGPH", "EGPF", "EIDW", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM",
+        "EDDB", "EDDH", "LSZH", "LIRF", "LIMC", "LEMD", "LEBL", "LPPT", "EKCH", "ESSA", "ENGM", "ENBR", "EFHK", "LKPR", "LHBP",
+        "KJFK", "KEWR", "KBOS", "KIAD", "KORD", "KMSP", "KDEN", "KSEA", "KPDX", "KDTW", "KBWI", "KRDU", "KMCO", "KPIT", "CYYZ",
+        "CYUL", "CYVR", "CYHZ"
+      ] }
+    ]
+  }
+]

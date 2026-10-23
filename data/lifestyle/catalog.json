@@ -1,0 +1,57 @@
+{
+  "_comment": "Цены в USD при уровне цен 1.0. Жильё дополнительно умножается на индекс жилья страны, отдых — на стоимость жизни страны базы.",
+  "housing": [
+    { "id": "room", "name": "Комната в квартире", "rooms": 1, "rent": 450, "price": 0, "recovery": 3, "comfort": 0, "prestige": 0 },
+    { "id": "studio", "name": "Студия", "rooms": 1, "rent": 950, "price": 160000, "recovery": 4, "comfort": 6, "prestige": 3 },
+    { "id": "flat2", "name": "Двухкомнатная квартира", "rooms": 2, "rent": 1500, "price": 290000, "recovery": 5, "comfort": 10, "prestige": 6 },
+    { "id": "flat3", "name": "Трёхкомнатная квартира", "rooms": 3, "rent": 2200, "price": 430000, "recovery": 6, "comfort": 14, "prestige": 9 },
+    { "id": "townhouse", "name": "Таунхаус", "rooms": 4, "rent": 3200, "price": 650000, "recovery": 7, "comfort": 18, "prestige": 13 },
+    { "id": "house", "name": "Дом с участком", "rooms": 5, "rent": 4500, "price": 950000, "recovery": 8, "comfort": 22, "prestige": 18 },
+    { "id": "penthouse", "name": "Пентхаус в центре", "rooms": 4, "rent": 8000, "price": 2200000, "recovery": 8, "comfort": 26, "prestige": 28 },
+    { "id": "villa", "name": "Вилла", "rooms": 7, "rent": 15000, "price": 4500000, "recovery": 10, "comfort": 32, "prestige": 38 }
+  ],
+  "aircraft": [
+    { "id": "aeroclub", "name": "Членство в аэроклубе (Cessna 172 напрокат)", "price": 0, "monthly": 350, "prestige": 2, "comfort": 4, "match": [], "burnKgH": 0 },
+    { "id": "c172", "name": "Cessna 172 Skyhawk", "price": 480000, "monthly": 1100, "prestige": 6, "comfort": 6, "match": ["172", "skyhawk"], "burnKgH": 27 },
+    { "id": "da40", "name": "Diamond DA40 NG", "price": 620000, "monthly": 1300, "prestige": 7, "comfort": 6, "match": ["da40", "da-40"], "burnKgH": 22 },
+    { "id": "sr22", "name": "Cirrus SR22T", "price": 1100000, "monthly": 2200, "prestige": 10, "comfort": 8, "match": ["sr22", "cirrus"], "burnKgH": 45 },
+    { "id": "m600", "name": "Piper M600/SLS", "price": 3300000, "monthly": 5500, "prestige": 15, "comfort": 9, "match": ["m600", "piper m"], "burnKgH": 120 },
+    { "id": "tbm", "name": "Daher TBM 960", "price": 5200000, "monthly": 8000, "prestige": 20, "comfort": 10, "match": ["tbm"], "burnKgH": 170 },
+    { "id": "pc12", "name": "Pilatus PC-12 NGX", "price": 6500000, "monthly": 9500, "prestige": 22, "comfort": 10, "match": ["pc-12", "pc12", "pilatus"], "burnKgH": 190 },
+    { "id": "cj4", "name": "Cessna Citation CJ4", "price": 11000000, "monthly": 16000, "prestige": 30, "comfort": 12, "match": ["cj4"], "burnKgH": 520 }
+  ],
+  "rest": [
+    { "id": "restaurant", "name": "Ужин в хорошем ресторане", "price": 120, "fatigue": 6, "satisfaction": 2, "health": 0, "family": false },
+    { "id": "spa", "name": "СПА-день", "price": 300, "fatigue": 15, "satisfaction": 3, "health": 1, "family": false },
+    { "id": "weekend", "name": "Выходные за городом", "price": 650, "fatigue": 28, "satisfaction": 5, "health": 1, "family": true },
+    { "id": "sanatorium", "name": "Неделя в санатории", "price": 1800, "fatigue": 40, "satisfaction": 4, "health": 12, "family": false },
+    { "id": "beach", "name": "Неделя у моря", "price": 2600, "fatigue": 55, "satisfaction": 10, "health": 3, "family": true },
+    { "id": "vacation", "name": "Отпуск за границей (2 недели)", "price": 6000, "fatigue": 85, "satisfaction": 18, "health": 5, "family": true },
+    { "id": "maldives", "name": "Две недели на Мальдивах", "price": 16000, "fatigue": 100, "satisfaction": 28, "health": 6, "family": true }
+  ],
+  "subscriptions": [
+    { "id": "gym", "name": "Абонемент в спортзал", "monthly": 70, "health": 2, "fatigueDaily": 0.5, "satisfaction": 2, "prestige": 0 },
+    { "id": "pool", "name": "Бассейн и фитнес-клуб премиум", "monthly": 250, "health": 3, "fatigueDaily": 1, "satisfaction": 4, "prestige": 2 },
+    { "id": "golf", "name": "Гольф-клуб", "monthly": 600, "health": 1, "fatigueDaily": 0.8, "satisfaction": 5, "prestige": 6 },
+    { "id": "yacht", "name": "Членство в яхт-клубе", "monthly": 1500, "health": 1, "fatigueDaily": 1.2, "satisfaction": 7, "prestige": 10 }
+  ],
+  "education": [
+    { "id": "icao5", "name": "Английский ICAO, уровень 5", "price": 1500, "requires": null, "effect": "+3% к зарплате на международных рейсах" },
+    { "id": "icao6", "name": "Английский ICAO, уровень 6 (бессрочный)", "price": 3000, "requires": "icao5", "effect": "+6% к зарплате на международных рейсах (вместо +3%)" },
+    { "id": "crm", "name": "Курс CRM и человеческого фактора", "price": 2500, "requires": null, "effect": "Репутация за хорошие рейсы растёт быстрее" },
+    { "id": "vip", "name": "Курс обслуживания VIP-клиентов", "price": 4000, "requires": null, "effect": "+10% к оплате VIP-чартеров, клиенты прощают мелкие огрехи" },
+    { "id": "tri", "name": "Сертификат пилота-инструктора (TRI)", "price": 25000, "requires": "crm", "effect": "Нужен для звания «Пилот-инструктор»; командирам — подработка инструктором" },
+    { "id": "mba", "name": "MBA в авиационном менеджменте", "price": 60000, "requires": null, "effect": "Пригодится для своей авиакомпании: доверие инвесторов и банков" }
+  ],
+  "collectibles": [
+    { "id": "seiko-pilot", "name": "Часы Seiko Prospex Pilot", "price": 800, "prestige": 1, "growth": 0 },
+    { "id": "omega-speedmaster", "name": "Часы Omega Speedmaster Moonwatch", "price": 7500, "prestige": 4, "growth": 0.02 },
+    { "id": "breitling-navitimer", "name": "Часы Breitling Navitimer", "price": 9500, "prestige": 5, "growth": 0.01 },
+    { "id": "iwc-big-pilot", "name": "Часы IWC Big Pilot's Watch", "price": 14000, "prestige": 6, "growth": 0.02 },
+    { "id": "rolex-gmt", "name": "Часы Rolex GMT-Master II", "price": 16000, "prestige": 8, "growth": 0.05 },
+    { "id": "patek-calatrava", "name": "Часы Patek Philippe Calatrava Pilot Travel Time", "price": 55000, "prestige": 14, "growth": 0.06 },
+    { "id": "model-collection", "name": "Коллекция моделей самолётов 1:200", "price": 3000, "prestige": 2, "growth": 0 },
+    { "id": "vintage-instruments", "name": "Винтажные приборы из кабины Ту-154", "price": 6000, "prestige": 3, "growth": 0.03 },
+    { "id": "painting", "name": "Картина современного художника", "price": 40000, "prestige": 9, "growth": 0.04 }
+  ]
+}

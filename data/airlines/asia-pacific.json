@@ -1,0 +1,345 @@
+[
+  {
+    "icao": "CSN", "iata": "CZ", "name": "China Southern Airlines", "callsign": "CHINA SOUTHERN", "country": "CN",
+    "archetype": "legacy", "reputation": 64,
+    "fleet": [
+      { "type": "A319", "count": 20 }, { "type": "A320", "count": 80 }, { "type": "A20N", "count": 100 }, { "type": "A321", "count": 50 },
+      { "type": "A21N", "count": 60 }, { "type": "B738", "count": 120 }, { "type": "B38M", "count": 40 }, { "type": "A332", "count": 10 },
+      { "type": "A333", "count": 25 }, { "type": "A359", "count": 20 }, { "type": "B77W", "count": 15 }, { "type": "B788", "count": 10 },
+      { "type": "B789", "count": 20 }, { "type": "E190", "count": 15 }, { "type": "C919", "count": 3 }, { "type": "AJ27", "count": 30 }
+    ],
+    "network": [
+      { "hub": "ZGGG", "destinations": [
+        "ZBAA", "ZBAD", "ZSPD", "ZSSS", "ZGSZ", "ZUUU", "ZUTF", "ZUCK", "ZPPP", "ZLXY", "ZSHC", "ZSNJ", "ZHHH", "ZSAM", "ZSQD",
+        "ZYTL", "ZYTX", "ZYHB", "ZWWW", "ZJSY", "ZJHK", "ZGKL", "ZHCC", "ZBTJ", "ZSJN", "ZSFZ", "ZGNN", "ZUGY", "ZLLL", "ZBHH",
+        "VHHH", "VMMC", "RCTP", "RJAA", "RJBB", "RJGG", "RKSI", "WSSS", "VTBS", "VTSP", "VVNB", "VVTS", "WMKK", "WIII", "WADD",
+        "RPLL", "VDPP", "VLVT", "VYYY", "VIDP", "VCBI", "VRMM", "VNKT", "VGHS", "OPIS", "OMDB", "OERK", "LTFM", "EGLL", "LFPG",
+        "EHAM", "EDDF", "LIRF", "LEMD", "UUEE", "HKJK", "HAAB", "YSSY", "YMML", "YBBN", "YPPH", "NZAA", "KLAX", "KSFO", "KJFK",
+        "CYVR"
+      ] },
+      { "hub": "ZBAD", "destinations": [
+        "ZGGG", "ZGSZ", "ZSPD", "ZUUU", "ZUCK", "ZPPP", "ZLXY", "ZSHC", "ZHHH", "ZSAM", "ZYHB", "ZWWW", "ZJSY", "ZJHK", "UUEE",
+        "EGLL", "LFPG", "EHAM", "EDDF", "RJAA", "RKSI", "WSSS", "VTBS", "OMDB"
+      ] }
+    ]
+  },
+  {
+    "icao": "CCA", "iata": "CA", "name": "Air China", "callsign": "AIR CHINA", "country": "CN",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [
+      { "type": "A319", "count": 30 }, { "type": "A320", "count": 40 }, { "type": "A20N", "count": 50 }, { "type": "A321", "count": 60 },
+      { "type": "A21N", "count": 20 }, { "type": "B738", "count": 110 }, { "type": "B38M", "count": 15 }, { "type": "A332", "count": 20 },
+      { "type": "A333", "count": 30 }, { "type": "A359", "count": 25 }, { "type": "B77W", "count": 28 }, { "type": "B789", "count": 14 },
+      { "type": "B748", "count": 7 }, { "type": "C919", "count": 5 }, { "type": "AJ27", "count": 25 }
+    ],
+    "network": [
+      { "hub": "ZBAA", "destinations": [
+        "ZSPD", "ZSSS", "ZGGG", "ZGSZ", "ZUUU", "ZUTF", "ZUCK", "ZPPP", "ZLXY", "ZSHC", "ZSNJ", "ZHHH", "ZGHA", "ZSAM", "ZSQD",
+        "ZYTL", "ZYTX", "ZYHB", "ZWWW", "ZJSY", "ZJHK", "ZGKL", "ZULS", "ZHCC", "ZSFZ", "ZGNN", "ZUGY", "ZLLL", "ZBHH", "ZBYN",
+        "VHHH", "VMMC", "RCTP", "RJTT", "RJAA", "RJBB", "RJGG", "RKSI", "RKPC", "WSSS", "VTBS", "VVNB", "WMKK", "WIII", "RPLL",
+        "VIDP", "VYYY", "VNKT", "OPIS", "UUEE", "ULLI", "UAAA", "UZTT", "UBBB", "OMDB", "OTHH", "LTFM", "EGLL", "LFPG", "EHAM",
+        "EDDF", "EDDM", "LIRF", "LIMC", "LEMD", "LEBL", "LSGG", "LOWW", "EKCH", "ESSA", "LHBP", "LGAV", "HAAB", "YSSY", "YMML",
+        "NZAA", "KJFK", "KLAX", "KSFO", "KIAD", "KIAH", "CYVR"
+      ] }
+    ]
+  },
+  {
+    "icao": "CES", "iata": "MU", "name": "China Eastern Airlines", "callsign": "CHINA EASTERN", "country": "CN",
+    "archetype": "legacy", "reputation": 63,
+    "fleet": [
+      { "type": "A319", "count": 30 }, { "type": "A320", "count": 100 }, { "type": "A20N", "count": 80 }, { "type": "A321", "count": 70 },
+      { "type": "A21N", "count": 30 }, { "type": "B738", "count": 100 }, { "type": "B38M", "count": 15 }, { "type": "A332", "count": 30 },
+      { "type": "A333", "count": 50 }, { "type": "A359", "count": 20 }, { "type": "B77W", "count": 20 }, { "type": "B789", "count": 10 },
+      { "type": "C919", "count": 10 }, { "type": "AJ27", "count": 25 }
+    ],
+    "network": [
+      { "hub": "ZSPD", "destinations": [
+        "ZBAA", "ZBAD", "ZGGG", "ZGSZ", "ZUUU", "ZUTF", "ZUCK", "ZPPP", "ZLXY", "ZHHH", "ZGHA", "ZSAM", "ZSQD", "ZYTL", "ZYTX",
+        "ZYHB", "ZWWW", "ZJSY", "ZJHK", "ZGKL", "ZHCC", "ZBTJ", "ZSJN", "ZSFZ", "ZGNN", "ZUGY", "ZLLL", "ZBHH", "ZBYN",
+        "VHHH", "VMMC", "RCTP", "RCKH", "RJTT", "RJAA", "RJBB", "RJGG", "RJCC", "RJFF", "ROAH", "RKSI", "RKSS", "RKPC", "RKPK",
+        "WSSS", "VTBS", "VTSP", "VTCC", "VVNB", "VVTS", "WMKK", "WIII", "WADD", "RPLL", "VDPP", "VLVT", "VIDP", "VRMM", "VNKT",
+        "UUEE", "OMDB", "LTFM", "EGLL", "LFPG", "EHAM", "EDDF", "LIRF", "LIMC", "LEMD", "LSZH", "LOWW", "LKPR", "LHBP", "HAAB",
+        "YSSY", "YMML", "YBBN", "NZAA", "KJFK", "KLAX", "KSFO", "CYYZ", "CYVR"
+      ] },
+      { "hub": "ZSSS", "destinations": [
+        "ZBAA", "ZBAD", "ZGGG", "ZGSZ", "ZUUU", "ZUCK", "ZPPP", "ZLXY", "ZHHH", "ZSAM", "ZSQD", "ZYTL", "ZYHB", "ZWWW", "ZJSY",
+        "VHHH", "RCSS", "RJTT", "RKSS"
+      ] }
+    ]
+  },
+  {
+    "icao": "CPA", "iata": "CX", "name": "Cathay Pacific", "callsign": "CATHAY", "country": "HK",
+    "archetype": "legacy", "reputation": 80,
+    "fleet": [
+      { "type": "A20N", "count": 10 }, { "type": "A21N", "count": 15 }, { "type": "A333", "count": 30 }, { "type": "A359", "count": 30 },
+      { "type": "A35K", "count": 18 }, { "type": "B77W", "count": 40 }, { "type": "B748F", "count": 14 }
+    ],
+    "network": [
+      { "hub": "VHHH", "destinations": [
+        "ZBAA", "ZBAD", "ZSPD", "ZSSS", "ZGSZ", "ZUUU", "ZUCK", "ZPPP", "ZLXY", "ZSHC", "ZSNJ", "ZHHH", "ZSAM", "ZSQD", "ZYTL",
+        "ZSFZ", "ZJHK", "RCTP", "RCKH", "RJTT", "RJAA", "RJBB", "RJGG", "RJCC", "RJFF", "ROAH", "RKSI", "RKPK", "WSSS", "VTBS",
+        "VTSP", "VTCC", "VVNB", "VVTS", "VVDN", "WMKK", "WMKP", "WIII", "WADD", "WARR", "RPLL", "RPVM", "VDPP", "VYYY", "VIDP",
+        "VABB", "VOBL", "VOMM", "VOHS", "VCBI", "VRMM", "VNKT", "VGHS", "OMDB", "OERK", "OTHH", "LLBG", "EGLL", "LFPG", "EHAM",
+        "EDDF", "EDDM", "LIRF", "LIMC", "LEMD", "LEBL", "LSZH", "EIDW", "EGCC", "EKCH", "FAOR", "YSSY", "YMML", "YBBN", "YPPH",
+        "YPAD", "YBCS", "NZAA", "NZCH", "KJFK", "KBOS", "KIAD", "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "CYYZ", "CYVR"
+      ] }
+    ]
+  },
+  {
+    "icao": "JAL", "iata": "JL", "name": "Japan Airlines", "callsign": "JAPANAIR", "country": "JP",
+    "archetype": "legacy", "reputation": 82,
+    "fleet": [
+      { "type": "B738", "count": 40 }, { "type": "A359", "count": 16 }, { "type": "A35K", "count": 5 }, { "type": "B77W", "count": 10 },
+      { "type": "B788", "count": 25 }, { "type": "B789", "count": 20 }, { "type": "E170", "count": 15 }, { "type": "E190", "count": 14 }
+    ],
+    "network": [
+      { "hub": "RJTT", "destinations": [
+        "RJCC", "RJBB", "RJOO", "RJFF", "ROAH", "RJFK", "RJOA", "RJFT", "RJOM", "RJNK", "RJEC", "RJCH", "RJOT", "RJFM", "RJFU",
+        "RJCK", "RJOS", "RJDC", "ROMY", "ROIG", "RKSS", "RCSS", "ZSSS", "ZBAA", "VHHH", "WSSS", "VTBS", "EGLL", "LFPG", "EDDF",
+        "KJFK", "KLAX", "KSFO", "KORD", "KDFW", "PHNL", "YSSY"
+      ] },
+      { "hub": "RJAA", "destinations": [
+        "RKSI", "RCTP", "ZSPD", "ZBAA", "ZGGG", "VHHH", "WSSS", "VTBS", "VVNB", "VVTS", "WMKK", "WIII", "RPLL", "VIDP", "VOBL",
+        "EGLL", "LFPG", "EFHK", "EHAM", "LTFM", "OTHH", "KJFK", "KBOS", "KORD", "KDFW", "KLAX", "KSAN", "KSEA", "CYVR", "PHNL",
+        "PGUM", "YMML", "NZAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "ANA", "iata": "NH", "name": "All Nippon Airways", "callsign": "ALL NIPPON", "country": "JP",
+    "archetype": "legacy", "reputation": 83,
+    "fleet": [
+      { "type": "A20N", "count": 10 }, { "type": "A21N", "count": 22 }, { "type": "B738", "count": 35 }, { "type": "B772", "count": 15 },
+      { "type": "B77W", "count": 25 }, { "type": "B788", "count": 35 }, { "type": "B789", "count": 45 }, { "type": "B78X", "count": 3 },
+      { "type": "A388", "count": 3 }, { "type": "DH8D", "count": 24 }
+    ],
+    "network": [
+      { "hub": "RJTT", "destinations": [
+        "RJCC", "RJBB", "RJOO", "RJFF", "ROAH", "RJFK", "RJOA", "RJFT", "RJOM", "RJNK", "RJEC", "RJCH", "RJOT", "RJFM", "RJFU",
+        "RJOS", "RJSS", "RJGG", "ROIG", "RKSS", "RCSS", "ZSSS", "ZBAA", "ZGSZ", "VHHH", "WSSS", "VTBS", "VVNB", "VVTS", "RPLL",
+        "WIII", "VIDP", "EGLL", "LFPG", "EDDF", "EDDM", "LSZH", "LIMC", "ESSA", "LTFM", "KJFK", "KLAX", "KSFO", "KORD", "KIAD",
+        "KIAH", "KSEA", "CYVR", "PHNL", "YSSY", "YMML"
+      ] },
+      { "hub": "RJAA", "destinations": [
+        "RKSI", "RCTP", "ZSPD", "ZBAA", "ZGGG", "ZUCK", "ZSHC", "ZSAM", "ZSQD", "ZYTL", "VHHH", "WSSS", "VTBS", "VVTS", "WMKK",
+        "WIII", "RPLL", "VYYY", "VABB", "VIDP", "EDDF", "EBBR", "KJFK", "KLAX", "KSJC", "KORD", "KIAH", "KSEA", "CYYZ", "CYVR",
+        "MMMX", "PHNL", "YPPH"
+      ] }
+    ]
+  },
+  {
+    "icao": "KAL", "iata": "KE", "name": "Korean Air", "callsign": "KOREANAIR", "country": "KR",
+    "archetype": "legacy", "reputation": 76,
+    "fleet": [
+      { "type": "B739", "count": 10 }, { "type": "B38M", "count": 15 }, { "type": "BCS3", "count": 10 }, { "type": "A333", "count": 25 },
+      { "type": "A359", "count": 3 }, { "type": "A388", "count": 6 }, { "type": "B748", "count": 9 }, { "type": "B772", "count": 15 },
+      { "type": "B77W", "count": 25 }, { "type": "B789", "count": 10 }, { "type": "B78X", "count": 10 }, { "type": "B77F", "count": 12 },
+      { "type": "B748F", "count": 7 }
+    ],
+    "network": [
+      { "hub": "RKSI", "destinations": [
+        "RKPC", "RKPK", "RJAA", "RJTT", "RJBB", "RJGG", "RJCC", "RJFF", "ROAH", "RJSS", "RJOA", "RJFK", "ZBAA", "ZBAD", "ZSPD",
+        "ZGGG", "ZGSZ", "ZSQD", "ZYTL", "ZYTX", "ZUUU", "ZLXY", "ZHHH", "ZSAM", "VHHH", "VMMC", "RCTP", "WSSS", "VTBS", "VTSP",
+        "VTCC", "VVNB", "VVTS", "VVDN", "VVCR", "WMKK", "WBKK", "WIII", "WADD", "RPLL", "RPVM", "RPLC", "VDPP", "VLVT", "VYYY",
+        "VIDP", "VABB", "VNKT", "VRMM", "UUEE", "UZTT", "UAAA", "UHWW", "OMDB", "OTHH", "LLBG", "LTFM", "EGLL", "LFPG",
+        "EHAM", "EDDF", "LIRF", "LIMC", "LEMD", "LSZH", "LOWW", "LKPR", "LHBP", "EPWA", "KJFK", "KBOS", "KIAD", "KATL", "KORD",
+        "KDFW", "KLAX", "KSFO", "KSEA", "KLAS", "PHNL", "PGUM", "CYYZ", "CYVR", "YSSY", "YBBN", "NZAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "SIA", "iata": "SQ", "name": "Singapore Airlines", "callsign": "SINGAPORE", "country": "SG",
+    "archetype": "legacy", "reputation": 88,
+    "fleet": [
+      { "type": "B38M", "count": 18 }, { "type": "A359", "count": 56 }, { "type": "A359ULR", "count": 7 }, { "type": "A388", "count": 12 }, { "type": "B77W", "count": 20 },
+      { "type": "B78X", "count": 22 }, { "type": "B748F", "count": 7 }
+    ],
+    "network": [
+      { "hub": "WSSS", "destinations": [
+        "WMKK", "WMKP", "WBKK", "WBGG", "WIII", "WADD", "WARR", "WIMM", "WBSB", "VTBS", "VTSP", "VTCC", "VVNB", "VVTS", "VVDN",
+        "VDPP", "VYYY", "RPLL", "RPVM", "VHHH", "RCTP", "ZBAA", "ZSPD", "ZGGG", "ZGSZ", "ZUUU", "ZUCK", "ZSAM", "ZSHC", "RJTT",
+        "RJAA", "RJBB", "RJGG", "RJFF", "RKSI", "VIDP", "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VCBI",
+        "VRMM", "VGHS", "VNKT", "OMDB", "OTHH", "LTFM", "EGLL", "EGCC", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "LIRF", "LIMC",
+        "LEBL", "LSZH", "EKCH", "FAOR", "YSSY", "YMML", "YBBN", "YPPH", "YPAD", "YBCS", "YPDN", "YSCB", "NZAA", "NZCH", "KJFK",
+        "KEWR", "KLAX", "KSFO", "KSEA", "KIAH", "CYVR"
+      ] }
+    ]
+  },
+  {
+    "icao": "THA", "iata": "TG", "name": "Thai Airways", "callsign": "THAI", "country": "TH",
+    "archetype": "legacy", "reputation": 68,
+    "fleet": [ { "type": "A20N", "count": 20 }, { "type": "A21N", "count": 7 }, { "type": "A359", "count": 18 }, { "type": "B77W", "count": 14 }, { "type": "B788", "count": 6 }, { "type": "B789", "count": 4 } ],
+    "network": [
+      { "hub": "VTBS", "destinations": [
+        "VTSP", "VTCC", "VTSS", "VTUK", "VTUD", "VTSB", "VTSM", "VTCT", "VTUU", "WSSS", "WMKK", "WMKP", "WIII", "WADD", "VVNB",
+        "VVTS", "VDPP", "VLVT", "VYYY", "RPLL", "VHHH", "RCTP", "ZBAA", "ZSPD", "ZGGG", "ZUUU", "ZPPP", "RJTT", "RJAA", "RJBB",
+        "RJGG", "RJFF", "RJCC", "RKSI", "VIDP", "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VECC", "VEGY", "VCBI", "VGHS", "VNKT",
+        "OPKC", "OPLA", "OPIS", "OMDB", "LTFM", "EGLL", "LFPG", "EDDF", "EDDM", "LIMC", "LSZH", "LOWW", "EKCH", "ESSA", "ENGM",
+        "UUEE", "YSSY", "YMML", "YPPH"
+      ] }
+    ]
+  },
+  {
+    "icao": "HVN", "iata": "VN", "name": "Vietnam Airlines", "callsign": "VIET NAM AIRLINES", "country": "VN",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [ { "type": "A321", "count": 50 }, { "type": "A21N", "count": 20 }, { "type": "A359", "count": 14 }, { "type": "B789", "count": 11 }, { "type": "B78X", "count": 8 } ],
+    "network": [
+      { "hub": "VVNB", "destinations": [
+        "VVTS", "VVDN", "VVCR", "VVPQ", "VVCI", "VVPB", "VVVH", "VVBM", "VVPK", "VVCT", "WSSS", "VTBS", "WMKK", "WIII", "VDPP",
+        "VLVT", "VYYY", "RPLL", "VHHH", "RCTP", "ZBAA", "ZSPD", "ZGGG", "ZUUU", "RJTT", "RJAA", "RJBB", "RJGG", "RJFF", "RKSI",
+        "RKPK", "VIDP", "VABB", "UUEE", "EGLL", "LFPG", "EDDF", "EDDM", "LKPR", "YSSY", "YMML"
+      ] },
+      { "hub": "VVTS", "destinations": [
+        "VVDN", "VVCR", "VVPQ", "VVCI", "VVPB", "VVVH", "VVBM", "WSSS", "VTBS", "WMKK", "WIII", "WADD", "VDPP", "VDSA", "RPLL",
+        "VHHH", "RCTP", "RCKH", "ZSPD", "ZGGG", "RJTT", "RJAA", "RJBB", "RKSI", "RKPK", "VIDP", "VABB", "EGLL", "LFPG", "EDDF",
+        "YSSY", "YMML", "KSFO"
+      ] }
+    ]
+  },
+  {
+    "icao": "MAS", "iata": "MH", "name": "Malaysia Airlines", "callsign": "MALAYSIAN", "country": "MY",
+    "archetype": "legacy", "reputation": 68,
+    "fleet": [ { "type": "B738", "count": 30 }, { "type": "B38M", "count": 10 }, { "type": "A333", "count": 18 }, { "type": "A359", "count": 7 } ],
+    "network": [
+      { "hub": "WMKK", "destinations": [
+        "WMKP", "WMKL", "WMKJ", "WMKC", "WMKN", "WMKD", "WBKK", "WBGG", "WBKW", "WBGB", "WBGS", "WBGR", "WSSS", "WIII", "WADD",
+        "WARR", "WIMM", "WBSB", "VTBS", "VTSP", "VTCC", "VVNB", "VVTS", "VDPP", "VYYY", "RPLL", "VHHH", "RCTP", "ZBAA", "ZSPD",
+        "ZGGG", "ZGSZ", "ZUUU", "ZSAM", "RJAA", "RJBB", "RKSI", "VIDP", "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH",
+        "VECC", "VCBI", "VRMM", "VGHS", "VNKT", "OEJN", "OMDB", "OTHH", "LTFM", "EGLL", "LFPG", "YSSY", "YMML", "YBBN", "YPPH",
+        "YPAD", "NZAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "GIA", "iata": "GA", "name": "Garuda Indonesia", "callsign": "INDONESIA", "country": "ID",
+    "archetype": "legacy", "reputation": 64,
+    "fleet": [ { "type": "B738", "count": 40 }, { "type": "A333", "count": 13 }, { "type": "A339", "count": 3 }, { "type": "B77W", "count": 8 } ],
+    "network": [
+      { "hub": "WIII", "destinations": [
+        "WADD", "WARR", "WAAA", "WIMM", "WIDD", "WIOO", "WALL", "WAHI", "WIPP", "WIBB", "WITT", "WAOO", "WAMM",
+        "WAPP", "WAJJ", "WABB", "WICA", "WSSS", "WMKK", "VTBS", "VHHH", "ZBAA", "ZSPD", "ZGGG", "RJAA", "RJTT", "RJBB",
+        "RKSI", "OEJN", "OEMA", "OMDB", "EHAM", "YSSY", "YMML", "YPPH"
+      ] }
+    ]
+  },
+  {
+    "icao": "PAL", "iata": "PR", "name": "Philippine Airlines", "callsign": "PHILIPPINE", "country": "PH",
+    "archetype": "legacy", "reputation": 62,
+    "fleet": [ { "type": "A321", "count": 23 }, { "type": "A21N", "count": 13 }, { "type": "A333", "count": 10 }, { "type": "A359", "count": 6 }, { "type": "B77W", "count": 8 }, { "type": "DH8D", "count": 13 } ],
+    "network": [
+      { "hub": "RPLL", "destinations": [
+        "RPVM", "RPMD", "RPLC", "RPVP", "RPVI", "RPVB", "RPMZ", "RPVK", "RPLI", "RPMS", "RPVD", "RPLB", "RPMR", "RPVR",
+        "WSSS", "WMKK", "WIII", "WADD", "VTBS", "VVNB", "VVTS", "VDPP", "VHHH", "VMMC", "RCTP", "ZBAA", "ZSPD", "ZSAM", "RJAA",
+        "RJTT", "RJBB", "RJGG", "RJFF", "RJCC", "RKSI", "RKPK", "PGUM", "OMDB", "OERK", "OEJN", "OTHH", "YSSY", "YMML", "YBBN",
+        "KJFK", "KLAX", "KSFO", "KSEA", "PHNL", "CYVR", "CYYZ"
+      ] }
+    ]
+  },
+  {
+    "icao": "IGO", "iata": "6E", "name": "IndiGo", "callsign": "IFLY", "country": "IN",
+    "archetype": "lowcost", "reputation": 60,
+    "fleet": [ { "type": "A320", "count": 30 }, { "type": "A20N", "count": 200 }, { "type": "A21N", "count": 120 }, { "type": "AT76", "count": 45 }, { "type": "B789", "count": 6 } ],
+    "network": [
+      { "hub": "VIDP", "destinations": [
+        "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "VAPO", "VILK", "VIJP", "VOCB", "VEGT", "VEPT",
+        "VIAR", "VISR", "VANP", "VEBS", "VEBN", "VAID", "VOCL", "VOML", "VOTR", "VERC", "VEBD", "VIDN", "VILH", "VAUD", "VABP",
+        "OMDB", "OMAA", "OMSJ", "OTHH", "OKKK", "OBBI", "OOMS", "OERK", "OEJN", "LTFM", "WSSS", "VTBS", "VTSP", "WMKK", "VVNB",
+        "VCBI", "VRMM", "VNKT", "VGHS", "UZTT", "UAAA", "UBBB", "UGTB", "EHAM", "EGMC", "EKCH"
+      ] },
+      { "hub": "VABB", "destinations": [
+        "VIDP", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "VILK", "VIJP", "VOCB", "VEGT", "VEPT", "VIAR",
+        "VANP", "VEBS", "VEBN", "VAID", "VOCL", "VOML", "VORY", "OMDB", "OMAA", "OMSJ", "OTHH", "OKKK", "OBBI", "OOMS", "OERK",
+        "OEJN", "OEDF", "OJAI", "LTFM", "HKJK", "HAAB", "WSSS", "VTBS", "VTSP", "WMKK", "WIII", "WADD", "VCBI", "VRMM", "VNKT",
+        "UZTT", "UAAA", "EHAM", "EGMC"
+      ] },
+      { "hub": "VOBL", "destinations": [
+        "VIDP", "VABB", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "VAPO", "VILK", "VIJP", "VOCB", "VEGT", "VEPT",
+        "VEBS", "VEBN", "VOCL", "VOML", "OMDB", "OMAA", "OTHH", "OKKK", "OOMS", "WSSS", "VTBS", "VTSP", "WMKK", "WADD", "VCBI",
+        "VRMM"
+      ] }
+    ]
+  },
+  {
+    "icao": "AIC", "iata": "AI", "name": "Air India", "callsign": "AIRINDIA", "country": "IN",
+    "archetype": "legacy", "reputation": 55,
+    "fleet": [
+      { "type": "A319", "count": 10 }, { "type": "A320", "count": 30 }, { "type": "A20N", "count": 40 }, { "type": "A21N", "count": 25 },
+      { "type": "B77L", "count": 4 }, { "type": "B77W", "count": 15 }, { "type": "B788", "count": 27 }, { "type": "A359", "count": 6 }
+    ],
+    "network": [
+      { "hub": "VIDP", "destinations": [
+        "VABB", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "VAPO", "VILK", "VIJP", "VOCB", "VEGT", "VEPT",
+        "VIAR", "VISR", "VANP", "VEBS", "VEBN", "VAID", "VIDN", "VILH", "OMDB", "OMAA", "OTHH", "OKKK", "OBBI", "OOMS",
+        "OERK", "OEJN", "OEDF", "WSSS", "VTBS", "WMKK", "WIII", "WADD", "VVNB", "VVTS", "VHHH", "RJTT", "RJAA", "RKSI", "VCBI",
+        "VRMM", "VNKT", "VGHS", "EGLL", "EGBB", "LFPG", "EHAM", "EDDF", "EDDM", "LIRF", "LIMC", "LSZH", "LOWW", "EKCH", "LKPR",
+        "KJFK", "KEWR", "KIAD", "KORD", "KSFO", "CYYZ", "CYVR", "YSSY", "YMML"
+      ] },
+      { "hub": "VABB", "destinations": [
+        "VIDP", "VOBL", "VOMM", "VOHS", "VOCI", "VOTV", "VAAH", "VECC", "VOGO", "VILK", "VIJP", "VEGT", "VIAR", "VANP", "VAID",
+        "VOCL", "OMDB", "OMAA", "OTHH", "OKKK", "OERK", "OEJN", "WSSS", "VTBS", "EGLL", "LFPG", "EDDF", "KJFK", "KEWR", "KSFO",
+        "FAOR", "HKJK"
+      ] }
+    ]
+  },
+  {
+    "icao": "EVA", "iata": "BR", "name": "EVA Air", "callsign": "EVA", "country": "TW",
+    "archetype": "legacy", "reputation": 81,
+    "fleet": [ { "type": "A321", "count": 20 }, { "type": "A21N", "count": 10 }, { "type": "A333", "count": 10 }, { "type": "B77W", "count": 35 }, { "type": "B789", "count": 10 }, { "type": "B78X", "count": 10 }, { "type": "B77F", "count": 8 } ],
+    "network": [
+      { "hub": "RCTP", "destinations": [
+        "RCKH", "VHHH", "VMMC", "ZBAA", "ZSPD", "ZGGG", "ZGSZ", "ZUUU", "ZSHC", "ZSNJ", "ZSAM", "ZSQD", "ZYTL", "RJTT", "RJAA",
+        "RJBB", "RJGG", "RJCC", "RJFF", "RJSS", "RJOA", "RJFK", "ROAH", "RKSI", "RKSS", "RKPK", "WSSS", "WMKK", "WMKP", "WIII",
+        "WADD", "WARR", "VTBS", "VTSP", "VTCC", "VVNB", "VVTS", "VVDN", "VDPP", "RPLL", "RPVM", "VIDP", "VYYY", "EGLL", "LFPG",
+        "EHAM", "LIMC", "LOWW", "LKPR", "EDDM", "KJFK", "KEWR", "KIAD", "KORD", "KDFW", "KIAH", "KLAX", "KSFO", "KSEA", "CYYZ",
+        "CYVR", "YSSY", "YBBN", "YMML"
+      ] }
+    ]
+  },
+  {
+    "icao": "AXM", "iata": "AK", "name": "AirAsia", "callsign": "ASIAN EXPRESS", "country": "MY",
+    "archetype": "lowcost", "reputation": 50,
+    "fleet": [ { "type": "A320", "count": 30 }, { "type": "A20N", "count": 60 } ],
+    "network": [
+      { "hub": "WMKK", "destinations": [
+        "WMKP", "WMKL", "WMKJ", "WMKC", "WMKN", "WMKD", "WMKI", "WBKK", "WBGG", "WBKW", "WBGB", "WBGS", "WBGR", "WBKL", "WBSB",
+        "WSSS", "WIII", "WADD", "WARR", "WIMM", "WIDD", "WIPP", "VTBD", "VTSP", "VTCC", "VTSB", "VTSS", "VTSM", "VVNB",
+        "VVTS", "VVDN", "VVPQ", "VDPP", "VDSA", "VLVT", "VYYY", "RPLL", "RPLC", "RPVM", "VHHH", "VMMC", "RCTP", "ZGGG", "ZGSZ",
+        "ZSHC", "ZUUU", "ZPPP", "ZGNN", "ZJHK", "VOCI", "VOMM", "VOBL", "VOTR", "VECC", "VAAH", "VCBI", "VRMM", "VGHS", "VNKT"
+      ] }
+    ]
+  },
+  {
+    "icao": "QFA", "iata": "QF", "name": "Qantas", "callsign": "QANTAS", "country": "AU",
+    "archetype": "legacy", "reputation": 78,
+    "fleet": [
+      { "type": "B738", "count": 75 }, { "type": "A21N", "count": 5 }, { "type": "BCS3", "count": 5 }, { "type": "A332", "count": 18 },
+      { "type": "A333", "count": 10 }, { "type": "A388", "count": 10 }, { "type": "B789", "count": 14 }, { "type": "DH8D", "count": 30 }
+    ],
+    "network": [
+      { "hub": "YSSY", "destinations": [
+        "YMML", "YBBN", "YPPH", "YPAD", "YSCB", "YMHB", "YPDN", "YBCS", "YBCG", "YBTL", "YBRK", "YBMK", "YAYE", "YCFS", "YSDU",
+        "YWLM", "YMAY", "YBHM", "YPPD", "YBAS", "YBSU", "NZAA", "NZWN", "NZCH", "NZQN", "NFFN", "NWWW", "NVVV", "AYPY", "WSSS",
+        "WADD", "VTBS", "VHHH", "RJTT", "RJAA", "RKSI", "ZSPD", "RPLL", "VIDP", "VABB", "VOBL", "OMDB", "FAOR", "SCEL", "KLAX",
+        "KSFO", "KDFW", "PHNL", "CYVR"
+      ] },
+      { "hub": "YMML", "destinations": [
+        "YSSY", "YBBN", "YPPH", "YPAD", "YSCB", "YMHB", "YPDN", "YBCS", "YBCG", "YBTL", "YMLT", "YMAY", "NZAA", "NZQN",
+        "NFFN", "WSSS", "WADD", "RJAA", "VTBS", "KLAX", "KDFW", "PHNL"
+      ] },
+      { "hub": "YPPH", "destinations": [ "YSSY", "YMML", "YBBN", "YPAD", "YPDN", "YPKA", "YPPD", "YPKG", "YBRM", "YPLM", "WSSS", "WADD", "EGLL", "LFPG", "LIRF", "RJTT" ] }
+    ]
+  },
+  {
+    "icao": "ANZ", "iata": "NZ", "name": "Air New Zealand", "callsign": "NEW ZEALAND", "country": "NZ",
+    "archetype": "legacy", "reputation": 80,
+    "fleet": [ { "type": "A20N", "count": 15 }, { "type": "A21N", "count": 12 }, { "type": "AT76", "count": 30 }, { "type": "B77W", "count": 7 }, { "type": "B789", "count": 14 } ],
+    "network": [
+      { "hub": "NZAA", "destinations": [
+        "NZWN", "NZCH", "NZQN", "NZDN", "NZNS", "NZNP", "NZPM", "NZNR", "NZRO", "NZTG", "NZGS", "NZWR", "NZKK", "NZHN",
+        "NZNV", "NZTU", "NZWU", "YSSY", "YMML", "YBBN", "YPPH", "YBCG", "YBCS", "YSCB", "YMHB", "NFFN", "NSFA", "NTAA",
+        "NWWW", "NVVV", "NCRG", "NFTF", "NIUE", "WSSS", "VHHH", "RCTP", "ZSPD", "RJAA", "RKSI", "PHNL", "KLAX", "KSFO", "KIAH",
+        "KORD", "KJFK", "CYVR"
+      ] }
+    ]
+  }
+]

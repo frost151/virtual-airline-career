@@ -1,0 +1,133 @@
+[
+  {
+    "icao": "AFL", "iata": "SU", "name": "Aeroflot", "callsign": "AEROFLOT", "country": "RU",
+    "archetype": "legacy", "reputation": 72,
+    "fleet": [
+      { "type": "A320", "count": 50 }, { "type": "A20N", "count": 20 }, { "type": "A321", "count": 30 }, { "type": "A21N", "count": 8 },
+      { "type": "B738", "count": 40 }, { "type": "A333", "count": 9 }, { "type": "A359", "count": 7 }, { "type": "B77W", "count": 19 },
+      { "type": "SU95", "count": 60 }
+    ],
+    "network": [
+      { "hub": "UUEE", "destinations": [
+        "ULLI", "URSS", "URMM", "URKK", "URRP", "URWW", "UWWW", "UWKD", "UWUU", "USSS", "USCC", "USPP", "USTR", "USRR", "UNNT", "UNOO",
+        "UNBB", "UNKL", "UIII", "UHWW", "UHHH", "UHPP", "UHSS", "UEEE", "ULMM", "ULAA", "UMKK", "URWA", "UWOO", "UWGG", "UUYY",
+        "UMMS", "UBBB", "UDYZ", "UZTT", "UZSS", "UAAA", "UCFM", "UTDD",
+        "OMDB", "LTFM", "LTAI", "HECA", "HEGN", "HESH", "ZBAA", "ZSPD", "ZGGG", "ZJSY", "VTBS", "VTSP", "VIDP", "VRMM", "WADD",
+        "VCBI", "FSIA", "OIIE", "VVNB", "MUHA"
+      ] }
+    ]
+  },
+  {
+    "icao": "SDM", "iata": "FV", "name": "Rossiya", "callsign": "RUSSIA", "country": "RU",
+    "archetype": "legacy", "reputation": 62,
+    "fleet": [
+      { "type": "A319", "count": 25 }, { "type": "A320", "count": 10 }, { "type": "B738", "count": 30 }, { "type": "B77W", "count": 9 },
+      { "type": "SU95", "count": 40 }
+    ],
+    "network": [
+      { "hub": "ULLI", "destinations": [
+        "UUEE", "UUWW", "URSS", "URMM", "URKK", "URRP", "UWKD", "UWWW", "UWUU", "USSS", "USCC", "UNNT", "UNKL", "UIII", "UHWW",
+        "UHHH", "ULMM", "ULAA", "UMKK", "URWA", "UMMS", "UBBB", "UDYZ", "UZTT", "UAAA", "OMDB", "LTAI", "LTFM", "HEGN", "HESH"
+      ] },
+      { "hub": "UUWW", "destinations": [
+        "URSS", "URMM", "URKK", "UWKD", "USSS", "UNNT", "UIII", "UHWW", "UHHH", "UHPP", "UHSS", "UEEE", "UMKK", "OMDB", "LTAI",
+        "VTSP", "ZJSY"
+      ] }
+    ]
+  },
+  {
+    "icao": "SBI", "iata": "S7", "name": "S7 Airlines", "callsign": "SIBERIAN AIRLINES", "country": "RU",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [
+      { "type": "A319", "count": 15 }, { "type": "A320", "count": 20 }, { "type": "A20N", "count": 18 }, { "type": "A21N", "count": 18 },
+      { "type": "B738", "count": 20 }, { "type": "E170", "count": 15 }
+    ],
+    "network": [
+      { "hub": "UNNT", "destinations": [
+        "UUDD", "ULLI", "URSS", "URMM", "URKK", "UWKD", "USSS", "UNKL", "UIII", "UIUU", "UIAA", "UHWW", "UHHH", "UEEE", "UNKY",
+        "UNEE", "UNBB", "UNOO", "USTR", "UZTT", "UZSS", "UAAA", "UACC", "UCFM", "UTDD", "UDYZ", "UBBB", "ZBAA", "VTBS", "VTSP", "OMDB"
+      ] },
+      { "hub": "UUDD", "destinations": [
+        "ULLI", "URSS", "URMM", "URKK", "URRP", "UWKD", "UWWW", "UWUU", "USSS", "UNNT", "UIII", "UNKL", "UHWW", "UMKK", "ULMM",
+        "UDYZ", "UBBB", "UZTT", "UAAA", "OMDB", "LTAI", "LTFM", "HEGN", "HESH"
+      ] },
+      { "hub": "UIII", "destinations": [ "UNNT", "UUDD", "ULLI", "UHWW", "UHHH", "UEEE", "UIAA", "UIUU", "ZBAA", "VTBS", "ZJSY" ] }
+    ]
+  },
+  {
+    "icao": "PBD", "iata": "DP", "name": "Pobeda", "callsign": "POBEDA", "country": "RU",
+    "archetype": "lowcost", "reputation": 55,
+    "fleet": [ { "type": "B738", "count": 45 } ],
+    "network": [
+      { "hub": "UUWW", "destinations": [
+        "ULLI", "URSS", "URMM", "URKK", "URRP", "URWW", "UWKD", "UWWW", "UWUU", "USSS", "USCC", "USPP", "USTR", "UNNT", "UNKL",
+        "UMKK", "ULMM", "ULAA", "URWA", "UWOO", "UWGG", "UUBP", "UUOO", "URML", "UMMS", "UBBB", "UDYZ", "UZTT", "UAAA",
+        "LTAI", "LTFM", "LTBJ", "OMDB", "OMSJ"
+      ] },
+      { "hub": "ULLI", "destinations": [ "UUWW", "URSS", "URMM", "URKK", "UWKD", "USSS", "UMKK", "ULMM", "LTAI", "UZTT" ] }
+    ]
+  },
+  {
+    "icao": "SVR", "iata": "U6", "name": "Ural Airlines", "callsign": "SVERDLOVSK AIR", "country": "RU",
+    "archetype": "leisure", "reputation": 54,
+    "fleet": [
+      { "type": "A319", "count": 13 }, { "type": "A320", "count": 25 }, { "type": "A20N", "count": 10 }, { "type": "A321", "count": 13 },
+      { "type": "A21N", "count": 5 }
+    ],
+    "network": [
+      { "hub": "USSS", "destinations": [
+        "UUDD", "UUWW", "ULLI", "URSS", "URMM", "URKK", "UWKD", "UNNT", "UIII", "UHWW", "UMKK", "UZTT", "UZSS", "UTDD", "UCFM",
+        "UAAA", "UDYZ", "UBBB", "LTAI", "OMDB", "HEGN", "VTBS", "ZBAA"
+      ] },
+      { "hub": "UUDD", "destinations": [ "URSS", "URMM", "URKK", "USSS", "UNNT", "UMKK", "UZTT", "UZSS", "UTDD", "UCFM", "UDYZ", "LTAI", "OMDB" ] }
+    ]
+  },
+  {
+    "icao": "BRU", "iata": "B2", "name": "Belavia", "callsign": "BELARUS AVIA", "country": "BY",
+    "archetype": "legacy", "reputation": 58,
+    "fleet": [ { "type": "B738", "count": 10 }, { "type": "B38M", "count": 3 }, { "type": "E175", "count": 4 }, { "type": "E195", "count": 6 } ],
+    "network": [
+      { "hub": "UMMS", "destinations": [
+        "UUEE", "UUWW", "ULLI", "URSS", "URMM", "URKK", "UWKD", "UWWW", "USSS", "UNNT", "UMKK", "UBBB", "UDYZ", "UGTB",
+        "UZTT", "UZSS", "UAAA", "UACC", "LTAI", "LTFM", "OMDB", "HESH", "ZBAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "UZB", "iata": "HY", "name": "Uzbekistan Airways", "callsign": "UZBEK", "country": "UZ",
+    "archetype": "legacy", "reputation": 56,
+    "fleet": [
+      { "type": "A320", "count": 4 }, { "type": "A20N", "count": 6 }, { "type": "A21N", "count": 6 }, { "type": "B752", "count": 3 },
+      { "type": "B763", "count": 4 }, { "type": "B788", "count": 7 }
+    ],
+    "network": [
+      { "hub": "UZTT", "destinations": [
+        "UUEE", "UUDD", "UUWW", "ULLI", "URKK", "URMM", "UWKD", "USSS", "UNNT", "UWWW", "UZSS", "UZSA", "UZNU", "UZFN", "UAAA",
+        "UACC", "UBBB", "UMMS", "LTFM", "EDDF", "LFPG", "EGLL", "LIRF", "OMDB", "OEJN", "VIDP", "RKSI", "RJAA", "ZBAA", "VTBS", "KJFK"
+      ] }
+    ]
+  },
+  {
+    "icao": "KZR", "iata": "KC", "name": "Air Astana", "callsign": "ASTANALINE", "country": "KZ",
+    "archetype": "legacy", "reputation": 74,
+    "fleet": [ { "type": "A20N", "count": 10 }, { "type": "A21N", "count": 16 }, { "type": "B763", "count": 2 }, { "type": "B788", "count": 3 }, { "type": "E290", "count": 4 } ],
+    "network": [
+      { "hub": "UAAA", "destinations": [
+        "UACC", "UATG", "UATE", "UAKK", "UASS", "UAOO", "UAII", "UZTT", "UBBB", "UGTB", "UDYZ", "UCFM", "LTFM", "LTAI", "EDDF",
+        "EHAM", "EGLL", "LGAV", "OMDB", "VIDP", "VTBS", "VTSP", "RKSI", "ZBAA", "ZSPD", "WSSS", "VRMM"
+      ] },
+      { "hub": "UACC", "destinations": [ "UAAA", "UATG", "UATE", "UAKK", "UASS", "UZTT", "UBBB", "UGTB", "LTFM", "EDDF", "OMDB", "ZBAA" ] }
+    ]
+  },
+  {
+    "icao": "AHY", "iata": "J2", "name": "Azerbaijan Airlines", "callsign": "AZAL", "country": "AZ",
+    "archetype": "legacy", "reputation": 60,
+    "fleet": [ { "type": "A320", "count": 6 }, { "type": "A20N", "count": 4 }, { "type": "B763", "count": 3 }, { "type": "B788", "count": 2 }, { "type": "E190", "count": 3 } ],
+    "network": [
+      { "hub": "UBBB", "destinations": [
+        "UUEE", "UUWW", "ULLI", "URMM", "URSS", "UWKD", "UBBN", "UBBG", "UZTT", "UAAA", "UACC", "UMMS", "LTFM", "LTAC", "LTAI",
+        "EGLL", "LFPG", "LIMC", "EDDF", "LKPR", "LLBG", "OMDB", "OERK", "VIDP", "ZBAA"
+      ] }
+    ]
+  }
+]

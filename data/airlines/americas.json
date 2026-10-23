@@ -1,0 +1,317 @@
+[
+  {
+    "icao": "AAL", "iata": "AA", "name": "American Airlines", "callsign": "AMERICAN", "country": "US",
+    "archetype": "legacy", "reputation": 60,
+    "fleet": [
+      { "type": "A319", "count": 130 }, { "type": "A320", "count": 45 }, { "type": "A321", "count": 210 }, { "type": "A21N", "count": 80 },
+      { "type": "B738", "count": 300 }, { "type": "B38M", "count": 70 }, { "type": "B772", "count": 47 }, { "type": "B77W", "count": 20 },
+      { "type": "B788", "count": 37 }, { "type": "B789", "count": 22 }, { "type": "E175", "count": 150 }, { "type": "CRJ9", "count": 120 }
+    ],
+    "network": [
+      { "hub": "KDFW", "destinations": [
+        "KATL", "KORD", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KIAD", "KPHL", "KCLT",
+        "KMIA", "KMCO", "KTPA", "KFLL", "KMSY", "KIAH", "KAUS", "KSAT", "KELP", "KABQ", "KOKC", "KTUL", "KMCI", "KSTL", "KMSP",
+        "KDTW", "KBNA", "KMEM", "KSLC", "KSAN", "KSNA", "KPDX", "KRDU", "KPIT", "KCLE", "KIND", "KCVG", "KBWI", "PHNL", "PHOG",
+        "PANC", "CYYZ", "CYVR", "MMMX", "MMUN", "MMGL", "MMMY", "MMSD", "MMPR", "MROC", "MPTO", "MGGT", "SKBO", "SPJC", "SCEL",
+        "SBGR", "SAEZ", "EGLL", "LFPG", "EHAM", "EDDF", "LEMD", "LIRF", "RJTT", "RKSI", "VHHH", "YBBN", "NZAA"
+      ] },
+      { "hub": "KCLT", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KIAD", "KPHL", "KMIA",
+        "KMCO", "KTPA", "KFLL", "KJAX", "KRSW", "KCHS", "KSAV", "KMYR", "KRDU", "KGSO", "KRIC", "KORF", "KBNA", "KSDF", "KIND",
+        "KCMH", "KPIT", "KBUF", "KSYR", "KALB", "KPVD", "KHPN", "KMSY", "KIAH", "KAUS", "KMSP", "KDTW", "TJSJ", "TNCM", "MYNN",
+        "MKJS", "MMUN", "MDPC", "TBPB", "TXKF", "EGLL", "LFPG", "LEMD", "LIRF", "LPPT", "EIDW"
+      ] },
+      { "hub": "KMIA", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KJFK", "KLGA", "KBOS", "KDCA", "KPHL", "KCLT", "KMCO", "KTPA", "KMSY", "KIAH", "KDEN",
+        "MUHA", "MKJS", "MKJP", "MYNN", "MDPC", "MDSD", "TJSJ", "TNCM", "TBPB", "TTPP", "TNCA", "TNCC", "MMMX", "MMUN", "MMGL",
+        "MGGT", "MSLP", "MHTG", "MNMG", "MROC", "MPTO", "SKBO", "SKRG", "SKCL", "SKCG", "SEQM", "SEGU", "SPJC", "SLLP", "SCEL",
+        "SAEZ", "SUMU", "SGAS", "SBGR", "SBGL", "SBBR", "SVMI", "EGLL", "LEMD", "LFPG"
+      ] },
+      { "hub": "KORD", "destinations": [
+        "KATL", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KPHL", "KCLT", "KMIA",
+        "KMCO", "KTPA", "KFLL", "KMSY", "KAUS", "KMSP", "KDTW", "KSTL", "KMCI", "KOMA", "KDSM", "KCID", "KMSN", "KGRR", "KCVG",
+        "CYYZ", "CYUL", "MMUN", "EGLL", "LFPG", "LEMD", "LIRF", "EIDW", "RJTT"
+      ] }
+    ]
+  },
+  {
+    "icao": "DAL", "iata": "DL", "name": "Delta Air Lines", "callsign": "DELTA", "country": "US",
+    "archetype": "legacy", "reputation": 72,
+    "fleet": [
+      { "type": "A319", "count": 57 }, { "type": "A320", "count": 60 }, { "type": "A321", "count": 127 }, { "type": "A21N", "count": 120 },
+      { "type": "B738", "count": 75 }, { "type": "B739", "count": 130 }, { "type": "B752", "count": 110 }, { "type": "B763", "count": 45 },
+      { "type": "A332", "count": 11 }, { "type": "A333", "count": 31 }, { "type": "A339", "count": 40 }, { "type": "A359", "count": 35 },
+      { "type": "BCS1", "count": 45 }, { "type": "BCS3", "count": 40 }, { "type": "E175", "count": 100 }, { "type": "CRJ9", "count": 130 }
+    ],
+    "network": [
+      { "hub": "KATL", "destinations": [
+        "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KIAD", "KPHL", "KCLT",
+        "KMIA", "KMCO", "KTPA", "KFLL", "KJAX", "KRSW", "KMSY", "KIAH", "KAUS", "KSAT", "KMSP", "KDTW", "KSLC", "KBNA", "KMEM",
+        "KSTL", "KMCI", "KIND", "KCMH", "KCVG", "KPIT", "KRDU", "KCHS", "KSAV", "KBHM", "KSAN", "KPDX", "PHNL", "PANC", "CYYZ",
+        "MMMX", "MMUN", "MMSD", "MROC", "MPTO", "MDPC", "MKJS", "TJSJ", "SKBO", "SPJC", "SCEL", "SBGR", "SAEZ", "EGLL", "LFPG",
+        "EHAM", "EDDF", "EDDM", "LIRF", "LEBL", "LEMD", "LPPT", "LSZH", "EIDW", "LGAV", "LTFM", "LLBG", "OMDB", "FAOR", "DNMM",
+        "GOBD", "DGAA", "RJTT", "RKSI", "ZSPD"
+      ] },
+      { "hub": "KMSP", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KMCO", "KMIA",
+        "KDTW", "KSLC", "KFAR", "KBIS", "KFSD", "KRAP", "KDLH", "KMSN", "KOMA", "KDSM", "PHNL", "PANC", "CYYZ", "CYWG", "MMUN",
+        "EGLL", "LFPG", "EHAM", "EKCH", "RKSI", "RJTT"
+      ] },
+      { "hub": "KDTW", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KLGA", "KBOS", "KDCA", "KMCO", "KMIA",
+        "KTPA", "KFLL", "KRSW", "KMSP", "KSLC", "KGRR", "KTVC", "KMBS", "KLAN", "CYYZ", "CYUL", "MMUN", "EGLL", "LFPG", "EHAM",
+        "EDDF", "LIRF", "RKSI", "RJTT", "ZSPD"
+      ] },
+      { "hub": "KJFK", "destinations": [
+        "KATL", "KLAX", "KSFO", "KSEA", "KLAS", "KPHX", "KSAN", "KBOS", "KMIA", "KMCO", "KTPA", "KFLL", "KMSY", "KAUS", "KSLC",
+        "KMSP", "KDTW", "TJSJ", "MDSD", "MDPC", "MKJS", "MMUN", "TNCA", "EGLL", "LFPG", "EHAM", "EDDF", "LIRF", "LIMC", "LEMD",
+        "LEBL", "LPPT", "LGAV", "EIDW", "EKCH", "LTFM", "LLBG", "OMDB", "FAOR", "DNMM", "GOBD", "SBGR", "SAEZ", "RJTT", "RKSI"
+      ] },
+      { "hub": "KSLC", "destinations": [
+        "KATL", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KJFK", "KBOS", "KMSP", "KDTW", "KPDX", "KSAN", "KBOI",
+        "KJAC", "KSUN", "KBZN", "KMSO", "KGEG", "PHNL", "PANC", "MMUN", "LFPG", "EHAM", "EGLL", "RKSI"
+      ] },
+      { "hub": "KSEA", "destinations": [
+        "KATL", "KLAX", "KSFO", "KDEN", "KLAS", "KPHX", "KJFK", "KBOS", "KMSP", "KDTW", "KSLC", "KPDX", "KSAN", "KGEG", "KBOI",
+        "PANC", "PAFA", "PAJN", "PHNL", "PHOG", "CYVR", "EGLL", "LFPG", "EHAM", "EIDW", "RJTT", "RKSI", "VHHH", "RCTP"
+      ] }
+    ]
+  },
+  {
+    "icao": "UAL", "iata": "UA", "name": "United Airlines", "callsign": "UNITED", "country": "US",
+    "archetype": "legacy", "reputation": 66,
+    "fleet": [
+      { "type": "A319", "count": 80 }, { "type": "A320", "count": 95 }, { "type": "A21N", "count": 60 }, { "type": "B738", "count": 140 },
+      { "type": "B739", "count": 160 }, { "type": "B38M", "count": 100 }, { "type": "B39M", "count": 70 }, { "type": "B752", "count": 40 },
+      { "type": "B763", "count": 37 }, { "type": "B772", "count": 74 }, { "type": "B77W", "count": 22 }, { "type": "B788", "count": 12 },
+      { "type": "B789", "count": 45 }, { "type": "B78X", "count": 21 }, { "type": "E175", "count": 200 }, { "type": "CRJ7", "count": 60 }
+    ],
+    "network": [
+      { "hub": "KORD", "destinations": [
+        "KATL", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KEWR", "KLGA", "KBOS", "KDCA", "KIAD", "KPHL", "KCLT",
+        "KMIA", "KMCO", "KTPA", "KFLL", "KMSY", "KIAH", "KAUS", "KSAT", "KMSP", "KDTW", "KSTL", "KMCI", "KOMA", "KDSM", "KMSN",
+        "KCLE", "KCMH", "KCVG", "KIND", "KPIT", "KBNA", "KRDU", "KSLC", "KSAN", "KPDX", "PHNL", "PANC", "CYYZ", "CYUL", "CYVR",
+        "MMMX", "MMUN", "MMPR", "EGLL", "LFPG", "EHAM", "EDDF", "EDDM", "LSZH", "LIRF", "LEMD", "LEBL", "EIDW", "LGAV", "LLBG",
+        "RJTT", "RJAA", "RKSI", "VHHH", "ZSPD", "VIDP"
+      ] },
+      { "hub": "KEWR", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KPHX", "KBOS", "KIAD", "KCLT", "KMIA", "KMCO", "KTPA",
+        "KFLL", "KRSW", "KMSY", "KIAH", "KAUS", "KMSP", "KDTW", "KSAN", "KSLC", "PHNL", "TJSJ", "MDPC", "MDSD", "MKJS", "MMUN",
+        "TNCA", "TBPB", "MYNN", "MPTO", "SBGR", "SAEZ", "EGLL", "EGPH", "EGCC", "EIDW", "EINN", "LFPG", "LFMN", "EHAM", "EBBR",
+        "EDDF", "EDDM", "EDDB", "LSZH", "LSGG", "LIRF", "LIMC", "LIPZ", "LIRN", "LEMD", "LEBL", "LEPA", "LPPT", "LPPD", "LGAV",
+        "LTFM", "LLBG", "OMDB", "FAOR", "FACT", "GOBD", "DGAA", "VIDP", "VABB", "RJTT", "RCTP", "VHHH"
+      ] },
+      { "hub": "KDEN", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KLAS", "KPHX", "KEWR", "KBOS", "KIAD", "KIAH", "KAUS", "KMSP", "KSLC",
+        "KSAN", "KPDX", "KABQ", "KELP", "KOKC", "KTUL", "KMCI", "KOMA", "KBOI", "KBZN", "KJAC", "KASE", "KEGE", "KHDN", "KGJT",
+        "KMTJ", "KCOS", "KRAP", "KBIL", "KMSO", "PHNL", "PHOG", "PANC", "CYVR", "CYYC", "MMUN", "EGLL", "EDDF", "EDDM", "RJTT"
+      ] },
+      { "hub": "KIAH", "destinations": [
+        "KATL", "KORD", "KDFW", "KLAX", "KSFO", "KDEN", "KLAS", "KPHX", "KEWR", "KIAD", "KBOS", "KMIA", "KMCO", "KTPA", "KMSY",
+        "KAUS", "KSAT", "KELP", "KMAF", "KCRP", "KBRO", "KHRL", "KLBB", "KAMA", "KOKC", "KTUL", "MMMX", "MMUN", "MMGL", "MMMY",
+        "MMSD", "MMPR", "MMZH", "MMHO", "MGGT", "MSLP", "MHTG", "MNMG", "MROC", "MPTO", "SKBO", "SEQM", "SPJC", "SCEL", "SBGR",
+        "EGLL", "LFPG", "EHAM", "EDDF", "RJAA"
+      ] },
+      { "hub": "KSFO", "destinations": [
+        "KORD", "KDFW", "KLAX", "KSEA", "KDEN", "KLAS", "KPHX", "KEWR", "KBOS", "KIAD", "KIAH", "KMSP", "KSLC", "KSAN", "KPDX",
+        "KSNA", "KPSP", "KBUR", "KSBA", "KRNO", "KBOI", "PHNL", "PHOG", "PHKO", "PHLI", "PANC", "CYVR", "MMMX", "MMUN", "MMSD",
+        "MMPR", "EGLL", "LFPG", "EDDF", "EDDM", "LSZH", "LIRF", "RJTT", "RJAA", "RKSI", "RCTP", "VHHH", "ZSPD", "WSSS", "RPLL",
+        "VIDP", "YSSY", "YMML", "YBBN", "NZAA", "NTAA"
+      ] },
+      { "hub": "KIAD", "destinations": [
+        "KORD", "KDFW", "KLAX", "KSFO", "KSEA", "KDEN", "KLAS", "KEWR", "KBOS", "KIAH", "KMCO", "KTPA", "KFLL", "KSAN", "KSLC",
+        "EGLL", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "LSZH", "LSGG", "LIRF", "LEMD", "LPPT", "LGAV", "LTFM", "OMDB", "OTHH",
+        "HAAB", "GOBD", "DGAA", "DNAA", "RJTT", "ZBAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "SWA", "iata": "WN", "name": "Southwest Airlines", "callsign": "SOUTHWEST", "country": "US",
+    "archetype": "lowcost", "reputation": 62,
+    "fleet": [ { "type": "B737", "count": 380 }, { "type": "B738", "count": 200 }, { "type": "B38M", "count": 220 } ],
+    "network": [
+      { "hub": "KDEN", "destinations": [
+        "KLAX", "KSFO", "KOAK", "KSJC", "KSAN", "KSMF", "KONT", "KBUR", "KLAS", "KPHX", "KSLC", "KSEA", "KPDX", "KBOI", "KABQ",
+        "KELP", "KDAL", "KHOU", "KAUS", "KSAT", "KOKC", "KTUL", "KMCI", "KSTL", "KMDW", "KMSP", "KMKE", "KDTW", "KIND", "KCMH",
+        "KBNA", "KATL", "KMCO", "KTPA", "KFLL", "KBWI", "KLGA", "KBOS", "KMSY", "KCOS", "KBZN", "KMTJ", "KHDN", "PHNL"
+      ] },
+      { "hub": "KLAS", "destinations": [
+        "KLAX", "KSFO", "KOAK", "KSJC", "KSAN", "KSMF", "KONT", "KBUR", "KSNA", "KLGB", "KPHX", "KSLC", "KSEA", "KPDX", "KBOI",
+        "KRNO", "KABQ", "KDEN", "KDAL", "KHOU", "KAUS", "KSAT", "KMCI", "KSTL", "KMDW", "KMSP", "KMKE", "KIND", "KCMH", "KBNA",
+        "KATL", "KMCO", "KBWI", "KMSY", "KOMA", "KTUL", "KOKC"
+      ] },
+      { "hub": "KMDW", "destinations": [
+        "KLAX", "KSFO", "KOAK", "KSAN", "KLAS", "KPHX", "KDEN", "KDAL", "KHOU", "KAUS", "KSAT", "KMCI", "KSTL", "KOMA", "KMSP",
+        "KDTW", "KCLE", "KCMH", "KPIT", "KBNA", "KMEM", "KATL", "KMCO", "KTPA", "KFLL", "KRSW", "KJAX", "KBWI", "KLGA", "KBOS",
+        "KMSY", "KRDU", "KCHS", "KSAV", "KBUF", "KALB", "KPVD", "KMHT"
+      ] },
+      { "hub": "KBWI", "destinations": [
+        "KLAX", "KSAN", "KLAS", "KPHX", "KDEN", "KDAL", "KHOU", "KAUS", "KSAT", "KMCI", "KSTL", "KMDW", "KMSP", "KDTW", "KCLE",
+        "KCMH", "KIND", "KBNA", "KMEM", "KATL", "KMCO", "KTPA", "KFLL", "KRSW", "KJAX", "KMSY", "KRDU", "KCHS", "KSAV",
+        "KMYR", "KBOS", "KPVD", "KMHT", "KPWM", "KALB", "KBUF", "KISP", "TJSJ", "MMUN", "MKJS", "MYNN", "TNCA"
+      ] },
+      { "hub": "KDAL", "destinations": [
+        "KLAX", "KSFO", "KOAK", "KSAN", "KLAS", "KPHX", "KDEN", "KHOU", "KAUS", "KSAT", "KELP", "KLBB", "KAMA", "KMAF", "KABQ",
+        "KOKC", "KTUL", "KMCI", "KSTL", "KMDW", "KMSP", "KDTW", "KIND", "KCMH", "KBNA", "KMEM", "KATL", "KMCO", "KTPA", "KFLL",
+        "KBWI", "KLGA", "KMSY", "KBHM", "KLIT", "KJAN", "KSDF", "KCVG", "KPIT"
+      ] }
+    ]
+  },
+  {
+    "icao": "ACA", "iata": "AC", "name": "Air Canada", "callsign": "AIR CANADA", "country": "CA",
+    "archetype": "legacy", "reputation": 64,
+    "fleet": [
+      { "type": "A320", "count": 20 }, { "type": "A321", "count": 15 }, { "type": "A319", "count": 15 }, { "type": "BCS3", "count": 40 },
+      { "type": "B38M", "count": 40 }, { "type": "A333", "count": 18 }, { "type": "B77W", "count": 20 }, { "type": "B77L", "count": 6 },
+      { "type": "B788", "count": 8 }, { "type": "B789", "count": 30 }, { "type": "E175", "count": 25 }, { "type": "CRJ9", "count": 35 },
+      { "type": "DH8D", "count": 40 }
+    ],
+    "network": [
+      { "hub": "CYYZ", "destinations": [
+        "CYUL", "CYVR", "CYYC", "CYEG", "CYOW", "CYQB", "CYHZ", "CYWG", "CYQR", "CYXE", "CYYT", "CYQM", "CYFC", "CYXU", "CYQT",
+        "CYTS", "CYAM", "CYSB", "CYQG", "CYXX", "CYLW", "CYYJ", "KJFK", "KLGA", "KEWR", "KBOS", "KORD", "KDCA", "KIAD", "KPHL",
+        "KATL", "KMIA", "KMCO", "KTPA", "KFLL", "KRSW", "KLAX", "KSFO", "KSEA", "KLAS", "KPHX", "KDEN", "KIAH", "KAUS", "KDFW",
+        "MMMX", "MMUN", "MMPR", "MDPC", "MKJS", "MUVR", "MUHA", "TBPB", "SBGR", "SCEL", "SKBO", "MPTO", "EGLL", "EGCC", "EGPH",
+        "EIDW", "LFPG", "EHAM", "EBBR", "EDDF", "EDDM", "LSZH", "LSGG", "LIRF", "LIMC", "LIPZ", "LEMD", "LEBL", "LPPT", "LGAV",
+        "LTFM", "LLBG", "OMDB", "HECA", "GMMN", "VIDP", "VABB", "RJTT", "RJAA", "RKSI", "VHHH", "ZBAA", "ZSPD"
+      ] },
+      { "hub": "CYUL", "destinations": [
+        "CYYZ", "CYVR", "CYYC", "CYEG", "CYOW", "CYQB", "CYHZ", "CYWG", "CYGP", "CYBG", "CYZV", "CYYY", "CYQM", "KJFK", "KLGA",
+        "KBOS", "KORD", "KMIA", "KFLL", "KMCO", "KTPA", "KLAX", "KSFO", "MMUN", "MMMX", "MDPC", "MUVR", "MUHA", "TFFR", "TFFF",
+        "EGLL", "LFPG", "LFML", "LFLL", "LFBD", "LFMN", "LFBO", "EBBR", "EDDF", "EDDM", "LSGG", "LIRF", "LEBL", "LPPT", "LGAV",
+        "GMMN", "DAAG", "DTTA", "HECA", "LLBG"
+      ] },
+      { "hub": "CYVR", "destinations": [
+        "CYYZ", "CYUL", "CYYC", "CYEG", "CYOW", "CYWG", "CYQR", "CYXE", "CYLW", "CYYJ", "CYXS", "CYXJ", "CYXT", "CYQQ", "CYCD",
+        "CYKA", "CYXY", "CYZF", "KLAX", "KSFO", "KSEA", "KLAS", "KPHX", "KDEN", "KORD", "KSAN", "KPSP", "PHNL", "PHOG", "PHKO",
+        "MMPR", "MMSD", "MMUN", "EGLL", "LFPG", "EDDF", "LSZH", "RJTT", "RJAA", "RJBB", "RKSI", "VHHH", "RCTP", "ZBAA", "ZSPD",
+        "WSSS", "RPLL", "VIDP", "YSSY", "YBBN", "NZAA"
+      ] },
+      { "hub": "CYYC", "destinations": [
+        "CYYZ", "CYUL", "CYVR", "CYEG", "CYOW", "CYWG", "CYQR", "CYXE", "CYLW", "CYYJ", "CYXC", "CYQL", "CYMM", "CYQU", "KLAX",
+        "KSFO", "KLAS", "KPHX", "KDEN", "KORD", "KSEA", "PHNL", "PHOG", "MMPR", "MMUN", "EGLL", "LFPG", "EDDF", "RJAA"
+      ] }
+    ]
+  },
+  {
+    "icao": "AMX", "iata": "AM", "name": "Aeromexico", "callsign": "AEROMEXICO", "country": "MX",
+    "archetype": "legacy", "reputation": 62,
+    "fleet": [ { "type": "B738", "count": 30 }, { "type": "B38M", "count": 55 }, { "type": "B39M", "count": 20 }, { "type": "B788", "count": 8 }, { "type": "B789", "count": 14 }, { "type": "E190", "count": 40 } ],
+    "network": [
+      { "hub": "MMMX", "destinations": [
+        "MMUN", "MMGL", "MMMY", "MMSD", "MMPR", "MMTJ", "MMHO", "MMCU", "MMMZ", "MMZH", "MMAA", "MMOX", "MMHC", "MMVR", "MMMD",
+        "MMTG", "MMVA", "MMCZ", "MMCE", "MMLO", "MMQT", "MMSP", "MMAS", "MMZC", "MMTC", "MMCL", "MMLP", "MMLM", "MMBT", "MMPQ",
+        "KJFK", "KLAX", "KSFO", "KSEA", "KORD", "KATL", "KDFW", "KIAH", "KAUS", "KSAT", "KMIA", "KMCO", "KLAS", "KPHX", "KDEN",
+        "KDTW", "KMSP", "KBOS", "KIAD", "KSAN", "CYYZ", "CYUL", "CYVR", "MGGT", "MSLP", "MHTG", "MROC", "MPTO", "MUHA", "MDSD",
+        "SKBO", "SKRG", "SEQM", "SPJC", "SCEL", "SAEZ", "SBGR", "EGLL", "LFPG", "EHAM", "LEMD", "LEBL", "LIRF", "RJAA", "RKSI"
+      ] }
+    ]
+  },
+  {
+    "icao": "LAN", "iata": "LA", "name": "LATAM Airlines", "callsign": "LAN CHILE", "country": "CL",
+    "archetype": "legacy", "reputation": 64,
+    "fleet": [
+      { "type": "A319", "count": 40 }, { "type": "A320", "count": 140 }, { "type": "A20N", "count": 60 }, { "type": "A321", "count": 50 },
+      { "type": "A21N", "count": 15 }, { "type": "B763", "count": 25 }, { "type": "B77W", "count": 10 }, { "type": "B788", "count": 10 },
+      { "type": "B789", "count": 25 }
+    ],
+    "network": [
+      { "hub": "SCEL", "destinations": [
+        "SCFA", "SCDA", "SCCF", "SCAR", "SCIE", "SCTE", "SCCI", "SCSE", "SCQP", "SCVD", "SCJO", "SCBA", "SCAT", "SCIP", "SAEZ",
+        "SABE", "SACO", "SAME", "SAZS", "SUMU", "SGAS", "SLLP", "SLVR", "SPJC", "SEQM", "SEGU", "SKBO", "SBGR", "SBGL", "SBFL",
+        "SBPA", "MPTO", "MMMX", "MMUN", "KMIA", "KJFK", "KLAX", "KMCO", "KBOS", "LEMD", "LFPG", "LIRF", "EGLL", "EDDF", "YMML",
+        "YSSY", "NZAA"
+      ] },
+      { "hub": "SPJC", "destinations": [
+        "SPZO", "SPQU", "SPHI", "SPRU", "SPTN", "SPJL", "SPQT", "SPSO", "SPCL", "SPUR", "SPPY", "SPMS", "SPTU", "SPJA", "SCEL",
+        "SAEZ", "SEQM", "SEGU", "SKBO", "SKRG", "SKCG", "SBGR", "SLLP", "SLVR", "SUMU", "MPTO", "MROC", "MMMX", "MMUN", "MDPC",
+        "MUHA", "KMIA", "KJFK", "KLAX", "KMCO", "LEMD", "LEBL"
+      ] },
+      { "hub": "SBGR", "destinations": [
+        "SBGL", "SBBR", "SBCF", "SBSV", "SBRF", "SBFZ", "SBBE", "SBEG", "SBPA", "SBFL", "SBCT", "SBGO", "SBCY", "SBMO", "SBNT",
+        "SBSL", "SBJP", "SBTE", "SBPV", "SBRB", "SBMQ", "SBFI", "SBVT", "SBUL", "SBLO", "SBKP", "SBSG", "SCEL", "SAEZ", "SUMU",
+        "SGAS", "SLLP", "SPJC", "SKBO", "SEQM", "KMIA", "KJFK", "KMCO", "KBOS", "KLAX", "LPPT", "LEMD", "LEBL", "LFPG", "LIRF",
+        "LIMC", "EDDF", "EGLL", "FAOR", "FACT"
+      ] }
+    ]
+  },
+  {
+    "icao": "AVA", "iata": "AV", "name": "Avianca", "callsign": "AVIANCA", "country": "CO",
+    "archetype": "legacy", "reputation": 60,
+    "fleet": [ { "type": "A319", "count": 10 }, { "type": "A320", "count": 60 }, { "type": "A20N", "count": 60 }, { "type": "B788", "count": 13 } ],
+    "network": [
+      { "hub": "SKBO", "destinations": [
+        "SKRG", "SKCL", "SKCG", "SKBQ", "SKSM", "SKSP", "SKBG", "SKPE", "SKCC", "SKMR", "SKVP", "SKLT", "SKPS", "SKAR", "SKMZ",
+        "SKNV", "SKYP", "SKRH", "SKVV", "SKEJ", "SEQM", "SEGU", "SPJC", "SLLP", "SLVR", "SCEL", "SAEZ", "SBGR", "SBGL", "SUMU",
+        "SVMI", "MPTO", "MROC", "MNMG", "MSLP", "MHTG", "MGGT", "MMMX", "MMUN", "MDSD", "MDPC", "MUHA", "TNCA", "TNCC", "TJSJ",
+        "KMIA", "KFLL", "KMCO", "KJFK", "KIAD", "KBOS", "KLAX", "KIAH", "KORD", "LEMD", "LEBL", "EGLL", "LFPG"
+      ] }
+    ]
+  },
+  {
+    "icao": "CMP", "iata": "CM", "name": "Copa Airlines", "callsign": "COPA", "country": "PA",
+    "archetype": "legacy", "reputation": 72,
+    "fleet": [ { "type": "B737", "count": 9 }, { "type": "B738", "count": 60 }, { "type": "B38M", "count": 35 }, { "type": "B39M", "count": 12 } ],
+    "network": [
+      { "hub": "MPTO", "destinations": [
+        "MPDA", "MPBO", "MROC", "MRLB", "MNMG", "MSLP", "MHTG", "MHLM", "MGGT", "MZBZ", "MMMX", "MMUN", "MMGL", "MMMY", "MUHA",
+        "MUVR", "MUHG", "MUCU", "MDSD", "MDPC", "MDST", "MKJS", "MKJP", "MTPP", "TJSJ", "TNCA", "TNCC", "TNCM", "TTPP", "TBPB",
+        "SKBO", "SKRG", "SKCL", "SKCG", "SKBQ", "SKSP", "SKBG", "SKPE", "SKAR", "SEQM", "SEGU", "SPJC", "SLLP", "SLVR", "SCEL",
+        "SAEZ", "SACO", "SAME", "SAAR", "SUMU", "SGAS", "SBGR", "SBGL", "SBBR", "SBCF", "SBPA", "SBFL", "SBEG", "SBRF", "SBSV",
+        "SBFZ", "SBBE", "SMJP", "SYCJ", "KMIA", "KFLL", "KMCO", "KTPA", "KJFK", "KEWR", "KBOS", "KIAD", "KORD", "KATL", "KIAH",
+        "KDFW", "KDEN", "KLAS", "KLAX", "KSFO", "KMSP", "KAUS", "KBWI", "KPHL", "CYYZ", "CYUL", "CYVR"
+      ] }
+    ]
+  },
+  {
+    "icao": "GLO", "iata": "G3", "name": "GOL", "callsign": "GOL TRANSPORTE", "country": "BR",
+    "archetype": "lowcost", "reputation": 55,
+    "fleet": [ { "type": "B737", "count": 20 }, { "type": "B738", "count": 80 }, { "type": "B38M", "count": 40 } ],
+    "network": [
+      { "hub": "SBGR", "destinations": [
+        "SBGL", "SBBR", "SBCF", "SBSV", "SBRF", "SBFZ", "SBBE", "SBEG", "SBPA", "SBFL", "SBCT", "SBGO", "SBCY", "SBMO",
+        "SBNT", "SBSL", "SBJP", "SBTE", "SBPV", "SBCG", "SBFI", "SBVT", "SBUL", "SBLO", "SBNF", "SBJV", "SBMG", "SBPS", "SBIL",
+        "SAEZ", "SABE", "SACO", "SAAR", "SUMU", "SGAS", "SCEL", "SLVR", "SKBO", "MDPC", "SBMQ"
+      ] },
+      { "hub": "SBGL", "destinations": [
+        "SBGR", "SBSP", "SBBR", "SBCF", "SBSV", "SBRF", "SBFZ", "SBBE", "SBPA", "SBFL", "SBCT", "SBGO", "SBVT", "SBNT", "SBJP",
+        "SBMO", "SAEZ", "SABE", "SUMU", "SCEL"
+      ] },
+      { "hub": "SBBR", "destinations": [
+        "SBGR", "SBSP", "SBGL", "SBCF", "SBSV", "SBRF", "SBFZ", "SBBE", "SBEG", "SBPA", "SBFL", "SBCT", "SBGO", "SBCY",
+        "SBPV", "SBRB", "SBMQ", "SBSL", "SBTE", "SBPJ", "SBCG", "SBUL", "SBMA"
+      ] }
+    ]
+  },
+  {
+    "icao": "ARG", "iata": "AR", "name": "Aerolineas Argentinas", "callsign": "ARGENTINA", "country": "AR",
+    "archetype": "legacy", "reputation": 56,
+    "fleet": [ { "type": "B738", "count": 40 }, { "type": "B38M", "count": 9 }, { "type": "A332", "count": 4 }, { "type": "E190", "count": 20 } ],
+    "network": [
+      { "hub": "SABE", "destinations": [
+        "SACO", "SAME", "SAAR", "SAZS", "SAWH", "SAWE", "SAVC", "SAZN", "SANT", "SASA", "SANC", "SAAV", "SARI", "SARF", "SARE",
+        "SAZM", "SAZB", "SAWG", "SAVT", "SANE", "SAOC", "SANU", "SAVY", "SAZR", "SUMU", "SBGR"
+      ] },
+      { "hub": "SAEZ", "destinations": [
+        "SACO", "SAME", "SAAR", "SAZS", "SAWH", "SAWE", "SAVC", "SASA", "SARI", "SANT", "SBGR", "SBGL", "SBFL", "SBSV", "SBRF",
+        "SBPA", "SBCT", "SBFZ", "SBMO", "SBNT", "SCEL", "SPJC", "SLVR", "SKBO", "SGAS", "SUMU", "MPTO", "MDPC", "MMUN", "MUHA",
+        "TNCA", "KMIA", "KJFK", "KMCO", "LEMD", "LIRF"
+      ] }
+    ]
+  },
+  {
+    "icao": "FDX", "iata": "FX", "name": "FedEx Express", "callsign": "FEDEX", "country": "US",
+    "archetype": "cargo", "reputation": 70,
+    "fleet": [ { "type": "B77F", "count": 60 } ],
+    "network": [
+      { "hub": "KMEM", "destinations": [
+        "KIND", "KOAK", "KLAX", "KSFO", "KSEA", "KPDX", "KDEN", "KDFW", "KAFW", "KIAH", "KPHX", "KSLC", "KORD", "KMSP", "KDTW",
+        "KEWR", "KJFK", "KBOS", "KIAD", "KATL", "KMIA", "KMCO", "KCLT", "KGSO", "PANC", "PHNL", "CYYZ", "CYVR", "CYUL", "MMMX",
+        "MMGL", "TJSJ", "SBKP", "SCEL", "SKBO", "LFPG", "EDDK", "EGSS", "EHAM", "LIMC", "LEMD"
+      ] },
+      { "hub": "KIND", "destinations": [ "KMEM", "KOAK", "KLAX", "KDFW", "KEWR", "KJFK", "KATL", "KMIA", "PANC", "CYYZ", "LFPG", "EDDK", "EGSS" ] },
+      { "hub": "PANC", "destinations": [ "KMEM", "KIND", "KOAK", "KLAX", "KSEA", "KDFW", "RJAA", "RJBB", "RKSI", "ZGGG", "ZSPD", "VHHH", "RCTP" ] },
+      { "hub": "LFPG", "destinations": [ "KMEM", "KIND", "KEWR", "EDDK", "EGSS", "LIMC", "LEMD", "LTFM", "OMDB", "VIDP", "HKJK", "FAOR" ] }
+    ]
+  }
+]
