@@ -76,7 +76,7 @@ npx vitest run       # тесты
 npx tsc --noEmit     # проверка типов
 ```
 
-Нужен **Node 22.16+** (лучше 24): встроенный `node:sqlite`. Сохранения профилей лежат в `%APPDATA%\virtual-airline-career\profiles` и в репозиторий не попадают — на новый компьютер их можно перенести вручную.
+Нужен **Node 22.16+** (лучше 24): встроенный `node:sqlite`. Сохранения профилей лежат в `%APPDATA%\Virtual Airline Career\profiles` и в репозиторий не попадают — на новый компьютер их можно перенести вручную.
 
 **Подводный камень:** если запускать Electron из процесса VS Code / Claude Code, там выставлена переменная `ELECTRON_RUN_AS_NODE=1`, и Electron стартует как обычный Node (`app` будет undefined). Перед запуском её нужно удалить: `Remove-Item Env:ELECTRON_RUN_AS_NODE`.
 
