@@ -25,6 +25,9 @@ const api: Api = {
     places: (codes) => ipcRenderer.invoke('world:places', codes),
     logoFallback: (iata) => ipcRenderer.invoke('world:logoFallback', iata),
     report: () => ipcRenderer.invoke('world:report'),
+    onReport: (cb) => subscribe('world:report', cb),
+    clock: () => ipcRenderer.invoke('world:clock'),
+    skip: (preset) => ipcRenderer.invoke('world:skip', preset),
     macro: () => ipcRenderer.invoke('world:macro'),
     onChanged: (cb) => subscribe('world:changed', cb)
   },
@@ -36,7 +39,7 @@ const api: Api = {
   },
   tracker: {
     state: () => ipcRenderer.invoke('tracker:state'),
-    start: (source, bookingId = null) => ipcRenderer.invoke('tracker:start', source, bookingId),
+    start: (source, bookingId = null, prepMin) => ipcRenderer.invoke('tracker:start', source, bookingId, prepMin),
     finish: () => ipcRenderer.invoke('tracker:finish'),
     onUpdate: (cb) => subscribe('tracker:update', cb),
     onFinished: (cb) => subscribe('tracker:finished', cb)
@@ -118,11 +121,12 @@ const api: Api = {
   },
   manage: {
     state: (icao) => ipcRenderer.invoke('manage:state', icao),
-    routeOptions: (icao, origin) => ipcRenderer.invoke('manage:routeOptions', icao, origin),
+    routeQuote: (icao, origin, dest) => ipcRenderer.invoke('manage:routeQuote', icao, origin, dest),
     setAutopilot: (icao, patch) => ipcRenderer.invoke('manage:setAutopilot', icao, patch),
     setFareMult: (icao, mult) => ipcRenderer.invoke('manage:setFareMult', icao, mult),
     setFrequency: (icao, hub, dest, freq) => ipcRenderer.invoke('manage:setFrequency', icao, hub, dest, freq),
-    openRoute: (icao, origin, dest, freq) => ipcRenderer.invoke('manage:openRoute', icao, origin, dest, freq),
+    openRoute: (icao, origin, dest, freq, typeId) => ipcRenderer.invoke('manage:openRoute', icao, origin, dest, freq, typeId),
+    setRouteType: (icao, hub, dest, typeId) => ipcRenderer.invoke('manage:setRouteType', icao, hub, dest, typeId),
     lease: (icao, typeId, count) => ipcRenderer.invoke('manage:lease', icao, typeId, count),
     buy: (icao, typeId, count) => ipcRenderer.invoke('manage:buy', icao, typeId, count),
     returnLease: (icao, typeId) => ipcRenderer.invoke('manage:returnLease', icao, typeId),

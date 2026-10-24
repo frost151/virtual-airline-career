@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { ActionIcon, Button, Card, Group, NumberInput, Select, Slider, Stack, Table, Text } from '@mantine/core'
-import { FARE_MULT_MAX, FARE_MULT_MIN, type DestinationOption, type ManageState } from '@shared/airlines'
+import { FARE_MULT_MAX, FARE_MULT_MIN, type ManageState, type RouteQuote } from '@shared/airlines'
 import { formatNum } from '../format'
-import { placeLabel, usePlaces } from '../lib'
+import { airportFilter, placeLabel, usePlaces } from '../lib'
 import { bigMoney } from '../components/StakePanel'
 import { AutopilotSwitch, ManagedPage, useManaged, type Managed } from '../components/Managed'
 import { Capacity } from './Fleet'
+
+/** «Авто» в выборе самолёта: тип выбирается по флоту. */
+const AUTO = 'auto'
 
 export function RoutesScreen() {
   const m = useManaged()
@@ -50,7 +53,24 @@ function RoutesBody({ m, st }: { m: Managed; st: ManageState }) {
                 <Table.Td>
                   {placeLabel(places[r.hub], r.hub)} — {placeLabel(places[r.dest], r.dest)}
                 </Table.Td>
-                <Table.Td>{r.typeName ?? '—'}</Table.Td>
+                <Table.Td miw={200}>
+                  {manual ? (
+                    <Select
+                      size="xs"
+                      allowDeselect={false}
+                      data={[
+                        { value: AUTO, label: r.typeAssigned ? 'Авто' : `Авто · ${r.typeName ?? '—'}` },
+                        ...r.typeOptions.map((t) => ({ value: t.id, label: t.name }))
+                      ]}
+                      value={r.typeAssigned ? r.typeId : AUTO}
+                      onChange={(v) =>
+                        m.act((icao) => window.api.manage.setRouteType(icao, r.hub, r.dest, !v || v === AUTO ? null : v))
+                      }
+                    />
+                  ) : (
+                    (r.typeName ?? '—')
+                  )}
+                </Table.Td>
                 <Table.Td ta="right">{formatNum(r.km)} км</Table.Td>
                 <Table.Td>
                   <Group gap={4} justify="center" wrap="nowrap">
@@ -125,22 +145,37 @@ function FareCard({ m, st }: { m: Managed; st: ManageState }) {
 }
 
 function OpenRouteCard({ m, st }: { m: Managed; st: ManageState }) {
+  const [airportList, setAirportList] = useState<{ value: string; label: string }[]>([])
   const [origin, setOrigin] = useState<string | null>(st.origins[0] ?? null)
-  const [options, setOptions] = useState<DestinationOption[]>([])
   const [dest, setDest] = useState<string | null>(null)
+  const [quote, setQuote] = useState<RouteQuote | null>(null)
+  const [typeId, setTypeId] = useState<string | null>(null)
   const [freq, setFreq] = useState(1)
-  const places = usePlaces(st.origins)
 
   useEffect(() => {
-    setDest(null)
-    if (!origin || !m.icao) return setOptions([])
-    window.api.manage.routeOptions(m.icao, origin).then(setOptions)
-  }, [origin, m.icao, st.routes.length])
+    window.api.owner.hubOptions().then(setAirportList)
+  }, [])
+
+  // Расстояние, спрос и какие самолёты флота выполнят рейс — при каждой смене аэропортов или флота.
+  useEffect(() => {
+    setQuote(null)
+    if (!origin || !dest || origin === dest || !m.icao) return
+    window.api.manage
+      .routeQuote(m.icao, origin, dest)
+      .then((q) => {
+        setQuote(q)
+        setTypeId((cur) => (q.types.some((t) => t.id === cur && !t.reason) ? cur : (q.types.find((t) => !t.reason)?.id ?? null)))
+      })
+      .catch(() => setQuote(null))
+  }, [origin, dest, m.icao, st.fleet.length])
 
   const open = async () => {
-    if (!origin || !dest) return
-    if (await m.act((icao) => window.api.manage.openRoute(icao, origin, dest, freq))) setDest(null)
+    if (!origin || !dest || !typeId) return
+    if (await m.act((icao) => window.api.manage.openRoute(icao, origin, dest, freq, typeId))) setDest(null)
   }
+
+  const noType = !!quote && !quote.types.some((t) => !t.reason)
+  const longest = quote ? Math.ceil((quote.km * 1.05) / 100) * 100 : 0
 
   return (
     <Card withBorder>
@@ -150,34 +185,71 @@ function OpenRouteCard({ m, st }: { m: Managed; st: ManageState }) {
       <Group align="flex-end">
         <Select
           label="Откуда"
-          w={260}
-          data={st.origins.map((o) => ({ value: o, label: placeLabel(places[o], o) }))}
+          w={320}
+          placeholder="Код ICAO, IATA или город"
+          data={airportList}
           value={origin}
           onChange={setOrigin}
           searchable
-          allowDeselect={false}
+          limit={50}
+          filter={airportFilter}
+          nothingFoundMessage="Не найдено"
         />
         <Select
           label="Куда"
-          w={420}
-          placeholder="Самые востребованные сверху"
-          data={options.map((d) => ({
-            value: d.icao,
-            label: `${d.label} · ${formatNum(d.km)} км · спрос ${formatNum(d.demand)}/сут${d.competitors ? ` · конкурентов ${d.competitors}` : ''}`
-          }))}
+          w={320}
+          placeholder="Код ICAO, IATA или город"
+          data={airportList}
           value={dest}
           onChange={setDest}
           searchable
-          nothingFoundMessage="Нет вариантов"
+          limit={50}
+          filter={airportFilter}
+          nothingFoundMessage="Не найдено"
+        />
+        <Select
+          label="Самолёт"
+          w={300}
+          placeholder={quote ? 'Нет подходящих' : 'Сначала выберите аэропорты'}
+          data={(quote?.types ?? []).map((t) => ({
+            value: t.id,
+            label: t.reason ? `${t.name} — ${t.reason}` : t.name,
+            disabled: !!t.reason
+          }))}
+          value={typeId}
+          onChange={setTypeId}
+          allowDeselect={false}
         />
         <NumberInput label="Рейсов в день" min={1} max={12} w={130} value={freq} onChange={(v) => setFreq(Number(v) || 1)} />
-        <Button disabled={!dest} onClick={open}>
+        <Button disabled={!quote || quote.exists || !typeId} onClick={open}>
           Открыть
         </Button>
       </Group>
+      {quote && (
+        <Stack gap={2} mt="xs">
+          <Text size="sm">
+            {formatNum(quote.km)} км · спрос {formatNum(quote.demand)} пасс./сут · {quote.competitors ? `конкурентов ${quote.competitors}` : 'конкурентов нет'}
+          </Text>
+          {quote.exists && (
+            <Text size="sm" c="orange">
+              Такой рейс у вас уже есть — частоту меняйте в таблице выше.
+            </Text>
+          )}
+          {!quote.scheduled && (
+            <Text size="sm" c="orange">
+              В один из аэропортов регулярные рейсы не летают.
+            </Text>
+          )}
+          {noType && (
+            <Text size="sm" c="orange">
+              Ни один самолёт вашего флота сюда не долетит: нужен тип с дальностью от {formatNum(longest)} км. Возьмите его во «Флоте».
+            </Text>
+          )}
+        </Stack>
+      )}
       <Text size="xs" c="dimmed" mt="xs">
-        Открывать рейсы можно из базы и из любого города, куда компания уже летает: так появляются новые базы. Если
-        самолётов не хватает, сначала закажите их во «Флоте».
+        Вылет и прилёт — любые аэропорты с регулярными рейсами. Рейс выполняет выбранный тип; самолёты, которые не долетят
+        или не сядут на ВПП, недоступны.
       </Text>
     </Card>
   )

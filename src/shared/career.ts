@@ -40,6 +40,12 @@ export const MONTHLY_BASE = 1500
 export const monthlySalary = (rank: RankId): number => MONTHLY_BASE * rankById(rank).payMult
 
 export const STARTING_CASH = 30_000
+
+/**
+ * «Начать полёт» по брони: сколько минут до вылета игрок берёт на подготовку.
+ * Часы мира перематываются так, чтобы вылет был ровно через это время.
+ */
+export const PREP_MINUTES = [10, 30, 60, 120] as const
 /** Бонус к зарплате за рейс с оценкой ≥ 90. */
 export const QUALITY_BONUS = 0.1
 

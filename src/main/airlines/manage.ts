@@ -5,7 +5,8 @@ import {
   STAFF_LEVEL_MAX,
   STAFF_LEVEL_MIN,
   type Autopilot,
-  type DestinationOption,
+  type RouteQuote,
+  type RouteState,
   type FleetRow,
   type ManageState,
   IPO_LEVELS,
@@ -15,12 +16,29 @@ import {
 } from '@shared/airlines'
 import { transaction, type Db } from '../db'
 import { addTransaction, pilotRow } from '../career/career'
-import { aircraftTypes, airlines, airports } from '../world'
+import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { distanceKm } from '../tracker/geo'
 import { macroState } from '../economy/state'
-import { LEASE_RATE, attritionRate, crewSalaries, fairValue, initialStaff, maxFreq, planBlockHours, projectAirline, staffManaged, staffNeeds } from './sim'
-import { loadStates, saveStates, type AirlineState } from './state'
-import { destinationOptions, foundTypeOptions, typeFits } from './player'
+import {
+  LEASE_RATE,
+  attritionRate,
+  crewSalaries,
+  fairValue,
+  fillSchedule,
+  initialStaff,
+  maxFreq,
+  planBlockHours,
+  projectAirline,
+  servedPairs,
+  staffManaged,
+  staffNeeds
+} from './sim'
+import { loadStates, saveStates, withState, type AirlineState } from './state'
+import type { AircraftType } from '@shared/world'
+import { typeServes } from '../career/schedule'
+import { foundTypeOptions, typeFits } from './player'
+import { dailyDemand } from './demand'
+import { worldNow } from '../worldTime'
 
 /**
  * Управление компанией, где у игрока контрольный пакет: флот, маршруты, тарифы, деньги.
@@ -131,13 +149,28 @@ export function manageState(db: Db, icao: string): ManageState {
     routes: active
       .map((r) => {
         const p = plan.routes.get(r)
-        return { ...r, km: Math.round(p?.km ?? 0), typeName: p?.type?.name ?? null, blockHours: Math.round(p?.blockHours ?? 0) }
+        const km = p?.km ?? 0
+        return {
+          ...r,
+          km: Math.round(km),
+          typeId: p?.type?.id ?? null,
+          typeName: p?.type?.name ?? null,
+          typeAssigned: !!r.type && r.type === p?.type?.id,
+          typeOptions: servingTypes(s, r.hub, r.dest, km).map((t) => ({ id: t.id, name: t.name })),
+          blockHours: Math.round(p?.blockHours ?? 0)
+        }
       })
       .sort((a, b) => b.profit - a.profit),
     origins: [...new Set([...active.map((r) => r.hub), ...active.map((r) => r.dest), ...al.network.map((n) => n.hub)])],
     types: foundTypeOptions(db, al.archetype),
     blockHoursNeeded: Math.round(plan.needed),
     blockHoursAvailable: Math.round(plan.available),
+    typeHours: [...plan.byType].map(([typeId, h]) => ({
+      typeId,
+      name: aircraftTypes.get(typeId)?.name ?? typeId,
+      needed: Math.round(h.needed),
+      available: Math.round(h.available)
+    })),
     cash: Math.round(s.cash),
     debt: Math.round(s.debt),
     debtRatePct: +((s.debtRate ?? 0.007) * 100).toFixed(2),
@@ -162,6 +195,8 @@ export function setAutopilot(db: Db, icao: string, patch: Partial<Autopilot>): v
   s.autopilot = { ...autopilotOf(s), ...patch }
   // Тарифы заместитель держит рыночными.
   if (s.autopilot.fares) s.fareMult = 1
+  // Отдали маршруты заместителю — он сразу занимает самолёты работой.
+  if (patch.routes) deputyRoutes(db, s)
   // Берём персонал на себя — заместитель передаёт штат под нынешнее расписание.
   if (!s.autopilot.staff && !s.staff) s.staff = initialStaff(s)
   commit(db, s)
@@ -181,10 +216,45 @@ export function setFareMult(db: Db, icao: string, mult: number): void {
 /** Расписание не должно требовать больше блок-часов, чем есть у флота. */
 function requireCapacity(s: AirlineState): void {
   const plan = planBlockHours(s)
-  if (plan.needed > plan.available * 1.0001)
-    throw new Error(
-      `Самолётов не хватит: расписанию нужно ${Math.round(plan.needed)} блок-ч в месяц, флот даёт ${Math.round(plan.available)}`
-    )
+  for (const [r, p] of plan.routes)
+    if (r.freq > 0 && !p.type) throw new Error(`Маршрут ${r.hub} — ${r.dest} некому обслуживать: ни один самолёт флота туда не долетит`)
+  for (const [typeId, h] of plan.byType)
+    if (h.needed > h.available * 1.0001)
+      throw new Error(
+        `Самолётов ${aircraftTypes.get(typeId)?.name ?? typeId} не хватит: их рейсам нужно ${Math.round(h.needed)} блок-ч в месяц, а они дают ${Math.round(h.available)}`
+      )
+}
+
+/** Типы флота, которые могут летать по маршруту. */
+function servingTypes(s: AirlineState, hub: string, dest: string, km: number): AircraftType[] {
+  const al = withState(airlines.get(s.icao)!, s)
+  return Object.entries(s.fleet)
+    .filter(([, n]) => n > 0)
+    .map(([id]) => aircraftTypes.get(id)!)
+    .filter((t) => t && typeServes(al, t, km, hub, dest))
+}
+
+/** Назначить маршруту тип самолёта (null — «Авто»: выбор по флоту). */
+export function setRouteType(db: Db, icao: string, hub: string, dest: string, typeId: string | null): void {
+  const s = requireControl(db, icao)
+  requireManual(s, 'routes')
+  const r = s.routes.find((x) => x.hub === hub && x.dest === dest && x.freq > 0)
+  if (!r) throw new Error('Маршрут не найден')
+  const h = airports.get(hub)!
+  const d = airports.get(dest)!
+  if (typeId && !servingTypes(s, hub, dest, distanceKm(h.lat, h.lon, d.lat, d.lon)).some((t) => t.id === typeId))
+    throw new Error('Этот самолёт не долетит или его нет во флоте')
+  const prev = r.type
+  if (typeId) r.type = typeId
+  else delete r.type
+  try {
+    requireCapacity(s)
+  } catch (e) {
+    if (prev) r.type = prev
+    else delete r.type
+    throw e
+  }
+  commit(db, s)
 }
 
 export function setFrequency(db: Db, icao: string, hub: string, dest: string, freq: number): void {
@@ -208,41 +278,75 @@ export function setFrequency(db: Db, icao: string, hub: string, dest: string, fr
   commit(db, s)
 }
 
-/** Направления из аэропорта сети, куда долетит самый дальний самолёт флота. */
-export function routeOptions(db: Db, icao: string, origin: string): DestinationOption[] {
-  const s = requireControl(db, icao)
-  const longest = Object.keys(s.fleet)
-    .filter((t) => s.fleet[t] > 0)
-    .map((t) => aircraftTypes.get(t)!)
-    .sort((a, b) => b.rangeKm - a.rangeKm)[0]
-  if (!longest) return []
-  const served = new Set(s.routes.filter((r) => r.freq > 0 && (r.hub === origin || r.dest === origin)).flatMap((r) => [r.hub, r.dest]))
-  return destinationOptions(db, origin, longest.id).filter((d) => !served.has(d.icao))
+/** Аэропорт годится для регулярного рейса. */
+const servesScheduled = (code: string) => {
+  const a = airports.get(code)
+  return !!a && a.scheduled && a.type !== 'small'
 }
 
-export function openRoute(db: Db, icao: string, origin: string, dest: string, freq: number): void {
+const samePair = (r: RouteState, a: string, b: string) => (r.hub === a && r.dest === b) || (r.hub === b && r.dest === a)
+
+/** Что известно о будущем рейсе: расстояние, спрос, конкуренты и какие самолёты флота его выполнят. */
+export function routeQuote(db: Db, icao: string, origin: string, dest: string): RouteQuote {
   const s = requireControl(db, icao)
-  requireManual(s, 'routes')
   const o = airports.get(origin)
   const d = airports.get(dest)
-  if (!o || !d || origin === dest) throw new Error('Выберите аэропорты')
-  if (!manageState(db, icao).origins.includes(origin)) throw new Error('Рейсы можно открывать только из городов, куда компания уже летает')
-  if (!d.scheduled || d.type === 'small') throw new Error('В этот аэропорт регулярные рейсы не летают')
-  if (distanceKm(o.lat, o.lon, d.lat, d.lon) < 150) throw new Error('Слишком близко для рейса')
+  if (!o || !d || origin === dest) throw new Error('Выберите разные аэропорты')
+  const km = distanceKm(o.lat, o.lon, d.lat, d.lon)
+  const al = withState(airlines.get(s.icao)!, s)
+  const rwy = Math.min(o.rwyM || 99999, d.rwyM || 99999)
+  const types = Object.entries(s.fleet)
+    .filter(([, n]) => n > 0)
+    .map(([id]) => aircraftTypes.get(id)!)
+    .map((t) => {
+      let reason: string | null = null
+      if (t.rangeKm < km * 1.05) reason = 'не долетит: дальность ' + Math.round(t.rangeKm).toLocaleString('ru-RU') + ' км'
+      else if (t.minRunwayM > rwy * 1.15) reason = 'коротка ВПП (' + rwy + ' м)'
+      else if (!typeServes(al, t, km, origin, dest)) reason = 'не подходит компании'
+      return { id: t.id, name: t.name, rangeKm: t.rangeKm, reason }
+    })
+  let competitors = 0
+  for (const x of loadStates(db).values())
+    if (x.icao !== icao && x.routes.some((r) => r.freq > 0 && samePair(r, origin, dest))) competitors++
+  return {
+    km: Math.round(km),
+    demand: Math.round(dailyDemand(origin, dest, km, 1, 1)),
+    competitors,
+    exists: s.routes.some((r) => r.freq > 0 && samePair(r, origin, dest)),
+    scheduled: servesScheduled(origin) && servesScheduled(dest),
+    types
+  }
+}
+
+/** Открыть рейс между любыми аэропортами с регулярными рейсами на выбранном типе самолёта. */
+export function openRoute(db: Db, icao: string, origin: string, dest: string, freq: number, typeId: string): void {
+  const s = requireControl(db, icao)
+  requireManual(s, 'routes')
+  const q = routeQuote(db, icao, origin, dest)
+  if (!q.scheduled) throw new Error('В один из аэропортов регулярные рейсы не летают')
+  if (q.km < 150) throw new Error('Слишком близко для рейса')
+  const t = q.types.find((x) => x.id === typeId)
+  if (!t) throw new Error('Выберите самолёт из своего флота')
+  if (t.reason) throw new Error(t.name + ': ' + t.reason)
   const existing = s.routes.find((r) => (r.hub === origin && r.dest === dest) || (r.hub === dest && r.dest === origin))
   if (existing?.freq) throw new Error('Такой рейс уже есть')
   const route = existing ?? { hub: origin, dest, freq: 0, lf: 0.6, fare: 0, profit: 0, badMonths: 0 }
   route.freq = Math.max(1, Math.min(maxFreq(route), Math.round(freq)))
   route.badMonths = 0
+  const prevType = route.type
+  route.type = typeId
   if (!existing) s.routes.push(route)
   const undo = () => {
-    if (existing) existing.freq = 0
-    else s.routes.splice(s.routes.indexOf(route), 1)
+    if (existing) {
+      existing.freq = 0
+      if (prevType) existing.type = prevType
+      else delete existing.type
+    } else s.routes.splice(s.routes.indexOf(route), 1)
   }
   const plan = planBlockHours(s)
-  if (!plan.routes.get(route)?.type) {
+  if (plan.routes.get(route)?.type?.id !== typeId) {
     undo()
-    throw new Error('Ни один самолёт флота не долетит или не сядет на эту ВПП')
+    throw new Error('Этот самолёт не долетит или не сядет на эту ВПП')
   }
   try {
     requireCapacity(s)
@@ -254,6 +358,11 @@ export function openRoute(db: Db, icao: string, origin: string, dest: string, fr
 }
 
 // ——— флот ———
+
+/** Маршрутами управляет заместитель — у своей компании он сразу ставит новые самолёты на рейсы. */
+function deputyRoutes(db: Db, s: AirlineState): void {
+  if (autopilotOf(s).routes && playerAirlineIds.has(s.icao)) fillSchedule(s, servedPairs(loadStates(db)))
+}
 
 /** Самолёт входит в строй сразу: ждать перегона в игре скучно. */
 function addAircraft(s: AirlineState, type: string, count: number, owned: boolean): void {
@@ -270,6 +379,7 @@ export function leaseAircraft(db: Db, icao: string, typeId: string, count: numbe
   if (s.cash < deposit) throw new Error(`Не хватает денег на залог: нужно $${deposit.toLocaleString('ru-RU')}`)
   s.cash -= deposit
   addAircraft(s, t.id, n, false)
+  deputyRoutes(db, s)
   commit(db, s)
 }
 
@@ -282,6 +392,7 @@ export function buyAircraft(db: Db, icao: string, typeId: string, count: number)
   if (s.cash < price) throw new Error(`Не хватает денег: нужно $${price.toLocaleString('ru-RU')}`)
   s.cash -= price
   addAircraft(s, t.id, n, true)
+  deputyRoutes(db, s)
   commit(db, s)
 }
 
@@ -476,7 +587,7 @@ export function goPublic(db: Db, icao: string, pct: number): void {
     s.shares = Math.max(0.01, offer.valuation / 10 / 1e6)
     commit(db, s)
     db.prepare('INSERT INTO news (t, category, title, body) VALUES (?, ?, ?, ?)').run(
-      Date.now(),
+      worldNow(db),
       'airline',
       `${airlines.get(icao)?.name} выходит на биржу`,
       `Инвесторы купили ${pct}% компании. Она привлекла $${opt.proceeds.toLocaleString('ru-RU')} на развитие.`

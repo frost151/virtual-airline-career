@@ -13,3 +13,191 @@ body {
   font-family: Consolas, 'Cascadia Mono', monospace;
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * ——— Оформление в духе MSFS 2024: стеклянные панели на фоне неба (src/renderer/src/assets/sky.svg) ———
+ * Префикс html:root поднимает специфичность выше правил Mantine: его переменных (:root[data-mantine-color-scheme])
+ * и стилей компонентов с атрибутами — иначе часть правил проигрывает.
+ */
+
+/* Голубой акцент вместо синего (шрифты — в теме Mantine, main.tsx). */
+html:root[data-mantine-color-scheme] {
+  --ui-accent: #49b8ff;
+  --ui-glass: rgba(9, 14, 25, 0.6);
+  --ui-glass-strong: rgba(9, 14, 25, 0.92);
+  --ui-line: rgba(255, 255, 255, 0.1);
+  --ui-display: 'Bahnschrift', 'Segoe UI', sans-serif;
+  --mantine-color-blue-filled: #1593e8;
+  --mantine-color-blue-filled-hover: #2ba5f5;
+  --mantine-color-blue-light: rgba(73, 184, 255, 0.15);
+  --mantine-color-blue-light-hover: rgba(73, 184, 255, 0.24);
+  --mantine-color-blue-light-color: #86d0ff;
+  --mantine-color-blue-outline: #49b8ff;
+  --mantine-color-blue-text: #6cc6ff;
+  --mantine-primary-color-filled: #1593e8;
+  --mantine-primary-color-filled-hover: #2ba5f5;
+  --mantine-primary-color-light: rgba(73, 184, 255, 0.15);
+  --mantine-primary-color-light-hover: rgba(73, 184, 255, 0.24);
+  --mantine-primary-color-light-color: #86d0ff;
+  --mantine-color-anchor: #6cc6ff;
+}
+
+/* Небо на весь экран, поверх — затемнение для читаемости. */
+html:root body {
+  background-color: #070b14;
+  background-image:
+    linear-gradient(90deg, rgba(3, 6, 12, 0.8) 0, rgba(3, 6, 12, 0.45) 300px, rgba(3, 6, 12, 0.3) 65%, rgba(3, 6, 12, 0.5) 100%),
+    linear-gradient(180deg, rgba(3, 6, 12, 0.55) 0, rgba(3, 6, 12, 0.15) 55%, rgba(3, 6, 12, 0.45) 100%),
+    var(--ui-sky);
+  background-size: cover;
+  background-position: center bottom;
+  background-attachment: fixed;
+}
+
+html:root .mantine-AppShell-main {
+  background: transparent;
+}
+
+/* Стеклянные шапка и меню. */
+html:root .mantine-AppShell-header,
+html:root .mantine-AppShell-navbar {
+  background: rgba(5, 9, 17, 0.58);
+  backdrop-filter: blur(20px) saturate(140%);
+  border-color: var(--ui-line);
+}
+
+html:root .mantine-NavLink-root {
+  border-radius: 2px;
+  padding-block: 10px;
+  color: rgba(226, 233, 245, 0.7);
+}
+html:root .mantine-NavLink-label {
+  font-family: var(--ui-display);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+html:root .mantine-NavLink-root:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+html:root .mantine-NavLink-root[data-active] {
+  background: linear-gradient(90deg, rgba(73, 184, 255, 0.3), rgba(73, 184, 255, 0.03));
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--ui-accent);
+}
+/* Заглавные подписи шире: от метки фазы полёта в меню оставляем только точку. */
+html:root .mantine-NavLink-section .mantine-Badge-label {
+  display: none;
+}
+html:root .mantine-NavLink-section .mantine-Badge-root {
+  padding-inline: 6px;
+  border: none;
+  background: transparent;
+}
+
+/* Заголовки — заглавными, разреженно. */
+html:root .mantine-Title-root {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* Карточки — тёмное стекло. */
+html:root .mantine-Card-root {
+  background-color: var(--ui-glass);
+  backdrop-filter: blur(18px) saturate(130%);
+  border-color: var(--ui-line);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Выпадающие списки, окна и шторки — плотнее, чтобы текст читался. */
+html:root [class*='-dropdown'],
+html:root .mantine-Modal-content,
+html:root .mantine-Modal-header,
+html:root .mantine-Drawer-content,
+html:root .mantine-Drawer-header {
+  background-color: var(--ui-glass-strong);
+  backdrop-filter: blur(24px);
+  border-color: var(--ui-line);
+}
+
+html:root .mantine-Button-root {
+  border-radius: 3px;
+  font-family: var(--ui-display);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+}
+html:root .mantine-Button-root[data-variant='filled']:not(:disabled):not([data-disabled]) {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+html:root .mantine-Badge-root {
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+
+html:root .mantine-Input-input {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--ui-line);
+  border-radius: 3px;
+}
+html:root .mantine-Input-input:focus {
+  border-color: var(--ui-accent);
+}
+
+html:root .mantine-Table-table {
+  --table-border-color: var(--ui-line);
+  --table-striped-color: rgba(255, 255, 255, 0.03);
+  --table-highlight-on-hover-color: rgba(73, 184, 255, 0.09);
+}
+/* Таблица прямо на фоне (без карточки) — на своей стеклянной подложке, иначе над горизонтом плохо читается. */
+html:root .mantine-Table-table:not(.mantine-Card-root .mantine-Table-table):not([class*='-content'] .mantine-Table-table) {
+  background-color: var(--ui-glass);
+  backdrop-filter: blur(18px) saturate(130%);
+  border-radius: 6px;
+}
+html:root .mantine-Table-th {
+  white-space: nowrap;
+  font-family: var(--ui-display);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(210, 222, 240, 0.6);
+}
+
+html:root .mantine-Tabs-tab {
+  font-family: var(--ui-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+html:root .mantine-SegmentedControl-root,
+html:root .mantine-Progress-root {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Цифры — в стиле приборов. */
+html:root .mono {
+  font-family: 'Bahnschrift', Consolas, monospace;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+html:root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html:root ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+html:root ::-webkit-scrollbar-track {
+  background: transparent;
+}

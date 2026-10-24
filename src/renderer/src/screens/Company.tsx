@@ -29,7 +29,7 @@ import type {
 } from '@shared/airlines'
 import type { AirlineArchetype } from '@shared/world'
 import { ARCHETYPE_LABEL, formatNum } from '../format'
-import { errMsg, notifyCareerChanged, placeLabel, usePilot, usePlaces } from '../lib'
+import { airportFilter, errMsg, notifyCareerChanged, placeLabel, usePilot, usePlaces } from '../lib'
 import { AirlineLogo, setCustomLogos } from '../components/AirlineLogo'
 import { Stat } from '../components/FlightParts'
 import { bigMoney } from '../components/StakePanel'
@@ -395,6 +395,7 @@ function FoundForm({ onFounded }: { onFounded(): void }) {
             placeholder="Город, аэропорт или код"
             searchable
             limit={40}
+            filter={airportFilter}
             data={hubs}
             value={input.hub || null}
             onChange={(v) => set({ hub: v ?? '', destinations: [] })}

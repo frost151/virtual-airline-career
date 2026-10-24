@@ -8,6 +8,7 @@ import type { Booking, CareerOutcome, FlightFinished } from '@shared/types'
 import { formatClock, formatDuration, formatNum } from '../format'
 import { EventList, LandingCard, Stat } from '../components/FlightParts'
 import { DelayReasonForm, OutcomeAlert } from '../components/DelayReason'
+import { StartFlight } from '../components/StartFlight'
 import { errMsg, placeLabel, useCareerVersion, usePlaces } from '../lib'
 
 const PHASES = Object.keys(PHASE_LABEL) as FlightPhase[]
@@ -90,20 +91,21 @@ export function ActiveFlight() {
           <Stack>
             {booking?.status === 'booked' && (
               <Alert color="blue" title={`Бронь: ${booking.flightNo}`}>
-                <Group justify="space-between">
+                <Stack gap="sm">
                   <Text>
                     {placeLabel(places[booking.dep], booking.dep)} → {placeLabel(places[booking.arr], booking.arr)} · вылет{' '}
                     {formatClock(booking.depAt)} UTC · {booking.typeId}
                   </Text>
-                  <Group gap="xs">
-                    <Button size="xs" disabled={simStatus !== 'connected'} onClick={() => start('msfs', booking.id)}>
-                      Начать по брони в MSFS
-                    </Button>
-                    <Button size="xs" variant="light" color="grape" onClick={() => start('demo', booking.id)}>
-                      Демо по брони
-                    </Button>
-                  </Group>
-                </Group>
+                  <StartFlight
+                    booking={booking}
+                    simConnected={simStatus === 'connected'}
+                    onError={setError}
+                    onStarted={() => {
+                      setFinished(null)
+                      setOutcome(null)
+                    }}
+                  />
+                </Stack>
               </Alert>
             )}
             <Text>

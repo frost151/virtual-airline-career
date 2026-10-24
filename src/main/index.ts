@@ -21,10 +21,14 @@ import {
   shutdownSession,
   simDiagnostics,
   simStatus,
+  skipTime,
   startFlight,
   takeReport,
-  trackerState
+  trackerState,
+  worldClockOffset
 } from './session'
+import { worldNow } from './worldTime'
+import type { SkipPreset } from '@shared/economy'
 import { macroOverview } from './economy/clock'
 import { getFlight, listFlights } from './logbook'
 import type { HireInput, Settings } from '@shared/types'
@@ -94,6 +98,8 @@ function registerIpc(): void {
     return p
   })
   ipcMain.handle('world:report', () => takeReport())
+  ipcMain.handle('world:clock', () => worldClockOffset())
+  ipcMain.handle('world:skip', (_e, preset: SkipPreset) => skipTime(preset))
   ipcMain.handle('world:macro', () => macroOverview(activeDb()))
   ipcMain.handle('profiles:close', () => {
     // Идущий полёт сохраняем в бортжурнал профиля, из которого выходим.
@@ -115,7 +121,9 @@ function registerIpc(): void {
   ipcMain.handle('sim:diagnostics', () => simDiagnostics())
   ipcMain.handle('sim:setProbes', (_e, names: string[]) => setSimProbes(names))
   ipcMain.handle('tracker:state', () => trackerState())
-  ipcMain.handle('tracker:start', (_e, source: FlightSource, bookingId: number | null) => startFlight(source, bookingId))
+  ipcMain.handle('tracker:start', (_e, source: FlightSource, bookingId: number | null, prepMin?: number) =>
+    startFlight(source, bookingId, prepMin)
+  )
   ipcMain.handle('tracker:finish', () => finishFlight())
   ipcMain.handle('logbook:list', () => listFlights(activeDb()))
   ipcMain.handle('logbook:get', (_e, id: number) => getFlight(activeDb(), id))
@@ -131,13 +139,13 @@ function registerIpc(): void {
   ipcMain.handle('career:transactions', () => career.listTransactions(activeDb()))
   ipcMain.handle('career:clients', () => listClients(activeDb()))
 
-  ipcMain.handle('dispatch:schedule', () => career.dispatchSchedule(activeDb(), Date.now()))
-  ipcMain.handle('dispatch:book', (_e, flightId: string) => career.bookScheduled(activeDb(), flightId, Date.now()))
+  ipcMain.handle('dispatch:schedule', () => career.dispatchSchedule(activeDb(), worldNow(activeDb())))
+  ipcMain.handle('dispatch:book', (_e, flightId: string) => career.bookScheduled(activeDb(), flightId, worldNow(activeDb())))
   ipcMain.handle('dispatch:bookings', () => career.listBookings(activeDb()))
   ipcMain.handle('dispatch:open', () => career.openBooking(activeDb()))
-  ipcMain.handle('dispatch:cancel', (_e, id: number) => career.cancelBooking(activeDb(), id, Date.now()))
-  ipcMain.handle('dispatch:charterOffers', () => career.listCharterOffers(activeDb(), Date.now()))
-  ipcMain.handle('dispatch:acceptCharter', (_e, id: string) => career.acceptCharter(activeDb(), id, Date.now()))
+  ipcMain.handle('dispatch:cancel', (_e, id: number) => career.cancelBooking(activeDb(), id, worldNow(activeDb())))
+  ipcMain.handle('dispatch:charterOffers', () => career.listCharterOffers(activeDb(), worldNow(activeDb())))
+  ipcMain.handle('dispatch:acceptCharter', (_e, id: string) => career.acceptCharter(activeDb(), id, worldNow(activeDb())))
   ipcMain.handle('dispatch:delayReason', (_e, id: number, code: string) => career.setDelayReason(activeDb(), id, code))
   ipcMain.handle('dispatch:simbriefUrl', (_e, id: number) => simbriefDispatchUrl(career.getBooking(activeDb(), id)))
   ipcMain.handle('dispatch:fetchOfp', () => fetchLatestOfp(getSettings(activeDb()).simbriefUsername))
@@ -197,11 +205,12 @@ function registerIpc(): void {
       return manage.manageState(db, icao)
     }
   ipcMain.handle('manage:state', (_e, icao: string) => manage.manageState(activeDb(), icao))
-  ipcMain.handle('manage:routeOptions', (_e, icao: string, origin: string) => manage.routeOptions(activeDb(), icao, origin))
+  ipcMain.handle('manage:routeQuote', (_e, icao: string, origin: string, dest: string) => manage.routeQuote(activeDb(), icao, origin, dest))
   ipcMain.handle('manage:setAutopilot', manageAction(manage.setAutopilot))
   ipcMain.handle('manage:setFareMult', manageAction(manage.setFareMult))
   ipcMain.handle('manage:setFrequency', manageAction(manage.setFrequency))
   ipcMain.handle('manage:openRoute', manageAction(manage.openRoute))
+  ipcMain.handle('manage:setRouteType', manageAction(manage.setRouteType))
   ipcMain.handle('manage:lease', manageAction(manage.leaseAircraft))
   ipcMain.handle('manage:buy', manageAction(manage.buyAircraft))
   ipcMain.handle('manage:returnLease', manageAction(manage.returnLease))

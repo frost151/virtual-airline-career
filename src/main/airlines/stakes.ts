@@ -3,6 +3,7 @@ import { transaction, type Db } from '../db'
 import { airlines } from '../world'
 import { addTransaction, pilotRow } from '../career/career'
 import { FLAG_CARRIERS, loadStates, releaseControl, saveStates, type AirlineState } from './state'
+import { worldNow } from '../worldTime'
 
 /**
  * Доли игрока в авиакомпаниях. Это не портфель акций из «Личной жизни»: доля покупается пакетом
@@ -106,7 +107,7 @@ export function buyStake(db: Db, icao: string, pct: number): void {
   transaction(db, () => {
     addTransaction(db, -q.price, `Покупка доли ${pct}% в ${name}`)
     if (row) db.prepare('UPDATE stakes SET pct = ?, cost = cost + ? WHERE icao = ?').run(pct, q.price, icao)
-    else db.prepare('INSERT INTO stakes (icao, pct, cost, acquired_at) VALUES (?, ?, ?, ?)').run(icao, pct, q.price, Date.now())
+    else db.prepare('INSERT INTO stakes (icao, pct, cost, acquired_at) VALUES (?, ?, ?, ?)').run(icao, pct, q.price, worldNow(db))
   })
 }
 

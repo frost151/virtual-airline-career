@@ -1,6 +1,7 @@
 import type { FlightRecord } from '@shared/sim'
 import type { Db } from './db'
 import type { FlightDraft } from './tracker/tracker'
+import { worldNow } from './worldTime'
 
 interface FlightRow {
   id: number
@@ -50,7 +51,7 @@ export function saveFlight(db: Db, d: FlightDraft): number {
       d.score,
       JSON.stringify(d.events),
       JSON.stringify(d.track),
-      new Date().toISOString()
+      new Date(worldNow(db)).toISOString()
     )
   return Number(res.lastInsertRowid)
 }

@@ -2,6 +2,7 @@ import type { AssetKind } from '@shared/lifestyle'
 import { FATIGUE_LIMIT } from '@shared/lifestyle'
 import type { Db } from '../db'
 import { CARS, COLLECTIBLES, GA_AIRCRAFT, HOUSING, SUBSCRIPTIONS, carPrestige } from './catalog'
+import { worldNow } from '../worldTime'
 
 /**
  * То, что личная жизнь даёт карьере: допуск к полётам, престиж, образование.
@@ -62,7 +63,7 @@ export function medicalUntil(db: Db): number {
 }
 
 /** Можно ли сейчас летать: усталость и медкомиссия. */
-export function fitToFly(db: Db, now = Date.now()): { ok: boolean; reason: string | null } {
+export function fitToFly(db: Db, now = worldNow(db)): { ok: boolean; reason: string | null } {
   const r = db.prepare('SELECT fatigue FROM pilot WHERE id = 1').get() as { fatigue: number } | undefined
   if ((r?.fatigue ?? 0) >= FATIGUE_LIMIT) return { ok: false, reason: 'Вы слишком устали. Отдохните — раздел «Личная жизнь» → «Отдых».' }
   if (medicalUntil(db) < now) return { ok: false, reason: 'Истекла медкомиссия. Пройдите её в разделе «Личная жизнь».' }

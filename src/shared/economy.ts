@@ -52,7 +52,12 @@ export interface CatchUpReport {
   cpiTo: number
   cycle: EconomicCycle
   missedBookings: number
+  /** Время перемотал игрок (иначе — программа была закрыта). */
+  skipped?: boolean
 }
+
+/** Перемотка часов мира: на 3 часа, сутки, неделю или до 1-го числа (итоги месяца). */
+export type SkipPreset = '3h' | '1d' | '1w' | 'month'
 
 export const CYCLE_LABEL: Record<EconomicCycle, string> = {
   boom: 'Подъём',

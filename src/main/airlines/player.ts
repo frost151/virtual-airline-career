@@ -9,6 +9,7 @@ import { macroState } from '../economy/state'
 import { dailyDemand } from './demand'
 import { LEASE_RATE, initialStaff, projectAirline } from './sim'
 import { loadStates, saveStates, type AirlineState } from './state'
+import { worldNow } from '../worldTime'
 
 /**
  * Своя авиакомпания игрока — единственное исключение из правила «новые компании не появляются».
@@ -87,7 +88,7 @@ function activeRow(db: Db): PlayerAirlineRow | undefined {
 function employAsCeo(db: Db, icao: string, hub: string): void {
   db.prepare(
     `UPDATE pilot SET employer_kind = 'airline', employer_id = ?, base = ?, location = COALESCE(location, ?), hired_at = ? WHERE id = 1`
-  ).run(icao, hub, hub, new Date().toISOString())
+  ).run(icao, hub, hub, new Date(worldNow(db)).toISOString())
 }
 
 export function playerAirlines(db: Db): PlayerAirline[] {
@@ -283,7 +284,7 @@ export function foundAirline(db: Db, input: FoundAirlineInput): PlayerAirline {
   const type = aircraftTypes.get(input.typeId)!
   const contribution = Math.round(input.contribution)
   const loan = Math.round(input.loan)
-  const now = Date.now()
+  const now = worldNow(db)
 
   const state: AirlineState = {
     icao,

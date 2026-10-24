@@ -4,6 +4,7 @@ import { getSettings } from './settings'
 import { addTransaction, allRatings, pilotRow, pilotStats } from './career/career'
 import { hasEducation } from './lifestyle/perks'
 import { airports } from './world'
+import { worldNow } from './worldTime'
 
 /**
  * Режим читера: всё работает, только если он включён в настройках.
@@ -48,7 +49,7 @@ export function cheatHeal(db: Db): void {
 
 export function cheatMedical(db: Db): void {
   requireCheats(db)
-  db.prepare('UPDATE pilot SET medical_until = ? WHERE id = 1').run(Date.now() + YEAR_MS)
+  db.prepare('UPDATE pilot SET medical_until = ? WHERE id = 1').run(worldNow(db) + YEAR_MS)
 }
 
 export function cheatReputation(db: Db): void {
@@ -60,7 +61,7 @@ export function cheatRating(db: Db, ratingId: string): void {
   requireCheats(db)
   const r = allRatings(db).find((x) => x.id === ratingId)
   if (!r) throw new Error('Допуск не найден')
-  db.prepare('INSERT OR IGNORE INTO ratings (id, name, obtained_at) VALUES (?, ?, ?)').run(r.id, r.name, new Date().toISOString())
+  db.prepare('INSERT OR IGNORE INTO ratings (id, name, obtained_at) VALUES (?, ?, ?)').run(r.id, r.name, new Date(worldNow(db)).toISOString())
 }
 
 /** Мгновенно перенестись в аэропорт (например, на базу или к нужному рейсу). */

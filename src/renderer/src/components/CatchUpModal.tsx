@@ -12,20 +12,27 @@ function awayText(ms: number): string {
   return `${h} ч`
 }
 
-/** «Пока вас не было» — показывается один раз после открытия профиля. */
+/** Сводка о прошедшем времени: «Пока вас не было» после открытия профиля или после перемотки. */
 export function CatchUpModal() {
   const [report, setReport] = useState<CatchUpReport | null>(null)
   useEffect(() => {
-    window.api.world.report().then(setReport)
+    const load = () =>
+      window.api.world.report().then((r) => {
+        if (r) setReport(r)
+      })
+    void load()
+    return window.api.world.onReport(load)
   }, [])
   if (!report) return null
 
   const oil = (report.brentTo / report.brentFrom - 1) * 100
   const prices = (report.cpiTo / report.cpiFrom - 1) * 100
   return (
-    <Modal opened onClose={() => setReport(null)} title="Пока вас не было" size="lg" centered>
+    <Modal opened onClose={() => setReport(null)} title={report.skipped ? 'Время перемотано' : 'Пока вас не было'} size="lg" centered>
       <Stack>
-        <Text c="dimmed">Прошло {awayText(report.to - report.from)}. Мир жил своей жизнью:</Text>
+        <Text c="dimmed">
+          Прошло {awayText(report.to - report.from)}. {report.skipped ? 'За это время:' : 'Мир жил своей жизнью:'}
+        </Text>
         <SimpleGrid cols={3}>
           <Stat label="Нефть Brent" value={`$${report.brentTo.toFixed(1)} (${oil >= 0 ? '+' : ''}${oil.toFixed(1)}%)`} />
           <Stat label="Цены выросли" value={`${prices >= 0 ? '+' : ''}${prices.toFixed(2)}%`} />

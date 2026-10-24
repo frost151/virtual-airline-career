@@ -8,8 +8,10 @@ import type { CareerOutcome, FlightFinished } from '@shared/types'
 import { getFlight, saveFlight } from './logbook'
 import { getSettings } from './settings'
 import { getBooking, onFlightFinished } from './career/career'
-import type { CatchUpReport } from '@shared/economy'
+import type { CatchUpReport, SkipPreset } from '@shared/economy'
 import { advanceWorld } from './economy/clock'
+import { clockOffset, worldNow } from './worldTime'
+import { prepareDeparture, skipPresetMs, skipWorld } from './timeSkip'
 import { MsfsSource } from './sim/msfs'
 import { DemoSource, generateDemoFlight } from './sim/demo'
 import { identifyAircraft } from './sim/aircraft'
@@ -18,7 +20,6 @@ import { FlightTracker } from './tracker/tracker'
 /** Во сколько раз ускорен демо-полёт: час полёта примерно за две минуты. */
 const DEMO_SPEED = Number(process.env.VAC_DEMO_SPEED) || 30
 const BROADCAST_MS = 250
-const EARLY_START_MS = 2 * 3_600_000
 
 let tracker: FlightTracker | null = null
 let activeBookingId: number | null = null
@@ -36,7 +37,8 @@ const msfs = new MsfsSource({
   },
   sample: (s) => {
     idleSample = s
-    if (tracker?.source === 'msfs') feed(s)
+    // Телеметрия MSFS идёт по реальным часам — переводим её на часы мира (с учётом перемотки).
+    if (tracker?.source === 'msfs') feed({ ...s, t: s.t + clockOffset(activeDb()) })
     dirty = true
   }
 })
@@ -87,17 +89,19 @@ export function trackerState(): TrackerState {
   }
 }
 
-export function startFlight(source: FlightSource, bookingId: number | null = null): TrackerState {
+/**
+ * Начать полёт. По брони игрок выбирает, сколько минут ему нужно до вылета (prepMin):
+ * мир перематывается к этому моменту, и вылет будет ровно через выбранное время.
+ */
+export function startFlight(source: FlightSource, bookingId: number | null = null, prepMin = 30): TrackerState {
   const db = activeDb()
   if (tracker) throw new Error('Полёт уже идёт')
   if (source === 'msfs' && msfs.status !== 'connected') throw new Error('MSFS 2024 не подключён')
-  const booking = bookingId === null ? null : getBooking(db, bookingId)
-  if (booking && booking.status !== 'booked') throw new Error('Бронь уже закрыта')
-  // Пассажиры ещё не пришли: раньше чем за 2 часа до вылета рейс не начинается (демо — для тестов — можно).
-  if (booking && source === 'msfs' && Date.now() < booking.depAt - EARLY_START_MS) {
-    const at = new Date(booking.depAt - EARLY_START_MS).toISOString().slice(11, 16)
-    throw new Error(`Слишком рано: начать рейс можно с ${at} UTC (за 2 часа до вылета)`)
+  if (bookingId !== null) {
+    const report = prepareDeparture(db, bookingId, prepMin)
+    if (report) showReport(report)
   }
+  const booking = bookingId === null ? null : getBooking(db, bookingId)
 
   tracker = new FlightTracker({ source, airports, getType: (id) => aircraftTypes.get(id) })
   activeBookingId = booking?.id ?? null
@@ -113,7 +117,7 @@ export function startFlight(source: FlightSource, bookingId: number | null = nul
     tracker.setAircraft(demoAircraft)
     const dep = airports.get(booking?.dep ?? 'ULLI')!
     const arr = airports.get(booking?.arr ?? 'UUEE')!
-    demo = new DemoSource(generateDemoFlight(dep, arr, Date.now()), DEMO_SPEED)
+    demo = new DemoSource(generateDemoFlight(dep, arr, worldNow(db)), DEMO_SPEED)
     demo.start(feed, () => tracker && finishFlight())
   }
   dirty = true
@@ -150,9 +154,30 @@ const REPORT_AFTER_MS = 3 * 3_600_000
 
 /** Досчитывает мир при открытии профиля и запоминает сводку для интерфейса. */
 export function catchUpOnOpen(): void {
-  const report = advanceWorld(activeDb(), Date.now())
+  const db = activeDb()
+  const report = advanceWorld(db, worldNow(db))
   pendingReport = report && report.to - report.from >= REPORT_AFTER_MS ? report : null
 }
+
+/** Сводку после перемотки показываем сразу: интерфейс заберёт её через takeReport. */
+function showReport(report: CatchUpReport): void {
+  pendingReport = report
+  dirty = true
+  send('world:changed', null)
+  send('world:report', null)
+}
+
+/** Перемотать время (не во время полёта). */
+export function skipTime(preset: SkipPreset): void {
+  if (tracker) throw new Error('Во время полёта время не перематывается')
+  const db = activeDb()
+  const report = skipWorld(db, skipPresetMs(db, preset))
+  if (report) showReport(report)
+  else send('world:changed', null)
+}
+
+/** Сдвиг часов мира относительно реального времени — интерфейсу для часов в шапке. */
+export const worldClockOffset = (): number => clockOffset(activeDb())
 
 export function takeReport(): CatchUpReport | null {
   const r = pendingReport
@@ -163,7 +188,7 @@ export function takeReport(): CatchUpReport | null {
 /** Раз в минуту мир продвигается вперёд (новые сутки, сорванные брони). Во время полёта — ждём. */
 function worldTick(): void {
   try {
-    if (!tracker && advanceWorld(activeDb(), Date.now())) send('world:changed', null)
+    if (!tracker && advanceWorld(activeDb(), worldNow(activeDb()))) send('world:changed', null)
   } catch {
     // Профиль не открыт — нечего считать.
   }

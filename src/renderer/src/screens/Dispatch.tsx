@@ -5,7 +5,8 @@ import type { Booking, CareerOutcome, CharterOffer, DispatchFlight, OfpSummary, 
 import { STATUS_COLOR } from '../format'
 import { formatClock, formatDuration, formatNum, formatUtc } from '../format'
 import { errMsg, notifyCareerChanged, placeLabel, useCareerVersion, usePilot, usePlaces } from '../lib'
-import { useSimStatus } from '../hooks'
+import { useSimStatus, useWorldNow } from '../hooks'
+import { StartFlight } from '../components/StartFlight'
 import { SortableTh, compareBy, type SortState } from '../components/SortableTh'
 import { Stat } from '../components/FlightParts'
 import { DelayReasonForm, OutcomeAlert } from '../components/DelayReason'
@@ -69,6 +70,7 @@ function BookingCard({ booking: b }: { booking: Booking }) {
   const [error, setError] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<CareerOutcome | null>(null)
   const [loadingOfp, setLoadingOfp] = useState(false)
+  const now = useWorldNow()
 
   useEffect(() => {
     window.api.settings.get().then(setSettings)
@@ -83,12 +85,6 @@ function BookingCard({ booking: b }: { booking: Booking }) {
     }
   }
 
-  const start = (source: 'msfs' | 'demo') =>
-    act(async () => {
-      await window.api.tracker.start(source, b.id)
-      navigate('/flight')
-    })
-
   const loadOfp = () =>
     act(async () => {
       setLoadingOfp(true)
@@ -100,7 +96,7 @@ function BookingCard({ booking: b }: { booking: Booking }) {
     })
 
   const ofpMismatch = ofp && (ofp.origin !== b.dep || ofp.destination !== b.arr)
-  const minutesToDep = Math.round((b.depAt - Date.now()) / 60_000)
+  const minutesToDep = Math.round((b.depAt - now) / 60_000)
 
   return (
     <Card withBorder padding="lg">
@@ -154,12 +150,6 @@ function BookingCard({ booking: b }: { booking: Booking }) {
               <Button variant="light" loading={loadingOfp} onClick={loadOfp}>
                 Загрузить OFP
               </Button>
-              <Button disabled={simStatus !== 'connected'} onClick={() => start('msfs')}>
-                Начать полёт в MSFS
-              </Button>
-              <Button variant="light" color="grape" onClick={() => start('demo')}>
-                Демо-полёт по брони
-              </Button>
               <Button
                 variant="subtle"
                 color="red"
@@ -173,9 +163,9 @@ function BookingCard({ booking: b }: { booking: Booking }) {
                 Отменить бронь
               </Button>
             </Group>
+            <StartFlight booking={b} simConnected={simStatus === 'connected'} onError={setError} onStarted={() => navigate('/flight')} />
             <Text size="xs" c="dimmed">
-              Бесплатная отмена — больше чем за 2 часа до вылета. Опоздание больше{' '}
-              {b.charter ? 'крайнего срока' : '15 минут'} потребует указать причину задержки.
+              Бесплатная отмена — больше чем за 2 часа до вылета.
               {settings && !settings.demoCountsForCareer && ' Демо-полёты в карьеру не засчитываются — включается в настройках.'}
             </Text>
           </>
@@ -222,6 +212,7 @@ const GETTERS: Record<SortKey, (f: DispatchFlight) => string | number> = {
 }
 
 function Schedule({ pilot, hasBooking }: { pilot: PilotState; hasBooking: boolean }) {
+  const now = useWorldNow()
   const [flights, setFlights] = useState<DispatchFlight[] | null>(null)
   const [onlyBookable, setOnlyBookable] = useState(true)
   const [query, setQuery] = useState('')
@@ -304,7 +295,7 @@ function Schedule({ pilot, hasBooking }: { pilot: PilotState; hasBooking: boolea
                 </Table.Td>
                 <Table.Td className="mono">
                   {formatClock(f.depAt)}
-                  {new Date(f.depAt).getUTCDate() !== new Date().getUTCDate() && (
+                  {new Date(f.depAt).getUTCDate() !== new Date(now).getUTCDate() && (
                     <Text span size="xs" c="dimmed">
                       {' '}
                       завтра

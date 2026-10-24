@@ -33,6 +33,7 @@ import { errMsg, notifyCareerChanged, useCareerVersion, usePilot } from '../lib'
 import { SortableTh, compareBy, type SortState } from '../components/SortableTh'
 import { Stat } from '../components/FlightParts'
 import { FinanceModal } from '../components/FinanceModal'
+import { useWorldNow } from '../hooks'
 
 const money = (n: number) => `${n < 0 ? '−' : ''}$${formatNum(Math.abs(n))}`
 
@@ -156,7 +157,8 @@ function Overview({ life, catalog, cash, run }: Ctx) {
   const assets = life.assets.reduce((s, a) => s + a.value, 0)
   const invest = life.investments.reduce((s, i) => s + i.value, 0) + life.stakesValue
   const debt = life.loans.reduce((s, l) => s + l.balance, 0)
-  const medicalDays = Math.floor((life.medicalUntil - Date.now()) / 86_400_000)
+  const now = useWorldNow()
+  const medicalDays = Math.floor((life.medicalUntil - now) / 86_400_000)
   return (
     <Stack>
       {!life.fitToFly.ok && <Alert color="red">{life.fitToFly.reason}</Alert>}

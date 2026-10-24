@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { AppShell, Badge, Button, Group, NavLink, Stack, Text, Title } from '@mantine/core'
+import { AppShell, Badge, Button, Group, NavLink, Popover, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import type { SkipPreset } from '@shared/economy'
 import { NavLink as RouterLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { ProfileSummary } from '@shared/types'
 import { MODE_LABEL, formatUtc } from '../format'
 import { PHASE_LABEL } from '@shared/sim'
-import { useSimStatus, useTrackerState } from '../hooks'
-import { useCareerVersion } from '../lib'
+import { useSimStatus, useTrackerState, useWorldNow } from '../hooks'
+import { errMsg, notifyCareerChanged, useCareerVersion } from '../lib'
 import { WorldAirlines } from './WorldAirlines'
 import { ActiveFlight } from './ActiveFlight'
 import { SimCheck } from './SimCheck'
@@ -87,7 +88,8 @@ export function Shell({ profile, onExit }: Props) {
           <Group gap="md">
             <CheatBadge />
             <SimBadge />
-            <UtcClock />
+            <WorldClock />
+            <TimeSkip flying={!!tracker?.active} />
             <Button size="xs" variant="subtle" onClick={onExit}>
               Сменить профиль
             </Button>
@@ -174,13 +176,78 @@ function SimBadge() {
   )
 }
 
-function UtcClock() {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(t)
-  }, [])
-  return <Text className="mono">{now.toISOString().slice(11, 19)} UTC</Text>
+/** Часы мира: с перемоткой они уходят вперёд от реальных, поэтому показываем и дату. */
+function WorldClock() {
+  const now = useWorldNow()
+  const date = new Date(now).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  return (
+    <Text className="mono" title="Время мира">
+      {date} · {new Date(now).toISOString().slice(11, 19)} UTC
+    </Text>
+  )
+}
+
+const SKIPS: [SkipPreset, string][] = [
+  ['3h', '+3 часа'],
+  ['1d', '+1 сутки'],
+  ['1w', '+1 неделя'],
+  ['month', 'До 1-го числа']
+]
+
+/** Перемотка времени мира: отдых, ожидание, итоги месяца — без реального ожидания. */
+function TimeSkip({ flying }: { flying: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const skip = async (preset: SkipPreset) => {
+    setError(null)
+    setBusy(true)
+    try {
+      await window.api.world.skip(preset)
+      notifyCareerChanged()
+      setOpen(false)
+    } catch (e) {
+      setError(errMsg(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Popover opened={open} onChange={setOpen} position="bottom-end" withArrow>
+      <Popover.Target>
+        <Button
+          size="xs"
+          variant="light"
+          disabled={flying}
+          title={flying ? 'Во время полёта время не перематывается' : undefined}
+          onClick={() => setOpen((v) => !v)}
+        >
+          Перемотать время
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs" maw={280}>
+          <Text size="sm">
+            Мир пойдёт вперёд сразу: пилот отдохнёт, придут зарплаты и счета, компании подведут итоги.
+          </Text>
+          <SimpleGrid cols={2} spacing="xs">
+            {SKIPS.map(([preset, label]) => (
+              <Button key={preset} size="xs" variant="light" loading={busy} onClick={() => skip(preset)}>
+                {label}
+              </Button>
+            ))}
+          </SimpleGrid>
+          {error && (
+            <Text size="xs" c="red">
+              {error}
+            </Text>
+          )}
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
+  )
 }
 
 function Placeholder({ section, profile }: { section: Section; profile: ProfileSummary }) {

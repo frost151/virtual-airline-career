@@ -1,7 +1,7 @@
 import type { Airline, AirlineArchetype } from './world'
 import type { FlightRecord, FlightSource, SimConnectionStatus, SimDiagnostics, TrackerState } from './sim'
 import type { PilotStats, RankId } from './career'
-import type { CatchUpReport, MacroOverview } from './economy'
+import type { CatchUpReport, MacroOverview, SkipPreset } from './economy'
 import type { Family, InvestmentKind, LifeState, PricedCatalog } from './lifestyle'
 import type {
   AirlineDetailEconomy,
@@ -13,6 +13,7 @@ import type {
   FoundTypeOption,
   ManageState,
   PlayerAirline,
+  RouteQuote,
   Stake,
   StakeOffer
 } from './airlines'
@@ -310,8 +311,14 @@ export interface Api {
     places(codes: string[]): Promise<Record<string, PlaceRef>>
     /** Запасная ссылка на логотип, если на основном CDN его нет (null — нет нигде). */
     logoFallback(iata: string): Promise<string | null>
-    /** Сводка «Пока вас не было» (выдаётся один раз после открытия профиля). */
+    /** Сводка «Пока вас не было» или после перемотки (выдаётся один раз). */
     report(): Promise<CatchUpReport | null>
+    /** Появилась новая сводка (после перемотки) — её можно забрать через report(). */
+    onReport(cb: () => void): () => void
+    /** Сдвиг часов мира относительно реального времени, мс. */
+    clock(): Promise<number>
+    /** Перемотать время (не во время полёта). */
+    skip(preset: SkipPreset): Promise<void>
     macro(): Promise<MacroOverview>
     onChanged(cb: () => void): () => void
   }
@@ -323,7 +330,8 @@ export interface Api {
   }
   tracker: {
     state(): Promise<TrackerState>
-    start(source: FlightSource, bookingId?: number | null): Promise<TrackerState>
+    /** prepMin — сколько минут до вылета берёт игрок (по брони; см. PREP_MINUTES). */
+    start(source: FlightSource, bookingId?: number | null, prepMin?: number): Promise<TrackerState>
     finish(): Promise<FlightFinished | null>
     onUpdate(cb: (s: TrackerState) => void): () => void
     onFinished(cb: (r: FlightFinished) => void): () => void
@@ -407,11 +415,13 @@ export interface Api {
   /** Управление компанией с контрольным пакетом. Действия возвращают обновлённую сводку. */
   manage: {
     state(icao: string): Promise<ManageState>
-    routeOptions(icao: string, origin: string): Promise<DestinationOption[]>
+    routeQuote(icao: string, origin: string, dest: string): Promise<RouteQuote>
     setAutopilot(icao: string, patch: Partial<Autopilot>): Promise<ManageState>
     setFareMult(icao: string, mult: number): Promise<ManageState>
     setFrequency(icao: string, hub: string, dest: string, freq: number): Promise<ManageState>
-    openRoute(icao: string, origin: string, dest: string, freq: number): Promise<ManageState>
+    /** typeId — тип самолёта из флота, который выполняет рейс. */
+    openRoute(icao: string, origin: string, dest: string, freq: number, typeId: string): Promise<ManageState>
+    setRouteType(icao: string, hub: string, dest: string, typeId: string | null): Promise<ManageState>
     lease(icao: string, typeId: string, count: number): Promise<ManageState>
     buy(icao: string, typeId: string, count: number): Promise<ManageState>
     returnLease(icao: string, typeId: string): Promise<ManageState>

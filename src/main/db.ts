@@ -227,7 +227,9 @@ const MIGRATIONS: string[] = [
   );
   `,
   // Фото пилота для личного кабинета (data URL).
-  `ALTER TABLE profile ADD COLUMN photo TEXT;`
+  `ALTER TABLE profile ADD COLUMN photo TEXT;`,
+  // Перемотка времени: часы мира = реальное время + сдвиг (src/main/worldTime.ts).
+  `ALTER TABLE profile ADD COLUMN clock_offset_ms INTEGER NOT NULL DEFAULT 0;`
 ]
 
 export function openDatabase(file: string): Db {

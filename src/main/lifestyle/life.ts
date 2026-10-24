@@ -30,6 +30,7 @@ import {
   serviceFactor
 } from './catalog'
 import { assetPrestige, assetRows, fitToFly, listIds, medicalUntil, prestige, type AssetRow } from './perks'
+import { worldNow } from '../worldTime'
 
 const YEAR_MS = 365 * 86_400_000
 /** Комиссия при продаже: риелтор, дилер, брокер. */
@@ -189,7 +190,7 @@ function financeAsset(db: Db, assetId: number, price: number, downPct: number, y
     const months = years * 12
     db.prepare(
       'INSERT INTO loans (kind, asset_id, principal, balance, rate, payment, months_left, opened_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(kind, assetId, principal, principal, rate, annuity(principal, rate, months), months, Date.now())
+    ).run(kind, assetId, principal, principal, rate, annuity(principal, rate, months), months, worldNow(db))
   }
 }
 
@@ -219,7 +220,7 @@ export function rentHome(db: Db, itemId: string): void {
     addTransaction(db, -rent, `Аренда: ${h.name} — депозит за первый месяц`)
     insertAsset(db, {
       kind: 'home', item_id: h.id, name: h.name, ownership: 'rent', country, airport, value: 0, purchase_price: 0,
-      residence: 1, rented_out: 0, bought_at: Date.now()
+      residence: 1, rented_out: 0, bought_at: worldNow(db)
     })
   })
 }
@@ -237,7 +238,7 @@ export function buyHome(db: Db, itemId: string, downPct: number, years: number):
     endRentedResidence(db)
     const id = insertAsset(db, {
       kind: 'home', item_id: h.id, name: h.name, ownership: 'own', country, airport, value: price, purchase_price: price,
-      residence: 1, rented_out: 0, bought_at: Date.now()
+      residence: 1, rented_out: 0, bought_at: worldNow(db)
     })
     financeAsset(db, id, price, downPct, years, 'mortgage', rates(country, macroState(db).cycle).mortgage, `Покупка жилья: ${h.name}`)
   })
@@ -269,7 +270,7 @@ export function buyCar(db: Db, itemId: string, downPct: number, years: number): 
   transaction(db, () => {
     const id = insertAsset(db, {
       kind: 'car', item_id: car.id, name: `${car.brand} ${car.model}`, ownership: 'own', country, airport: null, value: price,
-      purchase_price: price, residence: 0, rented_out: 0, bought_at: Date.now()
+      purchase_price: price, residence: 0, rented_out: 0, bought_at: worldNow(db)
     })
     financeAsset(db, id, price, downPct, years, 'auto', rates(country, macroState(db).cycle).auto, `Покупка: ${car.brand} ${car.model}`)
   })
@@ -285,7 +286,7 @@ export function buyAircraft(db: Db, itemId: string, downPct: number, years: numb
     // Аэроклуб — членство, а не покупка.
     insertAsset(db, {
       kind: 'aircraft', item_id: a.id, name: a.name, ownership: 'rent', country, airport: pilotRow(db).base, value: 0,
-      purchase_price: 0, residence: 0, rented_out: 0, bought_at: Date.now()
+      purchase_price: 0, residence: 0, rented_out: 0, bought_at: worldNow(db)
     })
     return
   }
@@ -293,7 +294,7 @@ export function buyAircraft(db: Db, itemId: string, downPct: number, years: numb
   transaction(db, () => {
     const id = insertAsset(db, {
       kind: 'aircraft', item_id: a.id, name: a.name, ownership: 'own', country, airport: pilotRow(db).base, value: price,
-      purchase_price: price, residence: 0, rented_out: 0, bought_at: Date.now()
+      purchase_price: price, residence: 0, rented_out: 0, bought_at: worldNow(db)
     })
     financeAsset(db, id, price, downPct, years, 'aircraft', rates(country, macroState(db).cycle).aircraft, `Покупка самолёта: ${a.name}`)
   })
@@ -308,7 +309,7 @@ export function buyCollectible(db: Db, itemId: string): void {
     addTransaction(db, -price, `Покупка: ${c.name}`)
     insertAsset(db, {
       kind: 'collectible', item_id: c.id, name: c.name, ownership: 'own', country: lifeCountry(db) ?? 'US', airport: null,
-      value: price, purchase_price: price, residence: 0, rented_out: 0, bought_at: Date.now()
+      value: price, purchase_price: price, residence: 0, rented_out: 0, bought_at: worldNow(db)
     })
   })
 }
@@ -361,7 +362,7 @@ export function takeRest(db: Db, restId: string): void {
 export function subscribe(db: Db, id: string, on: boolean): void {
   const s = SUBSCRIPTIONS.find((x) => x.id === id)
   if (!s) throw new Error('Нет такого клуба')
-  if (on) db.prepare('INSERT OR IGNORE INTO subscriptions (id, started_at) VALUES (?, ?)').run(id, Date.now())
+  if (on) db.prepare('INSERT OR IGNORE INTO subscriptions (id, started_at) VALUES (?, ?)').run(id, worldNow(db))
   else db.prepare('DELETE FROM subscriptions WHERE id = ?').run(id)
 }
 
@@ -377,11 +378,11 @@ export function enroll(db: Db, courseId: string): void {
   requireCash(db, price)
   transaction(db, () => {
     addTransaction(db, -price, `Обучение: ${c.name}`)
-    db.prepare('INSERT INTO education (id, obtained_at) VALUES (?, ?)').run(c.id, Date.now())
+    db.prepare('INSERT INTO education (id, obtained_at) VALUES (?, ?)').run(c.id, worldNow(db))
   })
 }
 
-export function renewMedical(db: Db, now = Date.now()): void {
+export function renewMedical(db: Db, now = worldNow(db)): void {
   const p = pilotRow(db)
   if (p.health < 50) throw new Error('Врачи не допускают: здоровье ниже 50. Подлечитесь — санаторий или спорт.')
   const price = Math.round(MEDICAL_BASE * serviceFactor(countryParams(lifeCountry(db))) * priceLevel(db))
@@ -405,7 +406,7 @@ export function invest(db: Db, kind: InvestmentKind, amount: number, icao: strin
     transaction(db, () => {
       addTransaction(db, -amount, `Покупка акций ${airlines.get(icao!)?.name ?? icao}`)
       db.prepare('INSERT INTO investments (kind, principal, value, rate, opened_at, icao, quantity) VALUES (?, ?, ?, 0, ?, ?, ?)').run(
-        kind, amount, amount, Date.now(), icao, quantity
+        kind, amount, amount, worldNow(db), icao, quantity
       )
     })
     return
@@ -414,7 +415,7 @@ export function invest(db: Db, kind: InvestmentKind, amount: number, icao: strin
   const rate = kind === 'deposit' ? r.deposit : kind === 'bonds' ? r.bonds : 0
   transaction(db, () => {
     addTransaction(db, -amount, `Инвестиции: ${kind === 'deposit' ? 'вклад' : kind === 'bonds' ? 'облигации' : 'индексный фонд'}`)
-    db.prepare('INSERT INTO investments (kind, principal, value, rate, opened_at) VALUES (?, ?, ?, ?, ?)').run(kind, amount, amount, rate, Date.now())
+    db.prepare('INSERT INTO investments (kind, principal, value, rate, opened_at) VALUES (?, ?, ?, ?, ?)').run(kind, amount, amount, rate, worldNow(db))
   })
 }
 

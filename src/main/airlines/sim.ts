@@ -1,4 +1,4 @@
-import type { AirlineFinance, RouteState, Staff } from '@shared/airlines'
+import type { RouteState, Staff } from '@shared/airlines'
 import type { MacroState } from '@shared/economy'
 import type { AircraftType, Airline, Airport } from '@shared/world'
 import { between, seededRng } from '@shared/random'
@@ -7,7 +7,7 @@ import type { NewsDraft } from '../economy/macro'
 import { SEASONALITY, jetFuelUsdPerKg } from '../economy/macro'
 import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { distanceKm } from '../tracker/geo'
-import { blockMinutes, frequency, pickType } from '../career/schedule'
+import { assignedType, blockMinutes, frequency, pickType, typeServes } from '../career/schedule'
 import { serviceFactor, countryParams } from '../lifestyle/catalog'
 import { COST_PROFILE, PRICE_APPEAL, averageFare, cargoRatePerKg, dailyDemand } from './demand'
 import { FLAG_CARRIERS, loadStates, saveStates, withState, type AirlineState } from './state'
@@ -112,8 +112,11 @@ interface RouteCalc {
 
 const pairKey = (a: string, b: string) => (a < b ? `${a}-${b}` : `${b}-${a}`)
 
+/** Тип самолёта на маршруте: назначенный владельцем, иначе — выбранный по флоту (как в расписании). */
 function routeType(al: Airline, r: RouteState, km: number): AircraftType | null {
-  return pickType(al, km, r.hub, r.dest, seededRng(`${al.icao}|${r.hub}|${r.dest}|0`))
+  // В сети withState уже лежит назначенный тип или «Авто» компании игрока.
+  const typeId = al.network.find((n) => n.hub === r.hub)?.type?.[r.dest] ?? r.type
+  return assignedType(al, typeId, km, r.hub, r.dest) ?? pickType(al, km, r.hub, r.dest, seededRng(`${al.icao}|${r.hub}|${r.dest}|0`))
 }
 
 /** Расходы на один рейс в одну сторону, $. */
@@ -223,9 +226,21 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
         cabinH ? (st.cabin * CREW_HOURS_PER_MONTH) / cabinH : 1
       )
     }
+    // У компании игрока вся сеть в модели: если на тип повешено больше рейсов, чем он успевает, часть отменяется.
+    const typeFactor = new Map<string, number>()
+    if (playerAirlineIds.has(s.icao)) {
+      const need = new Map<string, number>()
+      for (const c of list) need.set(c.type.id, (need.get(c.type.id) ?? 0) + c.blockH * c.route.freq * 2 * DAYS)
+      for (const [t, h] of need) typeFactor.set(t, Math.min(1, ((s.fleet[t] ?? 0) * BLOCK_HOURS_PER_DAY * DAYS) / h))
+    }
+    let plannedFlights = 0
+    const flown = new Map<RouteCalc, number>()
     for (const c of list) {
       const r = c.route
-      const flights = r.freq * 2 * DAYS * staffFactor
+      const planned = r.freq * 2 * DAYS
+      const flights = planned * Math.min(staffFactor, typeFactor.get(c.type.id) ?? 1)
+      plannedFlights += planned
+      flown.set(c, flights)
       let revFlight: number
       let paxFlight = 0
       if (c.type.category === 'freighter') {
@@ -261,7 +276,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
       // Оклады платим всему штату, даже если людей больше, чем нужно; делим по маршрутам по блок-часам.
       const sal = crewSalaries(s, pilotH ? rateH / (pilotH / 2) : AIRLINE_PILOT_RATE.narrowbody, level)
       cost.crew = s.staff!.pilots * sal.pilot + s.staff!.cabin * sal.cabin
-      for (const c of list) r_share(c.route, (c.blockH * c.route.freq * 2 * DAYS * staffFactor) / (blockHours || 1), cost.crew)
+      for (const c of list) r_share(c.route, (c.blockH * flown.get(c)!) / (blockHours || 1), cost.crew)
     }
     const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
     // В данных у компании только часть реальной сети: остальные самолёты летают по маршрутам, которых
@@ -285,7 +300,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
       lf: flightsTotal ? +(lfWeighted / flightsTotal).toFixed(3) : 0,
       utilization: fleetCount ? +(blockHours / (fleetCount * BLOCK_HOURS_PER_DAY * DAYS)).toFixed(3) : 0,
       costBreakdown: Object.fromEntries(Object.entries(cost).map(([k, v]) => [k, Math.round(v)])),
-      ...(managed ? { cancelled: +(1 - staffFactor).toFixed(3) } : {})
+      ...(managed || typeFactor.size ? { cancelled: plannedFlights ? +(1 - flightsTotal / plannedFlights).toFixed(3) : 0 } : {})
     }
   }
   return calcs
@@ -296,9 +311,13 @@ export function planBlockHours(s: AirlineState): {
   needed: number
   available: number
   routes: Map<RouteState, { type: AircraftType | null; km: number; blockHours: number }>
+  /** То же по типам самолётов: каждый тип летает только своими самолётами. */
+  byType: Map<string, { needed: number; available: number }>
 } {
   const al = withState(airlines.get(s.icao)!, s)
   const routes = new Map<RouteState, { type: AircraftType | null; km: number; blockHours: number }>()
+  const byType = new Map<string, { needed: number; available: number }>()
+  for (const [t, n] of Object.entries(s.fleet)) if (n > 0) byType.set(t, { needed: 0, available: n * BLOCK_HOURS_PER_DAY * DAYS })
   let needed = 0
   for (const r of s.routes) {
     const h = airports.get(r.hub)
@@ -308,10 +327,11 @@ export function planBlockHours(s: AirlineState): {
     const type = r.freq > 0 ? routeType(al, r, km) : null
     const blockHours = type ? (blockMinutes(type, km) / 60) * r.freq * 2 * DAYS : 0
     routes.set(r, { type, km, blockHours })
+    if (type) byType.get(type.id)!.needed += blockHours
     needed += blockHours
   }
   const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
-  return { needed, available: fleetCount * BLOCK_HOURS_PER_DAY * DAYS, routes }
+  return { needed, available: fleetCount * BLOCK_HOURS_PER_DAY * DAYS, routes, byType }
 }
 
 /** Доля расходов на экипаж — в прибыль маршрута. */
@@ -433,6 +453,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
   const ceoPay: Record<string, number> = {}
   const bankruptDebt: Record<string, number> = {}
   const quarter = [0, 3, 6, 9].includes(new Date(monthStart).getUTCMonth())
+  const pairs = servedPairs(states)
 
   for (const s of states.values()) {
     const al = airlines.get(s.icao)!
@@ -458,7 +479,8 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     }
     s.recentProfit = [...s.recentProfit, fin.profit].slice(-3)
     s.reputation = Math.max(10, Math.min(95, s.reputation + (fin.profit > 0 && fin.lf > 0.75 ? 0.3 : fin.profit < 0 ? -0.3 : 0)))
-    if (staffManaged(s)) news.push(...staffMonth(s, al, fin, t))
+    if (staffManaged(s)) staffMonth(s)
+    if (fin.cancelled) news.push(...cancellationsMonth(s, al, fin.cancelled, t))
     const revenueBase = Math.max(fin.revenue, monthlyCosts * 0.5)
     s.status = s.debt > revenueBase * 4 ? 'distress' : s.status === 'restarted' && s.debt < revenueBase ? 'ok' : s.status === 'distress' ? 'ok' : s.status
 
@@ -487,7 +509,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
         })
       }
     } else {
-      news.push(...decide(s, al, macro, rng, t))
+      news.push(...decide(s, al, macro, rng, t, pairs))
     }
 
     // Биржа.
@@ -515,23 +537,27 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
   return { news, restarted, dividends, ceoPay, bankruptDebt }
 }
 
-/** Месяц для экипажей игрока: текучка, репутация от сервиса и отмен. */
-function staffMonth(s: AirlineState, al: Airline, fin: AirlineFinance, t: number): NewsDraft[] {
+/** Месяц для экипажей игрока: текучка, репутация от сервиса и зарплат. */
+function staffMonth(s: AirlineState): void {
   const st = s.staff!
   const rate = attritionRate(st.payLevel)
   st.pilots = Math.max(0, st.pilots - Math.round(st.pilots * rate))
   st.cabin = Math.max(0, st.cabin - Math.round(st.cabin * rate))
-  const cancelled = fin.cancelled ?? 0
-  // Хороший сервис понемногу поднимает репутацию, отмены рейсов бьют по ней сильно.
-  const delta = (st.service - 1) * 4 - cancelled * 15 - (st.payLevel < 0.9 ? 0.5 : 0)
+  // Хороший сервис понемногу поднимает репутацию, зарплаты ниже рынка — понемногу роняют.
+  const delta = (st.service - 1) * 4 - (st.payLevel < 0.9 ? 0.5 : 0)
   s.reputation = Math.max(10, Math.min(95, s.reputation + delta))
+}
+
+/** Отменённые рейсы (не хватило экипажей или самолётов нужного типа) сильно бьют по репутации. */
+function cancellationsMonth(s: AirlineState, al: Airline, cancelled: number, t: number): NewsDraft[] {
+  s.reputation = Math.max(10, Math.min(95, s.reputation - cancelled * 15))
   if (cancelled < 0.05) return []
   return [
     {
       t,
       category: 'airline',
       title: `${al.name} отменяет рейсы`,
-      body: `Компании не хватает экипажей: за месяц отменено ${Math.round(cancelled * 100)}% рейсов. Пассажиры недовольны.`
+      body: `Компании не хватает самолётов или экипажей: за месяц отменено ${Math.round(cancelled * 100)}% рейсов. Пассажиры недовольны.`
     }
   ]
 }
@@ -560,7 +586,14 @@ function restartAirline(s: AirlineState, al: Airline, level: number): void {
 }
 
 /** Решения AI раз в месяц. Новости — только о заметных событиях, не больше двух на компанию. */
-function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => number, t: number): NewsDraft[] {
+function decide(
+  s: AirlineState,
+  al: Airline,
+  macro: MacroState,
+  rng: () => number,
+  t: number,
+  pairs: Map<string, number>
+): NewsDraft[] {
   const news: NewsDraft[] = []
   const fin = s.last!
   const city = (icao: string) => airports.get(icao)?.city ?? icao
@@ -610,15 +643,27 @@ function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => numb
     }
   }
 
-  // 4. Больше рейсов на полные маршруты и новые направления, если есть деньги.
-  if (aiRoutes && s.status === 'ok' && fin.profit > 0 && fin.utilization < 0.95) {
+  // 4. Компания игрока: заместитель занимает самолёты работой и открывает рейсы сам.
+  if (aiRoutes && playerAirlineIds.has(s.icao)) {
+    const opened = fillSchedule(s, pairs)
+    if (opened.length && news.length < 2) {
+      news.push({
+        t,
+        category: 'airline',
+        title: `${al.name} открывает новые рейсы`,
+        body: `Новые направления: ${opened.map((r) => `${city(r.hub)} — ${city(r.dest)}`).join(', ')}.`
+      })
+    }
+  }
+  // Компании мира: больше рейсов на полные маршруты и новые направления, если есть деньги.
+  else if (aiRoutes && s.status === 'ok' && fin.profit > 0 && fin.utilization < 0.95) {
     s.routes
       .filter((r) => r.freq > 0 && r.lf > 0.88 && r.profit > 0)
       .sort((a, b) => b.lf - a.lf)
       .slice(0, 2)
       .forEach((r) => (r.freq = Math.min(maxFreq(r), r.freq + 1)))
   }
-  if (aiRoutes && s.status === 'ok' && s.cash > fin.costs * 2 && fin.utilization < 0.9 && rng() < 0.3) {
+  if (aiRoutes && !playerAirlineIds.has(s.icao) && s.status === 'ok' && s.cash > fin.costs * 2 && fin.utilization < 0.9 && rng() < 0.3) {
     const opened = openRoute(s, al, rng)
     if (opened && news.length < 2) {
       news.push({
@@ -631,6 +676,95 @@ function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => numb
   }
   s.routes = s.routes.filter((r) => r.freq > 0 || r.lf > 0 || r.badMonths > 0)
   return news
+}
+
+// ——— заместитель по маршрутам у компании игрока ———
+
+/** До какой доли часов заместитель занимает самолёты: остальное — запас на задержки и ТО. */
+const FILL_TARGET = 0.9
+/** Меньше этого запаса часов у типа — новых рейсов на нём уже не ищем. */
+const FILL_MIN_SPARE_H = 20
+
+/** Сколько компаний летает по каждой паре аэропортов. */
+export function servedPairs(states: Map<string, AirlineState>): Map<string, number> {
+  const pairs = new Map<string, number>()
+  for (const s of states.values())
+    for (const r of s.routes) if (r.freq > 0) pairs.set(pairKey(r.hub, r.dest), (pairs.get(pairKey(r.hub, r.dest)) ?? 0) + 1)
+  return pairs
+}
+
+/** Направления из базы для типа: долетает, садится, лучшие по спросу и меньшей конкуренции — первыми. */
+function newRouteCandidates(al: Airline, type: AircraftType, hub: string, pairs: Map<string, number>) {
+  const h = airports.get(hub)
+  if (!h) return []
+  const out: { dest: string; km: number; score: number }[] = []
+  for (const a of airports.values()) {
+    if (a.icao === hub || !a.scheduled || a.type === 'small') continue
+    const km = distanceKm(h.lat, h.lon, a.lat, a.lon)
+    if (km < 300 || !typeServes(al, type, km, hub, a.icao)) continue
+    out.push({ dest: a.icao, km, score: dailyDemand(hub, a.icao, km, 1, 1) / (1 + (pairs.get(pairKey(hub, a.icao)) ?? 0)) })
+  }
+  return out.sort((a, b) => b.score - a.score)
+}
+
+/**
+ * Заместитель по маршрутам у компании игрока: занимает самолёты работой примерно на 90% их часов.
+ * Сначала добавляет рейсы на полные прибыльные маршруты, потом открывает новые из баз — где спрос выше,
+ * а конкурентов меньше. Экипажей игрока не перегружает. Возвращает открытые маршруты.
+ */
+export function fillSchedule(s: AirlineState, pairs: Map<string, number>): RouteState[] {
+  const al = withState(airlines.get(s.icao)!, s)
+  const hubs = [...new Set([...s.routes.filter((r) => r.freq > 0).map((r) => r.hub), ...airlines.get(s.icao)!.network.map((n) => n.hub)])]
+  const crewHours = staffManaged(s) ? (s.staff!.pilots * CREW_HOURS_PER_MONTH) / 2 : Infinity
+  const candidates = new Map<string, { hub: string; dest: string; km: number; score: number }[]>()
+  const exhausted = new Set<string>()
+  const opened: RouteState[] = []
+
+  for (let guard = 0; guard < 80; guard++) {
+    const plan = planBlockHours(s)
+    if (plan.needed >= crewHours * FILL_TARGET) break
+    const spareOf = (h: { needed: number; available: number }) => h.available * FILL_TARGET - h.needed
+    const next = [...plan.byType]
+      .filter(([id, h]) => !exhausted.has(id) && spareOf(h) >= FILL_MIN_SPARE_H)
+      .sort((a, b) => spareOf(b[1]) - spareOf(a[1]))[0]
+    if (!next) break
+    const [typeId, hours] = next
+    const spare = Math.min(spareOf(hours), crewHours * FILL_TARGET - plan.needed)
+    const type = aircraftTypes.get(typeId)!
+
+    // 1. Ещё рейс туда, где этот тип летает полным и в плюс.
+    const full = [...plan.routes]
+      .filter(([r, p]) => r.freq > 0 && p.type?.id === typeId && r.freq < maxFreq(r) && r.lf > 0.85 && r.profit >= 0)
+      .filter(([r, p]) => p.blockHours / r.freq <= spare)
+      .sort((a, b) => b[0].lf - a[0].lf)[0]
+    if (full) {
+      full[0].freq++
+      continue
+    }
+
+    // 2. Новый маршрут из базы на этом типе.
+    if (!candidates.has(typeId))
+      candidates.set(
+        typeId,
+        hubs.flatMap((hub) => newRouteCandidates(al, type, hub, pairs).map((c) => ({ ...c, hub }))).sort((a, b) => b.score - a.score)
+      )
+    const pick = candidates.get(typeId)!.find(
+      (c) =>
+        (blockMinutes(type, c.km) / 60) * 2 * DAYS <= spare &&
+        !s.routes.some((r) => r.freq > 0 && ((r.hub === c.hub && r.dest === c.dest) || (r.hub === c.dest && r.dest === c.hub)))
+    )
+    if (!pick) {
+      exhausted.add(typeId)
+      continue
+    }
+    const existing = s.routes.find((r) => r.hub === pick.hub && r.dest === pick.dest)
+    const route = existing ?? { hub: pick.hub, dest: pick.dest, freq: 0, lf: 0.6, fare: 0, profit: 0, badMonths: 0 }
+    Object.assign(route, { freq: 1, badMonths: 0, type: typeId })
+    if (!existing) s.routes.push(route)
+    pairs.set(pairKey(pick.hub, pick.dest), (pairs.get(pairKey(pick.hub, pick.dest)) ?? 0) + 1)
+    opened.push(route)
+  }
+  return opened
 }
 
 function mostUsedType(s: AirlineState, al: Airline): AircraftType | null {

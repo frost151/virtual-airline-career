@@ -29,6 +29,7 @@ import {
 import { DELAY_CODES } from '@shared/delayCodes'
 import { seededRng } from '@shared/random'
 import { transaction, type Db } from '../db'
+import { worldNow } from '../worldTime'
 import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { getFlight } from '../logbook'
 import { getSettings } from '../settings'
@@ -80,7 +81,7 @@ export function pilotRow(db: Db): PilotRow {
 }
 
 export function addTransaction(db: Db, amount: number, description: string, applyToCash = true): void {
-  db.prepare('INSERT INTO transactions (t, amount, description) VALUES (?, ?, ?)').run(Date.now(), amount, description)
+  db.prepare('INSERT INTO transactions (t, amount, description) VALUES (?, ?, ?)').run(worldNow(db), amount, description)
   if (applyToCash) db.prepare('UPDATE pilot SET cash = cash + ? WHERE id = 1').run(amount)
 }
 
@@ -224,11 +225,11 @@ export function hire(db: Db, input: HireInput): PilotState {
     cancelOpenBookings(db)
     db.prepare(
       `UPDATE pilot SET employer_kind = ?, employer_id = ?, base = ?, location = ?, reputation = 50, hired_at = ? WHERE id = 1`
-    ).run(input.kind, input.employerId, input.base, input.base, new Date().toISOString())
+    ).run(input.kind, input.employerId, input.base, input.base, new Date(worldNow(db)).toISOString())
     db.prepare('INSERT OR IGNORE INTO ratings (id, name, obtained_at) VALUES (?, ?, ?)').run(
       rating.id,
       rating.name,
-      new Date().toISOString()
+      new Date(worldNow(db)).toISOString()
     )
   })
   return pilotState(db)
@@ -254,7 +255,7 @@ export function buyRating(db: Db, ratingId: string): PilotState {
   if (ownedRatings(db).some((x) => x.id === ratingId)) throw new Error('Этот допуск уже есть')
   if (pilotRow(db).cash < r.price) throw new Error('Недостаточно денег')
   transaction(db, () => {
-    db.prepare('INSERT INTO ratings (id, name, obtained_at) VALUES (?, ?, ?)').run(r.id, r.name, new Date().toISOString())
+    db.prepare('INSERT INTO ratings (id, name, obtained_at) VALUES (?, ?, ?)').run(r.id, r.name, new Date(worldNow(db)).toISOString())
     addTransaction(db, -r.price, `Переучивание: ${r.name}`)
   })
   return pilotState(db)
@@ -358,6 +359,20 @@ export function openBooking(db: Db): Booking | null {
   return r ? toBooking(r) : null
 }
 
+/** Перенести вылет брони (игрок начал полёт позже расписания): прибытие и крайний срок чартера — на столько же. */
+export function retimeBooking(db: Db, id: number, depAt: number): void {
+  const b = getBooking(db, id)
+  const shift = Math.round(depAt - b.depAt)
+  if (!shift) return
+  const charter = b.charter ? JSON.stringify({ ...b.charter, deadline: b.charter.deadline + shift }) : null
+  db.prepare('UPDATE bookings SET dep_at = dep_at + ?, arr_at = arr_at + ?, charter_json = COALESCE(?, charter_json) WHERE id = ?').run(
+    shift,
+    shift,
+    charter,
+    id
+  )
+}
+
 function cancelOpenBookings(db: Db): void {
   db.prepare("UPDATE bookings SET status = 'cancelled' WHERE status = 'booked'").run()
 }
@@ -413,7 +428,7 @@ export function bookScheduled(db: Db, flightId: string, now: number): Booking {
       `INSERT INTO bookings (kind, flight_no, callsign, operator, dep, arr, dep_at, arr_at, type_id, pax, cargo_kg, distance_km,
         block_min, status, created_at, avg_fare) VALUES ('scheduled', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'booked', ?, ?)`
     )
-    .run(f.flightNo, f.callsign, al.icao, f.dep, f.arr, f.depAt, f.arrAt, f.typeId, f.pax, f.cargoKg, f.distanceKm, f.blockMin, new Date().toISOString(), f.avgFare)
+    .run(f.flightNo, f.callsign, al.icao, f.dep, f.arr, f.depAt, f.arrAt, f.typeId, f.pax, f.cargoKg, f.distanceKm, f.blockMin, new Date(worldNow(db)).toISOString(), f.avgFare)
   return getBooking(db, Number(res.lastInsertRowid))
 }
 
@@ -482,7 +497,7 @@ export function acceptCharter(db: Db, offerId: string, now: number): Booking {
         offer.distanceKm,
         offer.blockMin,
         JSON.stringify(details),
-        new Date().toISOString()
+        new Date(worldNow(db)).toISOString()
       )
     return getBooking(db, Number(res.lastInsertRowid))
   })

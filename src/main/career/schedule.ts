@@ -20,13 +20,17 @@ function turnaroundMin(t: AircraftType): number {
   return 50
 }
 
+/** Может ли тип летать по маршруту: долетает, садится на ВПП, грузовой — только у грузовой компании. */
+export function typeServes(al: Airline, t: AircraftType, km: number, dep: string, arr: string): boolean {
+  const rwy = Math.min(airports.get(dep)?.rwyM || 99999, airports.get(arr)?.rwyM || 99999)
+  return (al.archetype === 'cargo') === (t.category === 'freighter') && t.rangeKm >= km * 1.05 && t.minRunwayM <= rwy * 1.15
+}
+
 /** Тип под маршрут: хватает дальности и полосы, по размеру подходит к расстоянию. */
 export function pickType(al: Airline, km: number, dep: string, arr: string, rng: () => number): AircraftType | null {
-  const rwy = Math.min(airports.get(dep)?.rwyM || 99999, airports.get(arr)?.rwyM || 99999)
   const candidates = al.fleet
     .map((f) => ({ t: aircraftTypes.get(f.type)!, count: f.count }))
-    .filter(({ t }) => t && (al.archetype === 'cargo') === (t.category === 'freighter'))
-    .filter(({ t }) => t.rangeKm >= km * 1.05 && t.minRunwayM <= rwy * 1.15)
+    .filter(({ t }) => t && typeServes(al, t, km, dep, arr))
   if (!candidates.length) return null
 
   const weighted = candidates.map(({ t, count }) => {
@@ -43,6 +47,13 @@ export function pickType(al: Airline, km: number, dep: string, arr: string, rng:
     if (r <= 0) return x.t
   }
   return weighted[weighted.length - 1].t
+}
+
+/** Назначенный маршруту тип, если он есть во флоте и может летать по маршруту. */
+export function assignedType(al: Airline, typeId: string | undefined, km: number, dep: string, arr: string): AircraftType | null {
+  const t = typeId ? aircraftTypes.get(typeId) : undefined
+  if (!t || !al.fleet.some((f) => f.type === t.id && f.count > 0)) return null
+  return typeServes(al, t, km, dep, arr) ? t : null
 }
 
 export function frequency(al: Airline, km: number, dest: string): number {
@@ -84,10 +95,14 @@ export function airlineDaySchedule(al: Airline, dayStart: number): ScheduledFlig
     // Грузовые и сверхдальние рейсы — не каждый день.
     if ((al.archetype === 'cargo' || km > 9000) && hashString(`${al.icao}${hub}${dest}${weekday}`) % 7 >= 5) return
 
+    // Владелец мог назначить маршруту тип самолёта — тогда все рейсы на нём.
+    const assigned = assignedType(al, live.type?.[dest], km, hub, dest)
     for (let k = 0; k < freq; k++) {
       const rng = seededRng(`${al.icao}|${hub}|${dest}|${k}`)
       const loadRng = seededRng(`${al.icao}|${hub}|${dest}|${k}|${dayStart}`)
-      const type = pickType(al, km, hub, dest, rng)
+      // Случайный выбор делаем всегда: от него зависят следующие числа rng, то есть время вылета.
+      const auto = pickType(al, km, hub, dest, rng)
+      const type = assigned ?? auto
       if (!type) return
 
       // Местное время вылета 06:00–22:00, разнесённое по частотам; переводим в UTC по долготе хаба.

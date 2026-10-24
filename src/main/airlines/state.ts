@@ -1,7 +1,9 @@
 import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, RouteState, Staff } from '@shared/airlines'
 import type { Airline } from '@shared/world'
 import { transaction, type Db } from '../db'
-import { airlines } from '../world'
+import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
+import { distanceKm } from '../tracker/geo'
+import { assignedType, blockMinutes, typeServes } from '../career/schedule'
 
 /**
  * Живое состояние авиакомпаний в профиле: деньги, флот, сеть с частотами, акции.
@@ -94,26 +96,67 @@ export function effectiveAirline(db: Db | null, icao: string): Airline {
   return withState(base, s)
 }
 
+/** Блок-часов в сутки на самолёт и дней в месяце — как в экономике авиакомпаний (sim.ts). */
+const BLOCK_HOURS_PER_DAY = 13
+const DAYS = 30
+
+/**
+ * «Авто» у компании игрока: маршрут без назначенного типа достаётся тому типу, у которого
+ * больше всего свободных часов (после назначенных маршрутов). Длинные маршруты — первыми.
+ * У компаний мира тип выбирается случайно по составу флота — на этом стоит их калибровка.
+ */
+function autoTypes(al: Airline, s: AirlineState): Map<RouteState, string> {
+  const out = new Map<RouteState, string>()
+  if (!playerAirlineIds.has(s.icao)) return out
+  const free = new Map(al.fleet.map((f) => [f.type, f.count * BLOCK_HOURS_PER_DAY * DAYS]))
+  const legs = s.routes
+    .filter((r) => r.freq > 0)
+    .map((r) => {
+      const h = airports.get(r.hub)
+      const d = airports.get(r.dest)
+      return { r, km: h && d ? distanceKm(h.lat, h.lon, d.lat, d.lon) : 0 }
+    })
+  const hours = (typeId: string, km: number, freq: number) => (blockMinutes(aircraftTypes.get(typeId)!, km) / 60) * freq * 2 * DAYS
+  for (const { r, km } of legs) {
+    const t = assignedType(al, r.type, km, r.hub, r.dest)
+    if (t) free.set(t.id, free.get(t.id)! - hours(t.id, km, r.freq))
+  }
+  for (const { r, km } of legs.filter((x) => !assignedType(al, x.r.type, x.km, x.r.hub, x.r.dest)).sort((a, b) => b.km * b.r.freq - a.km * a.r.freq)) {
+    const best = al.fleet
+      .map((f) => aircraftTypes.get(f.type)!)
+      .filter((t) => t && typeServes(al, t, km, r.hub, r.dest))
+      .sort((a, b) => free.get(b.id)! - free.get(a.id)!)[0]
+    if (!best) continue
+    out.set(r, best.id)
+    free.set(best.id, free.get(best.id)! - hours(best.id, km, r.freq))
+  }
+  return out
+}
+
 export function withState(base: Airline, s: AirlineState): Airline {
+  const fleet = Object.entries(s.fleet)
+    .filter(([, c]) => c > 0)
+    .map(([type, count]) => ({ type, count }))
+  const auto = autoTypes({ ...base, fleet }, s)
   const byHub = new Map<string, Airline['network'][number]>()
   for (const r of s.routes) {
     if (r.freq <= 0) continue
     let n = byHub.get(r.hub)
     if (!n) {
-      n = { hub: r.hub, destinations: [], freq: {}, lf: {}, fare: {} }
+      n = { hub: r.hub, destinations: [], freq: {}, lf: {}, fare: {}, type: {} }
       byHub.set(r.hub, n)
     }
     n.destinations.push(r.dest)
     n.freq![r.dest] = r.freq
     n.lf![r.dest] = r.lf
     n.fare![r.dest] = r.fare
+    const type = r.type ?? auto.get(r)
+    if (type) n.type![r.dest] = type
   }
   return {
     ...base,
     reputation: Math.round(s.reputation),
-    fleet: Object.entries(s.fleet)
-      .filter(([, c]) => c > 0)
-      .map(([type, count]) => ({ type, count })),
+    fleet,
     network: [...byHub.values()],
     version: s.version
   }

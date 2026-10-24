@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { ComboboxParsedItem, OptionsFilter } from '@mantine/core'
 import type { PilotState, PlaceRef } from '@shared/types'
 
 /** Текст ошибки из main-процесса без технического префикса Electron. */
@@ -56,3 +57,26 @@ export function usePlaces(codes: (string | null | undefined)[]): Record<string, 
 }
 
 export const placeLabel = (p: PlaceRef | undefined, icao: string): string => (p?.city ? `${p.city} (${icao})` : icao)
+
+/**
+ * Поиск в списках аэропортов (подпись «Город — Название (ICAO / IATA)»): сначала точный код,
+ * потом подписи, начинающиеся с запроса, потом остальные совпадения. Иначе на «ULLI» первым
+ * находится Flagstaff Pulliam.
+ */
+export const airportFilter: OptionsFilter = ({ options, search, limit }) => {
+  const q = search.trim().toLowerCase()
+  if (!q) return options.slice(0, limit)
+  const rank = (item: ComboboxParsedItem): number => {
+    const label = 'label' in item ? item.label.toLowerCase() : ''
+    const codes = label.match(/\(([^)]+)\)$/)?.[1].split(' / ') ?? []
+    if (codes.includes(q)) return 0
+    if (label.startsWith(q)) return 1
+    return label.includes(q) ? 2 : 3
+  }
+  return options
+    .map((item) => ({ item, r: rank(item) }))
+    .filter((x) => x.r < 3)
+    .sort((a, b) => a.r - b.r)
+    .slice(0, limit)
+    .map((x) => x.item)
+}

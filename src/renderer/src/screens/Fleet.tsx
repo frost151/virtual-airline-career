@@ -21,6 +21,27 @@ export function Capacity({ st }: { st: ManageState }) {
         </Text>
       </Group>
       <Progress value={Math.min(100, pct)} color={pct > 100 ? 'red' : pct > 85 ? 'green' : 'yellow'} />
+      {st.typeHours.length > 1 &&
+        st.typeHours.map((h) => {
+          const p = h.available ? (h.needed / h.available) * 100 : 0
+          return (
+            <Group key={h.typeId} gap="sm" wrap="nowrap">
+              <Text size="xs" w={170} truncate>
+                {h.name}
+              </Text>
+              <Progress style={{ flex: 1 }} size="sm" value={Math.min(100, p)} color={p > 100 ? 'red' : p > 85 ? 'green' : 'yellow'} />
+              <Text size="xs" className="mono" w={150} ta="right">
+                {formatNum(h.needed)} / {formatNum(h.available)} ч
+              </Text>
+            </Group>
+          )
+        })}
+      {st.typeHours.some((h) => h.needed > h.available) && (
+        <Text size="sm" c="red">
+          Одному из типов назначено больше рейсов, чем он успевает: часть его рейсов будет отменяться. Перераспределите
+          самолёты на «Маршрутах» или закажите ещё.
+        </Text>
+      )}
       {st.staff && (st.staff.pilots < st.staff.pilotsNeeded || st.staff.cabin < st.staff.cabinNeeded) && (
         <Text size="sm" c="red">
           Экипажей на это расписание не хватит: пилотов {st.staff.pilots} из {st.staff.pilotsNeeded}, бортпроводников{' '}

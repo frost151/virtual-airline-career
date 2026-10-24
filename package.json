@@ -1,7 +1,7 @@
 {
   "name": "virtual-airline-career",
   "productName": "Virtual Airline Career",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Соло-карьера виртуальной авиакомпании для MSFS 2024",
   "main": "./out/main/index.js",
   "private": true,

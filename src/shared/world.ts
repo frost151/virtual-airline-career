@@ -70,6 +70,8 @@ export interface Airline {
     freq?: Record<string, number>
     lf?: Record<string, number>
     fare?: Record<string, number>
+    /** Тип самолёта, назначенный владельцем на направление. */
+    type?: Record<string, string>
   }[]
   /** Версия живого состояния — сбрасывает кэш расписания при изменениях сети. */
   version?: number

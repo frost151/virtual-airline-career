@@ -15,6 +15,8 @@ export interface RouteState {
   profit: number
   /** Месяцев подряд в убытке — для решения о закрытии. */
   badMonths: number
+  /** Тип самолёта, назначенный владельцем (без поля — выбирается по флоту). */
+  type?: string
 }
 
 export type AirlineStatus = 'ok' | 'distress' | 'restarted'
@@ -247,9 +249,30 @@ export interface FleetRow {
 
 export interface ManagedRoute extends RouteState {
   km: number
+  /** Тип, который летает на маршруте сейчас (назначенный или выбранный по флоту). */
+  typeId: string | null
   typeName: string | null
+  /** Тип назначен владельцем (иначе — «Авто»). */
+  typeAssigned: boolean
+  /** Типы флота, которые могут летать по маршруту. */
+  typeOptions: { id: string; name: string }[]
   /** Блок-часов в месяц на маршруте. */
   blockHours: number
+}
+
+/** Будущий рейс: для формы «Открыть рейс». */
+export interface RouteQuote {
+  km: number
+  /** Оценка спроса, пассажиров в сутки в одну сторону. */
+  demand: number
+  /** Сколько других компаний уже летает по этой паре. */
+  competitors: number
+  /** Такой рейс у компании уже есть. */
+  exists: boolean
+  /** Оба аэропорта принимают регулярные рейсы. */
+  scheduled: boolean
+  /** Самолёты флота; reason — почему тип не выполнит рейс (null — выполнит). */
+  types: { id: string; name: string; rangeKm: number; reason: string | null }[]
 }
 
 export interface ManageState {
@@ -268,6 +291,8 @@ export interface ManageState {
   /** Сколько блок-часов в месяц требует расписание и сколько даёт флот. */
   blockHoursNeeded: number
   blockHoursAvailable: number
+  /** Загрузка флота по типам: у каждого типа свои самолёты. */
+  typeHours: { typeId: string; name: string; needed: number; available: number }[]
   cash: number
   debt: number
   /** Ставка по долгу в месяц, %. */
