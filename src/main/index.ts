@@ -54,6 +54,8 @@ function createWindow(): void {
     backgroundColor: '#1a1b1e',
     autoHideMenuBar: true,
     title: 'Virtual Airline Career',
+    // В собранной программе иконку окна даёт сам exe; при разработке берём её из build/.
+    ...(app.isPackaged ? {} : { icon: join(app.getAppPath(), 'build/icon.png') }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
