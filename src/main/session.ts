@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { createWriteStream, mkdirSync, type WriteStream } from 'fs'
 import { join } from 'path'
-import type { AircraftInfo, FlightSource, SimConnectionStatus, SimSample, TrackerState } from '@shared/sim'
+import type { AircraftInfo, FlightSource, SimConnectionStatus, SimDiagnostics, SimSample, TrackerState } from '@shared/sim'
 import { aircraftTypes, airports } from './world'
 import { activeDb } from './profiles'
 import type { CareerOutcome, FlightFinished } from '@shared/types'
@@ -61,6 +61,8 @@ export function shutdownSession(): void {
 }
 
 export const simStatus = (): SimConnectionStatus => msfs.status
+export const simDiagnostics = (): SimDiagnostics => msfs.diagnostics()
+export const setSimProbes = (names: string[]): void => msfs.setProbes(names)
 
 export function trackerState(): TrackerState {
   if (tracker) return { ...tracker.snapshot(), bookingId: activeBookingId }

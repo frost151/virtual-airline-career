@@ -1,9 +1,21 @@
 import type { Airline, AirlineArchetype } from './world'
-import type { FlightRecord, FlightSource, SimConnectionStatus, TrackerState } from './sim'
+import type { FlightRecord, FlightSource, SimConnectionStatus, SimDiagnostics, TrackerState } from './sim'
 import type { PilotStats, RankId } from './career'
 import type { CatchUpReport, MacroOverview } from './economy'
 import type { Family, InvestmentKind, LifeState, PricedCatalog } from './lifestyle'
-import type { AirlineDetailEconomy, AirlineMarketRow } from './airlines'
+import type {
+  AirlineDetailEconomy,
+  AirlineMarketRow,
+  Autopilot,
+  DestinationOption,
+  FoundAirlineInput,
+  FoundQuote,
+  FoundTypeOption,
+  ManageState,
+  PlayerAirline,
+  Stake,
+  StakeOffer
+} from './airlines'
 
 export type GameMode = 'pilot' | 'owner'
 
@@ -26,6 +38,8 @@ export interface CreateProfileInput {
   pilotName: string
   mode: GameMode
   ownerStart?: OwnerStart
+  /** Стартовый капитал профиля «Владелец», млн $ (OWNER_CAPITAL_OPTIONS). */
+  startCapitalMusd?: number
   /** Семья пилота: партнёр и число детей. */
   partner?: boolean
   children?: number
@@ -281,6 +295,11 @@ export interface Api {
     open(id: string): Promise<ProfileSummary>
     close(): Promise<void>
     current(): Promise<ProfileSummary | null>
+    /** Удалить профиль безвозвратно. */
+    delete(id: string): Promise<void>
+    /** Фото пилота открытого профиля (data URL) или null. */
+    photo(): Promise<string | null>
+    setPhoto(photo: string | null): Promise<void>
   }
   world: {
     airlines(): Promise<AirlineSummary[]>
@@ -296,6 +315,8 @@ export interface Api {
   sim: {
     status(): Promise<SimConnectionStatus>
     onStatus(cb: (s: SimConnectionStatus) => void): () => void
+    diagnostics(): Promise<SimDiagnostics>
+    setProbes(names: string[]): Promise<void>
   }
   tracker: {
     state(): Promise<TrackerState>
@@ -367,6 +388,35 @@ export interface Api {
   market: {
     rows(): Promise<AirlineMarketRow[]>
     detail(icao: string): Promise<AirlineDetailEconomy>
+    stakes(): Promise<Stake[]>
+    stakeOffer(icao: string): Promise<StakeOffer>
+    buyStake(icao: string, pct: number): Promise<void>
+    sellStake(icao: string): Promise<number>
+  }
+  owner: {
+    companies(): Promise<PlayerAirline[]>
+    hubOptions(): Promise<{ value: string; label: string }[]>
+    typeOptions(archetype: AirlineArchetype): Promise<FoundTypeOption[]>
+    destinations(hub: string, typeId: string): Promise<DestinationOption[]>
+    quote(input: FoundAirlineInput): Promise<FoundQuote>
+    found(input: FoundAirlineInput): Promise<PlayerAirline>
+  }
+  /** Управление компанией с контрольным пакетом. Действия возвращают обновлённую сводку. */
+  manage: {
+    state(icao: string): Promise<ManageState>
+    routeOptions(icao: string, origin: string): Promise<DestinationOption[]>
+    setAutopilot(icao: string, patch: Partial<Autopilot>): Promise<ManageState>
+    setFareMult(icao: string, mult: number): Promise<ManageState>
+    setFrequency(icao: string, hub: string, dest: string, freq: number): Promise<ManageState>
+    openRoute(icao: string, origin: string, dest: string, freq: number): Promise<ManageState>
+    lease(icao: string, typeId: string, count: number): Promise<ManageState>
+    buy(icao: string, typeId: string, count: number): Promise<ManageState>
+    returnLease(icao: string, typeId: string): Promise<ManageState>
+    sell(icao: string, typeId: string): Promise<ManageState>
+    borrow(icao: string, amount: number): Promise<ManageState>
+    repay(icao: string, amount: number): Promise<ManageState>
+    setCeoSalary(icao: string, amount: number): Promise<ManageState>
+    setPayout(icao: string, pct: number): Promise<ManageState>
   }
   settings: {
     get(): Promise<Settings>

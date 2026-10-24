@@ -7,6 +7,7 @@ import { addTransaction, pilotRow, resign } from '../career/career'
 import { countryParams } from '../lifestyle/catalog'
 import { FLAG_CARRIERS, hasAirlineStates, loadStates, type AirlineState } from './state'
 import { initAirlineStates, simulateAirlinesMonth } from './sim'
+import { burnStake, payStakeDividends } from './stakes'
 
 /** Связка экономики авиакомпаний с миром и карьерой пилота. */
 
@@ -51,6 +52,23 @@ export function airlinesMonthly(db: Db, macro: MacroState, seed: string): NewsDr
     const gross = dps * h.q
     const net = Math.round(gross * (1 - taxPct / 100))
     if (net > 0) addTransaction(db, net, `Дивиденды ${airlines.get(h.icao)?.name ?? h.icao}`)
+  }
+  payStakeDividends(db, res.dividends, taxPct)
+  // Зарплата CEO облагается как обычная зарплата в стране базы.
+  for (const [icao, gross] of Object.entries(res.ceoPay)) {
+    const net = Math.round(gross * (1 - countryParams(country).tax / 100))
+    if (net > 0) addTransaction(db, net, `Зарплата CEO ${airlines.get(icao)?.name ?? icao}`)
+  }
+
+  for (const icao of res.restarted) {
+    const burned = burnStake(db, icao)
+    if (!burned) continue
+    news.push({
+      t,
+      category: 'career',
+      title: 'Ваша доля сгорела',
+      body: `${airlines.get(icao)?.name} обанкротилась: кредиторы забрали флот, доля ${burned.pct}% больше ничего не стоит.`
+    })
   }
   return news
 }

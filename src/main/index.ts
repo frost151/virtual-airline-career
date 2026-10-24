@@ -1,12 +1,35 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import type { FlightSource } from '@shared/sim'
-import { activeDb, closeProfile, createProfile, currentProfile, listProfiles, openProfile } from './profiles'
+import {
+  activeDb,
+  closeProfile,
+  createProfile,
+  currentProfile,
+  deleteProfile,
+  getPhoto,
+  listProfiles,
+  openProfile,
+  setPhoto
+} from './profiles'
 import { getAirline, listAirlines, places } from './world'
-import { catchUpOnOpen, finishFlight, initSession, shutdownSession, simStatus, startFlight, takeReport, trackerState } from './session'
+import {
+  catchUpOnOpen,
+  finishFlight,
+  initSession,
+  setSimProbes,
+  shutdownSession,
+  simDiagnostics,
+  simStatus,
+  startFlight,
+  takeReport,
+  trackerState
+} from './session'
 import { macroOverview } from './economy/clock'
 import { getFlight, listFlights } from './logbook'
 import type { HireInput, Settings } from '@shared/types'
+import type { FoundAirlineInput } from '@shared/airlines'
+import type { AirlineArchetype } from '@shared/world'
 import * as career from './career/career'
 import { listClients } from './career/charter'
 import { fetchLatestOfp, simbriefDispatchUrl } from './career/simbrief'
@@ -16,6 +39,9 @@ import { CARS } from './lifestyle/catalog'
 import { wikiImage } from './wikiImages'
 import { airlineLogoFallback } from './logos'
 import { airlineEconomy, marketRows } from './airlines/economy'
+import * as stakes from './airlines/stakes'
+import * as player from './airlines/player'
+import * as manage from './airlines/manage'
 import * as cheats from './cheats'
 
 function createWindow(): void {
@@ -73,11 +99,19 @@ function registerIpc(): void {
     closeProfile()
   })
   ipcMain.handle('profiles:current', () => currentProfile())
+  ipcMain.handle('profiles:photo', () => getPhoto())
+  ipcMain.handle('profiles:setPhoto', (_e, photo: string | null) => setPhoto(photo))
+  ipcMain.handle('profiles:delete', (_e, id: string) => {
+    if (currentProfile()?.id === id) finishFlight()
+    deleteProfile(id)
+  })
   ipcMain.handle('world:airlines', () => listAirlines())
   ipcMain.handle('world:airline', (_e, icao: string) => getAirline(icao))
   ipcMain.handle('world:places', (_e, codes: string[]) => places(codes))
   ipcMain.handle('world:logoFallback', (_e, iata: string) => airlineLogoFallback(iata))
   ipcMain.handle('sim:status', () => simStatus())
+  ipcMain.handle('sim:diagnostics', () => simDiagnostics())
+  ipcMain.handle('sim:setProbes', (_e, names: string[]) => setSimProbes(names))
   ipcMain.handle('tracker:state', () => trackerState())
   ipcMain.handle('tracker:start', (_e, source: FlightSource, bookingId: number | null) => startFlight(source, bookingId))
   ipcMain.handle('tracker:finish', () => finishFlight())
@@ -142,6 +176,38 @@ function registerIpc(): void {
   ipcMain.handle('cheat:teleport', (_e, icao: string) => cheats.cheatTeleport(activeDb(), icao))
   ipcMain.handle('market:rows', () => marketRows(activeDb()))
   ipcMain.handle('market:detail', (_e, icao: string) => airlineEconomy(activeDb(), icao))
+  ipcMain.handle('market:stakes', () => stakes.listStakes(activeDb()))
+  ipcMain.handle('market:stakeOffer', (_e, icao: string) => stakes.stakeOffer(activeDb(), icao))
+  ipcMain.handle('market:buyStake', (_e, icao: string, pct: number) => stakes.buyStake(activeDb(), icao, pct))
+  ipcMain.handle('market:sellStake', (_e, icao: string) => stakes.sellStake(activeDb(), icao))
+  ipcMain.handle('owner:companies', () => player.playerAirlines(activeDb()))
+  ipcMain.handle('owner:hubOptions', () => player.hubOptions())
+  ipcMain.handle('owner:typeOptions', (_e, archetype: AirlineArchetype) => player.foundTypeOptions(activeDb(), archetype))
+  ipcMain.handle('owner:destinations', (_e, hub: string, typeId: string) => player.destinationOptions(activeDb(), hub, typeId))
+  ipcMain.handle('owner:quote', (_e, input: FoundAirlineInput) => player.foundQuote(activeDb(), input))
+  ipcMain.handle('owner:found', (_e, input: FoundAirlineInput) => player.foundAirline(activeDb(), input))
+  // Управление компанией: каждое действие возвращает обновлённую сводку.
+  const manageAction =
+    <A extends unknown[]>(fn: (db: ReturnType<typeof activeDb>, icao: string, ...args: A) => unknown) =>
+    (_e: unknown, icao: string, ...args: A) => {
+      const db = activeDb()
+      fn(db, icao, ...args)
+      return manage.manageState(db, icao)
+    }
+  ipcMain.handle('manage:state', (_e, icao: string) => manage.manageState(activeDb(), icao))
+  ipcMain.handle('manage:routeOptions', (_e, icao: string, origin: string) => manage.routeOptions(activeDb(), icao, origin))
+  ipcMain.handle('manage:setAutopilot', manageAction(manage.setAutopilot))
+  ipcMain.handle('manage:setFareMult', manageAction(manage.setFareMult))
+  ipcMain.handle('manage:setFrequency', manageAction(manage.setFrequency))
+  ipcMain.handle('manage:openRoute', manageAction(manage.openRoute))
+  ipcMain.handle('manage:lease', manageAction(manage.leaseAircraft))
+  ipcMain.handle('manage:buy', manageAction(manage.buyAircraft))
+  ipcMain.handle('manage:returnLease', manageAction(manage.returnLease))
+  ipcMain.handle('manage:sell', manageAction(manage.sellAircraft))
+  ipcMain.handle('manage:borrow', manageAction(manage.borrow))
+  ipcMain.handle('manage:repay', manageAction(manage.repay))
+  ipcMain.handle('manage:setCeoSalary', manageAction(manage.setCeoSalary))
+  ipcMain.handle('manage:setPayout', manageAction(manage.setPayout))
   ipcMain.handle('life:carImage', (_e, id: string) => {
     const car = CARS.find((c) => c.id === id)
     return car?.wiki ? wikiImage(car.wiki) : null

@@ -1,4 +1,4 @@
-import type { AirlineFinance, AirlineStatus, RouteState } from '@shared/airlines'
+import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, RouteState } from '@shared/airlines'
 import type { Airline } from '@shared/world'
 import { transaction, type Db } from '../db'
 import { airlines } from '../world'
@@ -26,6 +26,21 @@ export interface AirlineState {
   /** Прибыль за последние месяцы — для дивидендов. */
   recentProfit: number[]
   version: number
+  /** Ставка по долгу в месяц (по умолчанию 0,7%). У компании игрока зависит от поручительства. */
+  debtRate?: number
+  // ——— управление игрока (у компаний под его контролем) ———
+  /** Какие решения принимает ИИ-заместитель; без поля — все. */
+  autopilot?: Autopilot
+  /** Множитель к рыночному тарифу, 0,7–1,3. */
+  fareMult?: number
+  /** Сколько самолётов из fleet в собственности (остальные — в лизинге). */
+  owned?: Record<string, number>
+  /** Самолёты в пути: после заказа их перегоняют и готовят около недели. */
+  deliveries?: Delivery[]
+  /** Зарплата CEO в месяц, $ (до налога). */
+  ceoSalary?: number
+  /** Доля квартальной прибыли на дивиденды (по умолчанию 0,3). */
+  payout?: number
 }
 
 /** Национальные перевозчики: при банкротстве их спасает государство. */
@@ -56,6 +71,14 @@ export function saveStates(db: Db, states: Map<string, AirlineState>): void {
     for (const s of states.values()) stmt.run(s.icao, JSON.stringify(s))
   })
   memo.set(db, states)
+}
+
+/** Игрок потерял контроль: решения снова принимает ИИ, тарифы рыночные, зарплаты CEO нет. */
+export function releaseControl(s: AirlineState): void {
+  delete s.autopilot
+  delete s.fareMult
+  delete s.ceoSalary
+  delete s.payout
 }
 
 /** Авиакомпания с живой сетью и флотом — для расписания и диспетчерской. */

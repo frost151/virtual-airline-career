@@ -7,6 +7,7 @@ import { isFirstOfMonth, jetFuelUsdPerKg, stepDay, stepMonth, type NewsDraft } f
 import { dayOf, getWorld, insertMacroPoint, macroState, setWorld } from './state'
 import { lifeDaily, lifeMonthly } from '../lifestyle/ticks'
 import { airlinesMonthly, ensureAirlines } from '../airlines/economy'
+import { airlinesDaily } from '../airlines/manage'
 
 /**
  * Часы мира. Время мира = реальное UTC. Всё, что произошло, пока программа была закрыта,
@@ -47,6 +48,7 @@ export function advanceWorld(db: Db, now: number): CatchUpReport | null {
         state = d.state
         d.news.forEach((n) => insertNews(db, n))
         lifeDaily(db)
+        airlinesDaily(db, state.day * 86_400_000)
         if (isFirstOfMonth(state.day)) {
           const prevCpi = state.cpi
           const m = stepMonth(state, seededRng(`${seed}|month|${state.day}`))

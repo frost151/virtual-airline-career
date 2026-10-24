@@ -14,7 +14,10 @@ const api: Api = {
     create: (input) => ipcRenderer.invoke('profiles:create', input),
     open: (id) => ipcRenderer.invoke('profiles:open', id),
     close: () => ipcRenderer.invoke('profiles:close'),
-    current: () => ipcRenderer.invoke('profiles:current')
+    current: () => ipcRenderer.invoke('profiles:current'),
+    delete: (id) => ipcRenderer.invoke('profiles:delete', id),
+    photo: () => ipcRenderer.invoke('profiles:photo'),
+    setPhoto: (photo) => ipcRenderer.invoke('profiles:setPhoto', photo)
   },
   world: {
     airlines: () => ipcRenderer.invoke('world:airlines'),
@@ -27,7 +30,9 @@ const api: Api = {
   },
   sim: {
     status: () => ipcRenderer.invoke('sim:status'),
-    onStatus: (cb) => subscribe('sim:status', cb)
+    onStatus: (cb) => subscribe('sim:status', cb),
+    diagnostics: () => ipcRenderer.invoke('sim:diagnostics'),
+    setProbes: (names) => ipcRenderer.invoke('sim:setProbes', names)
   },
   tracker: {
     state: () => ipcRenderer.invoke('tracker:state'),
@@ -97,7 +102,35 @@ const api: Api = {
   },
   market: {
     rows: () => ipcRenderer.invoke('market:rows'),
-    detail: (icao) => ipcRenderer.invoke('market:detail', icao)
+    detail: (icao) => ipcRenderer.invoke('market:detail', icao),
+    stakes: () => ipcRenderer.invoke('market:stakes'),
+    stakeOffer: (icao) => ipcRenderer.invoke('market:stakeOffer', icao),
+    buyStake: (icao, pct) => ipcRenderer.invoke('market:buyStake', icao, pct),
+    sellStake: (icao) => ipcRenderer.invoke('market:sellStake', icao)
+  },
+  owner: {
+    companies: () => ipcRenderer.invoke('owner:companies'),
+    hubOptions: () => ipcRenderer.invoke('owner:hubOptions'),
+    typeOptions: (archetype) => ipcRenderer.invoke('owner:typeOptions', archetype),
+    destinations: (hub, typeId) => ipcRenderer.invoke('owner:destinations', hub, typeId),
+    quote: (input) => ipcRenderer.invoke('owner:quote', input),
+    found: (input) => ipcRenderer.invoke('owner:found', input)
+  },
+  manage: {
+    state: (icao) => ipcRenderer.invoke('manage:state', icao),
+    routeOptions: (icao, origin) => ipcRenderer.invoke('manage:routeOptions', icao, origin),
+    setAutopilot: (icao, patch) => ipcRenderer.invoke('manage:setAutopilot', icao, patch),
+    setFareMult: (icao, mult) => ipcRenderer.invoke('manage:setFareMult', icao, mult),
+    setFrequency: (icao, hub, dest, freq) => ipcRenderer.invoke('manage:setFrequency', icao, hub, dest, freq),
+    openRoute: (icao, origin, dest, freq) => ipcRenderer.invoke('manage:openRoute', icao, origin, dest, freq),
+    lease: (icao, typeId, count) => ipcRenderer.invoke('manage:lease', icao, typeId, count),
+    buy: (icao, typeId, count) => ipcRenderer.invoke('manage:buy', icao, typeId, count),
+    returnLease: (icao, typeId) => ipcRenderer.invoke('manage:returnLease', icao, typeId),
+    sell: (icao, typeId) => ipcRenderer.invoke('manage:sell', icao, typeId),
+    borrow: (icao, amount) => ipcRenderer.invoke('manage:borrow', icao, amount),
+    repay: (icao, amount) => ipcRenderer.invoke('manage:repay', icao, amount),
+    setCeoSalary: (icao, amount) => ipcRenderer.invoke('manage:setCeoSalary', icao, amount),
+    setPayout: (icao, pct) => ipcRenderer.invoke('manage:setPayout', icao, pct)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

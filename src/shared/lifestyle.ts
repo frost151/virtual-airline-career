@@ -161,6 +161,8 @@ export interface LifeState {
   assets: Asset[]
   loans: Loan[]
   investments: Investment[]
+  /** Стоимость долей в авиакомпаниях по рынку, $. */
+  stakesValue: number
   subscriptions: string[]
   education: string[]
   /** Можно ли сейчас брать рейсы. */

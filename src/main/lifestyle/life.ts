@@ -2,6 +2,7 @@ import type { Asset, AssetKind, BudgetLine, Family, Investment, InvestmentKind, 
 import { transaction, type Db } from '../db'
 import { airlines, airports } from '../world'
 import { sharePrice } from '../airlines/economy'
+import { listStakes } from '../airlines/stakes'
 import { macroState, priceLevel } from '../economy/state'
 import { addTransaction, pilotRow } from '../career/career'
 import { getSettings } from '../settings'
@@ -478,6 +479,7 @@ export function lifeState(db: Db): LifeState {
     assets: listAssets(db),
     loans: listLoans(db),
     investments: listInvestments(db),
+    stakesValue: listStakes(db).reduce((s, x) => s + x.value, 0),
     subscriptions: listIds(db, 'subscriptions'),
     education: listIds(db, 'education'),
     fitToFly: fitToFly(db),

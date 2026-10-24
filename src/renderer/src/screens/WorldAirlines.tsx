@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Badge, Card, Drawer, Group, Loader, SegmentedControl, Select, SimpleGrid, Stack, Table, Text, TextInput, Title } from '@mantine/core'
 import type { AirlineSummary } from '@shared/types'
-import type { AirlineDetailEconomy, AirlineMarketRow } from '@shared/airlines'
+import type { AirlineDetailEconomy, AirlineMarketRow, Stake } from '@shared/airlines'
 import type { AirlineArchetype } from '@shared/world'
-import { ARCHETYPE_LABEL, countryName, formatNum } from '../format'
+import { ARCHETYPE_LABEL, COST_LABEL, countryName, formatNum } from '../format'
 import { SortableTh, compareBy, type SortState } from '../components/SortableTh'
 import { AirlineLogo } from '../components/AirlineLogo'
 import { LineChart } from '../components/LineChart'
 import { Stat } from '../components/FlightParts'
 import { placeLabel, usePlaces } from '../lib'
+import { MyStakes, StakeCard } from '../components/StakePanel'
 
 type SortKey = 'name' | 'country' | 'fleet' | 'lf' | 'revenue' | 'margin' | 'share' | 'reputation'
 
@@ -48,13 +49,23 @@ export function WorldAirlines() {
   const [country, setCountry] = useState<string | null>(null)
   const [sort, setSort] = useState<SortState<SortKey>>({ key: 'revenue', dir: 'desc' })
   const [selected, setSelected] = useState<Row | null>(null)
+  const [stakes, setStakes] = useState<Stake[]>([])
 
+  const loadStakes = () =>
+    window.api.market
+      .stakes()
+      .then(setStakes)
+      .catch(() => setStakes([]))
   useEffect(() => {
     window.api.world.airlines().then(setAirlines)
-    const load = () => window.api.market.rows().then(setMarket).catch(() => setMarket([]))
+    const load = () => {
+      window.api.market.rows().then(setMarket).catch(() => setMarket([]))
+      void loadStakes()
+    }
     load()
     return window.api.world.onChanged(load)
   }, [])
+  const stakeOf = useMemo(() => new Map(stakes.map((s) => [s.icao, s])), [stakes])
 
   const byIcao = useMemo(() => new Map(market.map((m) => [m.icao, m])), [market])
 
@@ -99,6 +110,8 @@ export function WorldAirlines() {
         </Text>
       </Group>
 
+      <MyStakes stakes={stakes} onSelect={(icao) => setSelected(rows.find((r) => r.icao === icao) ?? null)} />
+
       <Group gap="sm" align="flex-end">
         <SegmentedControl value={archetype} onChange={(v) => setArchetype(v as typeof archetype)} data={archetypeOptions} />
         <Select placeholder="Все страны" data={countryOptions} value={country} onChange={setCountry} searchable clearable w={220} nothingFoundMessage="Нет такой страны" />
@@ -132,6 +145,11 @@ export function WorldAirlines() {
                         {a.name}
                       </Text>
                       <Group gap={4}>
+                        {stakeOf.has(a.icao) && (
+                          <Badge size="xs" color={stakeOf.get(a.icao)!.control ? 'green' : 'blue'}>
+                            ваша доля {stakeOf.get(a.icao)!.pct}%
+                          </Badge>
+                        )}
                         {a.m?.national && (
                           <Badge size="xs" variant="outline" color="gray">
                             нац. перевозчик
@@ -202,26 +220,15 @@ export function WorldAirlines() {
           )
         }
       >
-        {selected && <AirlineCard airline={selected} />}
+        {selected && <AirlineCard airline={selected} onStakeChanged={loadStakes} />}
       </Drawer>
     </Stack>
   )
 }
 
-const COST_LABEL: Record<string, string> = {
-  fuel: 'Топливо',
-  crew: 'Экипажи',
-  maintenance: 'Техобслуживание',
-  airport: 'Аэропортовые сборы',
-  navigation: 'Аэронавигация',
-  handling: 'Наземное обслуживание',
-  fleet: 'Лизинг флота',
-  overhead: 'Персонал, продажи, офис'
-}
-
 const monthLabel = (ms: number) => new Date(ms).toLocaleDateString('ru-RU', { month: 'short', year: '2-digit', timeZone: 'UTC' })
 
-function AirlineCard({ airline }: { airline: Row }) {
+function AirlineCard({ airline, onStakeChanged }: { airline: Row; onStakeChanged(): void }) {
   const [eco, setEco] = useState<AirlineDetailEconomy | null>(null)
   useEffect(() => {
     setEco(null)
@@ -239,6 +246,8 @@ function AirlineCard({ airline }: { airline: Row }) {
         {airline.iata} / {airline.icao} · {countryName(airline.country)} · {ARCHETYPE_LABEL[airline.archetype]}
         {r.national ? ' · национальный перевозчик (государство не даст обанкротиться)' : ''}
       </Text>
+
+      <StakeCard icao={airline.icao} onChanged={onStakeChanged} />
 
       {f && (
         <Card withBorder>

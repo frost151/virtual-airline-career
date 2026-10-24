@@ -29,9 +29,12 @@ export interface IdentifiedAircraft {
   profile: AircraftProfile | null
 }
 
-/** Опознаёт самолёт по TITLE и ATC MODEL из симулятора. */
-export function identifyAircraft(title: string, atcModel: string): IdentifiedAircraft {
-  const haystack = `${title} ${atcModel}`.toLowerCase()
+/**
+ * Опознаёт самолёт по TITLE, ATC MODEL и пути к aircraft.cfg из симулятора.
+ * Путь участвует только в поиске профиля: в нём бывают цифры и буквы, похожие на коды типов.
+ */
+export function identifyAircraft(title: string, atcModel: string, path = ''): IdentifiedAircraft {
+  const haystack = `${title} ${atcModel} ${path.replace(/\\/g, '/')}`.toLowerCase()
   const profile = aircraftProfiles.find((p) => p.match.some((m) => haystack.includes(m))) ?? null
 
   let typeId: string | null = null

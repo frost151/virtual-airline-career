@@ -8,6 +8,12 @@ import { useSimStatus, useTrackerState } from '../hooks'
 import { useCareerVersion } from '../lib'
 import { WorldAirlines } from './WorldAirlines'
 import { ActiveFlight } from './ActiveFlight'
+import { SimCheck } from './SimCheck'
+import { Company, refreshCustomLogos } from './Company'
+import { Fleet } from './Fleet'
+import { PilotProfile } from './PilotProfile'
+import { RoutesScreen } from './RoutesScreen'
+import { Finance } from './Finance'
 import { Logbook } from './Logbook'
 import { Home } from './Home'
 import { Dispatch } from './Dispatch'
@@ -18,7 +24,7 @@ import { Life } from './Life'
 import { CatchUpModal } from '../components/CatchUpModal'
 
 /** Разделы, у которых уже есть настоящий экран. */
-const READY = ['home', 'dispatch', 'market', 'flight', 'logbook', 'career', 'settings', 'economy', 'life']
+const READY = ['home', 'profile', 'dispatch', 'market', 'flight', 'logbook', 'career', 'company', 'fleet', 'routes', 'finance', 'settings', 'economy', 'life']
 
 interface Section {
   path: string
@@ -31,10 +37,12 @@ interface Section {
 
 const SECTIONS: Section[] = [
   { path: 'home', label: 'Главная', stage: 3 },
+  { path: 'profile', label: 'Личный кабинет', stage: 7 },
   { path: 'dispatch', label: 'Диспетчерская', stage: 3 },
   { path: 'flight', label: 'Активный полёт', stage: 2 },
   { path: 'logbook', label: 'Бортжурнал', stage: 2 },
   { path: 'career', label: 'Карьера', stage: 3, pilotOnly: true },
+  { path: 'company', label: 'Моя компания', stage: 7 },
   { path: 'life', label: 'Личная жизнь', stage: 5 },
   { path: 'fleet', label: 'Флот', stage: 7, ownerOnly: true },
   { path: 'routes', label: 'Маршруты', stage: 7, ownerOnly: true },
@@ -53,7 +61,16 @@ interface Props {
 export function Shell({ profile, onExit }: Props) {
   const location = useLocation()
   const tracker = useTrackerState()
-  const sections = SECTIONS.filter((s) => (!s.ownerOnly || profile.mode === 'owner') && (!s.pilotOnly || profile.mode === 'pilot'))
+  useEffect(() => void refreshCustomLogos(), [profile.id])
+  // Разделы владельца видны, когда у игрока есть контроль над компанией (своя или 51% в чужой).
+  const version = useCareerVersion()
+  const [controls, setControls] = useState(false)
+  useEffect(() => {
+    const load = () => window.api.market.stakes().then((list) => setControls(list.some((s) => s.control)))
+    void load()
+    return window.api.world.onChanged(load)
+  }, [version])
+  const sections = SECTIONS.filter((s) => (!s.ownerOnly || controls) && (!s.pilotOnly || profile.mode === 'pilot'))
 
   return (
     <AppShell header={{ height: 56 }} navbar={{ width: 220, breakpoint: 0 }} padding="lg">
@@ -107,6 +124,12 @@ export function Shell({ profile, onExit }: Props) {
           <Route path="/economy" element={<Economy />} />
           <Route path="/life" element={<Life />} />
           <Route path="/flight" element={<ActiveFlight />} />
+          <Route path="/sim-check" element={<SimCheck />} />
+          <Route path="/company" element={<Company />} />
+          <Route path="/profile" element={<PilotProfile profile={profile} />} />
+          <Route path="/fleet" element={<Fleet />} />
+          <Route path="/routes" element={<RoutesScreen />} />
+          <Route path="/finance" element={<Finance />} />
           <Route path="/logbook" element={<Logbook />} />
           {sections
             .filter((s) => !READY.includes(s.path))

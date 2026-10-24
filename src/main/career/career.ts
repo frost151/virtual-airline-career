@@ -29,7 +29,7 @@ import {
 import { DELAY_CODES } from '@shared/delayCodes'
 import { seededRng } from '@shared/random'
 import { transaction, type Db } from '../db'
-import { aircraftTypes, airlines, airports } from '../world'
+import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { getFlight } from '../logbook'
 import { getSettings } from '../settings'
 import { priceLevel } from '../economy/state'
@@ -159,7 +159,7 @@ export function allRatings(db: Db): RatingInfo[] {
 export function hireOptions(db: Db): HireOption[] {
   const stats = pilotStats(db)
   const level = priceLevel(db)
-  const options: HireOption[] = [...airlines.values()].map((base) => {
+  const options: HireOption[] = [...airlines.values()].filter((a) => !playerAirlineIds.has(a.icao)).map((base) => {
     // Живое состояние: после банкротства у компании может остаться один хаб и один самолёт.
     const al = effectiveAirline(db, base.icao)
     const req = hireRequirementHours(al.reputation, al.archetype)
@@ -203,6 +203,7 @@ export function hireOptions(db: Db): HireOption[] {
 
 export function hire(db: Db, input: HireInput): PilotState {
   pilotRow(db)
+  if (db.prepare('SELECT 1 FROM stakes WHERE founded = 1').get()) throw new Error('Вы CEO своей авиакомпании и летаете только в ней')
   const opt = hireOptions(db).find((o) => o.kind === input.kind && o.id === input.employerId)
   if (!opt) throw new Error('Работодатель не найден')
   if (!opt.eligible) throw new Error(`Нужно не меньше ${opt.requiredHours} ч налёта`)

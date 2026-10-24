@@ -62,6 +62,30 @@ export interface AircraftInfo {
 
 export type SimConnectionStatus = 'disconnected' | 'connecting' | 'connected'
 
+/** Снимок для экрана «Проверка симулятора»: по нему сверяем переменные и профили с реальным MSFS. */
+export interface SimDiagnostics {
+  status: SimConnectionStatus
+  /** Имя и версия симулятора из ответа SimConnect на подключение. */
+  simName: string | null
+  simVersion: string | null
+  title: string | null
+  atcModel: string | null
+  atcType: string | null
+  /** Путь к aircraft.cfg загруженного самолёта (системное состояние AircraftLoaded). */
+  aircraftPath: string | null
+  aircraft: AircraftInfo | null
+  /** Сырые значения: основные переменные, L-переменные профиля и пробы. Ключ — имя переменной. */
+  vars: Record<string, number>
+  /** Пробные переменные, заданные вручную (например, «L:S_OH_EXT_LT_BEACON»). */
+  probes: string[]
+  /** Последние события Pause_EX1 с сырым значением флагов. */
+  pauseEvents: { t: number; data: number }[]
+  /** Последние касания: вертикальная скорость в момент касания и значение PLANE TOUCHDOWN NORMAL VELOCITY. */
+  touchdowns: { t: number; vsFpm: number; touchdownRaw: number; pitchRaw: number; gForce: number }[]
+  /** Ошибки SimConnect: обычно это неизвестная переменная или неверная единица. */
+  exceptions: { t: number; code: number; what: string | null }[]
+}
+
 export type FlightPhase =
   | 'preflight'
   | 'pushback'

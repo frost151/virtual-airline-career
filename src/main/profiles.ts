@@ -1,9 +1,12 @@
 import { app } from 'electron'
-import { existsSync, mkdirSync, readdirSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, rmSync } from 'fs'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
 import { openDatabase, type Db } from './db'
 import type { CreateProfileInput, ProfileSummary } from '@shared/types'
+import { registerPlayerAirlines } from './airlines/player'
+import { addTransaction, pilotRow } from './career/career'
+import { OWNER_CAPITAL_OPTIONS } from '@shared/airlines'
 
 /** Каждый профиль (сохранение) — отдельный файл SQLite в userData/profiles. */
 function profilesDir(): string {
@@ -71,6 +74,11 @@ export function createProfile(input: CreateProfileInput): ProfileSummary {
      VALUES (1, ?, ?, ?, ?, ?, ?, ?)`
   ).run(name, pilotName, input.mode, input.mode === 'owner' ? (input.ownerStart ?? 'new') : null, now, now, now)
   db.prepare('UPDATE profile SET partner = ?, children = ? WHERE id = 1').run(input.partner ? 1 : 0, Math.max(0, Math.min(6, Math.round(input.children ?? 0))))
+  if (input.mode === 'owner') {
+    const musd = (OWNER_CAPITAL_OPTIONS as readonly number[]).includes(input.startCapitalMusd ?? 0) ? input.startCapitalMusd! : 5
+    pilotRow(db)
+    addTransaction(db, musd * 1e6, 'Стартовый капитал инвестора')
+  }
   db.close()
   return openProfile(id)
 }
@@ -86,12 +94,36 @@ export function openProfile(id: string): ProfileSummary {
     throw new Error('Файл профиля повреждён')
   }
   active = { id, db }
+  registerPlayerAirlines(db)
   return summary
 }
 
 export function closeProfile(): void {
   active?.db.close()
   active = null
+  registerPlayerAirlines(null)
+}
+
+/** Удаляет профиль безвозвратно: файл базы и служебные файлы SQLite (-wal, -shm). */
+export function deleteProfile(id: string): void {
+  // id — UUID из имени файла; другое не принимаем, чтобы не удалить лишнего.
+  if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Профиль не найден')
+  if (active?.id === id) closeProfile()
+  const file = profilePath(id)
+  if (!existsSync(file)) throw new Error('Профиль не найден')
+  for (const f of [file, `${file}-wal`, `${file}-shm`]) rmSync(f, { force: true })
+}
+
+/** Фото пилота длиннее этого не храним: интерфейс сам уменьшает картинку. */
+const MAX_PHOTO_CHARS = 600_000
+
+export function getPhoto(): string | null {
+  return (activeDb().prepare('SELECT photo FROM profile WHERE id = 1').get() as { photo: string | null }).photo
+}
+
+export function setPhoto(photo: string | null): void {
+  if (photo !== null && (!photo.startsWith('data:image/') || photo.length > MAX_PHOTO_CHARS)) throw new Error('Фото — картинка до 450 КБ')
+  activeDb().prepare('UPDATE profile SET photo = ? WHERE id = 1').run(photo)
 }
 
 /** База открытого профиля; без профиля летать и вести бортжурнал нельзя. */

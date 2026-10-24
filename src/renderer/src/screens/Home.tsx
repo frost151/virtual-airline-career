@@ -18,6 +18,7 @@ import {
 } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import type { Booking, HireOption, PilotState, ProfileSummary } from '@shared/types'
+import type { PlayerAirline } from '@shared/airlines'
 import type { FlightRecord } from '@shared/sim'
 import { ARCHETYPE_LABEL, countryName, formatClock, formatNum, formatUtc } from '../format'
 import { errMsg, notifyCareerChanged, placeLabel, usePilot, usePlaces } from '../lib'
@@ -27,16 +28,70 @@ import { AirlineLogo } from '../components/AirlineLogo'
 
 export function Home({ profile }: { profile: ProfileSummary }) {
   const [pilot] = usePilot()
-  if (profile.mode === 'owner') {
-    return (
-      <Stack>
-        <Title order={3}>Главная</Title>
-        <Text c="dimmed">Режим владельца появится на этапе 6. Пока можно летать в разделе «Активный полёт».</Text>
+  const [companies, setCompanies] = useState<PlayerAirline[] | null>(null)
+  useEffect(() => {
+    window.api.owner.companies().then(setCompanies)
+  }, [pilot])
+  if (!pilot || !companies) return <Loader />
+  if (companies.length) return <CeoHome company={companies[0]} />
+  return (
+    <Stack>
+      {profile.mode === 'owner' && <OwnerStart />}
+      {pilot.employerId ? <Dashboard pilot={pilot} /> : <Hiring pilot={pilot} />}
+    </Stack>
+  )
+}
+
+// ——— владелец ———
+
+/** Профиль «Владелец» без компании: основать свою или купить долю. */
+function OwnerStart() {
+  const navigate = useNavigate()
+  return (
+    <Card withBorder padding="lg">
+      <Stack gap="xs">
+        <Title order={4}>Станьте владельцем авиакомпании</Title>
+        <Text c="dimmed">
+          Основайте свою компанию на стартовый капитал или купите долю в существующей. Пока вы решаете, можно работать
+          пилотом.
+        </Text>
+        <Group>
+          <Button onClick={() => navigate('/company')}>Основать авиакомпанию</Button>
+          <Button variant="light" onClick={() => navigate('/market')}>
+            Купить долю на рынке
+          </Button>
+        </Group>
       </Stack>
-    )
-  }
-  if (!pilot) return <Loader />
-  return pilot.employerId ? <Dashboard pilot={pilot} /> : <Hiring pilot={pilot} />
+    </Card>
+  )
+}
+
+/** Главная генерального директора своей компании. */
+function CeoHome({ company }: { company: PlayerAirline }) {
+  const navigate = useNavigate()
+  return (
+    <Stack>
+      <Title order={3}>Главная</Title>
+      <Card withBorder padding="lg">
+        <Group justify="space-between">
+          <Group>
+            <AirlineLogo iata={company.iata} name={company.name} h={40} />
+            <Stack gap={0}>
+              <Text fw={700}>{company.name}</Text>
+              <Text size="sm" c="dimmed">
+                Вы — генеральный директор и владелец
+              </Text>
+            </Stack>
+          </Group>
+          <Button onClick={() => navigate('/company')}>Открыть компанию</Button>
+        </Group>
+      </Card>
+      <Text size="sm" c="dimmed">
+        Полёты рейсами своей компании появятся в одной из следующих частей этапа. Пока можно летать свободно в разделе
+        «Активный полёт».
+      </Text>
+    </Stack>
+  )
 }
 
 // ——— сводка ———

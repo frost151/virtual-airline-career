@@ -17,13 +17,13 @@
       "nav": { "name": "L:S_OH_EXT_LT_NAV_LOGO", "onIfAtLeast": 1 },
       "taxi": { "name": "L:S_OH_EXT_LT_NOSE", "onIfAtLeast": 1 }
     },
-    "verified": false,
-    "notes": "Имена L-переменных и положения переключателей не проверены на MSFS 2024"
+    "verified": true,
+    "notes": "Проверено на MSFS 2024 (Fenix A319, 2026-10-24). Положения: стробы 0 OFF / 1 AUTO / 2 ON, посадочные 0 RETRACT / 1 OFF / 2 ON, нос 0 OFF / 1 TAXI / 2 T.O., NAV/LOGO 0 / 1 / 2. Стандартные LIGHT-переменные тоже работают."
   },
   {
     "id": "pmdg-737",
     "name": "PMDG 737",
-    "match": ["pmdg 737", "pmdg-737", "pmdg boeing 737"],
+    "match": ["pmdg 737", "pmdg-737", "pmdg boeing 737", "pmdg-aircraft-73", "pmdg 73"],
     "types": [
       { "match": "bcf", "type": "B738F" },
       { "match": "bdsf", "type": "B738F" },
@@ -35,13 +35,13 @@
     ],
     "defaultType": "B738",
     "lights": "standard",
-    "verified": false,
-    "notes": "Возможно, потребуется PMDG SDK (EnableDataBroadcast=1 в 737_Options.ini)"
+    "verified": true,
+    "notes": "Проверено на MSFS 2024 (PMDG 737-800, 2026-10-24): стандартные LIGHT-переменные работают с LED и галогеновыми фарами, SDK не нужен. В TITLE нет «PMDG» — опознаётся по пути к aircraft.cfg (SimObjects/Airplanes/PMDG 737-800/...)."
   },
   {
     "id": "pmdg-777",
     "name": "PMDG 777",
-    "match": ["pmdg 777", "pmdg-777", "pmdg boeing 777"],
+    "match": ["pmdg 777", "pmdg-777", "pmdg boeing 777", "pmdg-aircraft-77", "pmdg 77"],
     "types": [
       { "match": "777f", "type": "B77F" },
       { "match": "freighter", "type": "B77F" },

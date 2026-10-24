@@ -154,7 +154,7 @@ function Gauge({ label, value, invert = false, hint }: { label: string; value: n
 function Overview({ life, catalog, cash, run }: Ctx) {
   const total = life.budget.reduce((s, l) => s + l.amount, 0)
   const assets = life.assets.reduce((s, a) => s + a.value, 0)
-  const invest = life.investments.reduce((s, i) => s + i.value, 0)
+  const invest = life.investments.reduce((s, i) => s + i.value, 0) + life.stakesValue
   const debt = life.loans.reduce((s, l) => s + l.balance, 0)
   const medicalDays = Math.floor((life.medicalUntil - Date.now()) / 86_400_000)
   return (
@@ -202,7 +202,7 @@ function Overview({ life, catalog, cash, run }: Ctx) {
             <SimpleGrid cols={2}>
               <Stat label="Деньги" value={money(cash)} />
               <Stat label="Имущество" value={money(assets)} />
-              <Stat label="Инвестиции" value={money(invest)} />
+              <Stat label={life.stakesValue ? 'Инвестиции и доли' : 'Инвестиции'} value={money(invest)} />
               <Stat label="Долги" value={money(-debt)} />
             </SimpleGrid>
             <Text mt="sm">

@@ -44,3 +44,15 @@ export const countryName = (iso: string): string => {
     return iso
   }
 }
+
+/** Статьи расходов авиакомпании. */
+export const COST_LABEL: Record<string, string> = {
+  fuel: 'Топливо',
+  crew: 'Экипажи',
+  maintenance: 'Техобслуживание',
+  airport: 'Аэропортовые сборы',
+  navigation: 'Аэронавигация',
+  handling: 'Наземное обслуживание',
+  fleet: 'Лизинг флота',
+  overhead: 'Персонал, продажи, офис'
+}

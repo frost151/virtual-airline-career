@@ -7,6 +7,20 @@ const primary = (iata: string) => `https://pics.avs.io/240/80/${iata}.png`
 /** Запасные ссылки, уже выясненные через main (null — логотипа нет нигде). */
 const fallbackCache = new Map<string, string | null>()
 
+/** Логотипы компаний игрока: свой код IATA не должен подтягивать чужой логотип с CDN. */
+const customLogos = new Map<string, string | null>()
+
+export function setCustomLogos(list: { iata: string; logo: string | null }[]): void {
+  customLogos.clear()
+  for (const a of list) customLogos.set(a.iata, a.logo)
+}
+
+const initialSrc = (iata: string | null): string | null => {
+  if (!iata) return null
+  if (customLogos.has(iata)) return customLogos.get(iata)!
+  return fallbackCache.has(iata) ? fallbackCache.get(iata)! : primary(iata)
+}
+
 interface Props {
   iata: string | null
   name: string
@@ -16,14 +30,14 @@ interface Props {
 
 /** Логотип авиакомпании; если его нет — значок с буквами названия. */
 export function AirlineLogo({ iata, name, h = 22 }: Props) {
-  const [src, setSrc] = useState<string | null>(iata ? (fallbackCache.get(iata) ?? primary(iata)) : null)
+  const [src, setSrc] = useState<string | null>(() => initialSrc(iata))
 
   useEffect(() => {
-    setSrc(iata ? (fallbackCache.has(iata) ? fallbackCache.get(iata)! : primary(iata)) : null)
+    setSrc(initialSrc(iata))
   }, [iata])
 
   const onError = async () => {
-    if (!iata) return setSrc(null)
+    if (!iata || customLogos.has(iata)) return setSrc(null)
     // Основной CDN не знает компанию — спрашиваем запасной (один раз на код).
     if (src === primary(iata)) {
       const url = fallbackCache.has(iata) ? fallbackCache.get(iata)! : await window.api.world.logoFallback(iata).catch(() => null)

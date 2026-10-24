@@ -16,6 +16,9 @@ export const airlines = new Map(
   ([...russiaCis, ...europe, ...middleEastAfrica, ...asiaPacific, ...americas, ...cargo] as Airline[]).map((a) => [a.icao, a])
 )
 
+/** Компании, основанные игроком в открытом профиле: регистрируются в airlines при открытии. */
+export const playerAirlineIds = new Set<string>()
+
 const destinationsOf = (al: Airline) => new Set(al.network.flatMap((n) => n.destinations))
 
 export function listAirlines(): AirlineSummary[] {

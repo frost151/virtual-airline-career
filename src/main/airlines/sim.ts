@@ -5,7 +5,7 @@ import { between, seededRng } from '@shared/random'
 import type { Db } from '../db'
 import type { NewsDraft } from '../economy/macro'
 import { SEASONALITY, jetFuelUsdPerKg } from '../economy/macro'
-import { aircraftTypes, airlines, airports } from '../world'
+import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { distanceKm } from '../tracker/geo'
 import { blockMinutes, frequency, pickType } from '../career/schedule'
 import { serviceFactor, countryParams } from '../lifestyle/catalog'
@@ -22,9 +22,14 @@ const DAYS = 30
 /** Блок-часов в сутки, которые реально выжимают из самолёта. */
 const BLOCK_HOURS_PER_DAY = 13
 /** Ставка лизинга в месяц от стоимости самолёта. */
-const LEASE_RATE = 0.0085
+export const LEASE_RATE = 0.0085
+/** Насколько цена билета сдвигает долю рынка и собственный спрос компании. */
+const FARE_SHARE_ELASTICITY = 1.5
+const FARE_DEMAND_ELASTICITY = 0.8
+const fareMultOf = (s: AirlineState): number => s.fareMult ?? 1
+
 /** Потолок частот: челночные маршруты между крупными аэропортами — до 12 рейсов в день. */
-function maxFreq(r: RouteState): number {
+export function maxFreq(r: RouteState): number {
   const h = airports.get(r.hub)
   const d = airports.get(r.dest)
   if (!h || !d) return 6
@@ -118,12 +123,18 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
     const first = list[0]
     const demand = dailyDemand(first.route.hub, first.route.dest, first.km, season, ctx.macro.demandIndex)
     const weights = list.map(
-      (c) => Math.pow(c.route.freq * c.type.seats, 0.8) * Math.pow(c.state.reputation / 60, 1.5) * PRICE_APPEAL[c.al.archetype]
+      (c) =>
+        Math.pow(c.route.freq * c.type.seats, 0.8) *
+        Math.pow(c.state.reputation / 60, 1.5) *
+        PRICE_APPEAL[c.al.archetype] *
+        Math.pow(fareMultOf(c.state), -FARE_SHARE_ELASTICITY)
     )
     const total = weights.reduce((a, b) => a + b, 0) || 1
     list.forEach((c, i) => {
       const seats = c.route.freq * c.type.seats
-      const pax = Math.min(seats * 0.97, (demand * weights[i]) / total)
+      // Дешёвый билет ещё и создаёт спрос: летят те, кто иначе остался бы дома.
+      const own = Math.pow(fareMultOf(c.state), -FARE_DEMAND_ELASTICITY)
+      const pax = Math.min(seats * 0.97, (demand * weights[i] * own) / total)
       c.route.lf = seats ? pax / seats : 0
     })
   }
@@ -148,7 +159,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
         r.fare = 0
       } else {
         paxFlight = c.type.seats * r.lf
-        r.fare = averageFare(c.km, c.al.archetype, r.lf, level)
+        r.fare = Math.round(averageFare(c.km, c.al.archetype, r.lf, level) * fareMultOf(s))
         revFlight = paxFlight * r.fare + c.type.cargoKg * 0.45 * cargoRatePerKg(c.km, level)
       }
       const fc = flightCost(c.type, c.km, c.blockH, paxFlight, r.dest, jet, level)
@@ -170,10 +181,13 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
     // В данных у компании только часть реальной сети: остальные самолёты летают по маршрутам, которых
     // в модели нет, и окупают себя сами. Поэтому платим только за нужные сети самолёты + 10% резерва.
     const needed = blockHours / (BLOCK_HOURS_PER_DAY * DAYS)
-    const activeShare = fleetCount ? Math.min(1, (needed * 1.1) / fleetCount) : 0
+    // У компании игрока вся сеть в модели — она платит за каждый свой самолёт.
+    const activeShare = playerAirlineIds.has(s.icao) ? 1 : fleetCount ? Math.min(1, (needed * 1.1) / fleetCount) : 0
     cost.fleet =
-      Object.entries(s.fleet).reduce((sum, [t, n]) => sum + (aircraftTypes.get(t)?.valueMusd ?? 30) * 1e6 * LEASE_RATE * n * level, 0) *
-      activeShare
+      Object.entries(s.fleet).reduce(
+        (sum, [t, n]) => sum + (aircraftTypes.get(t)?.valueMusd ?? 30) * 1e6 * LEASE_RATE * Math.max(0, n - (s.owned?.[t] ?? 0)) * level,
+        0
+      ) * activeShare
     // Наземный персонал, продажи, IT, офис — по реальным авиакомпаниям это от десятой до пятой части выручки.
     cost.overhead = revenue * COST_PROFILE[airlines.get(s.icao)!.archetype].overhead + fleetCount * activeShare * 60_000 * level
     const costs = Object.values(cost).reduce((a, b) => a + b, 0)
@@ -188,6 +202,29 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
     }
   }
   return calcs
+}
+
+/** Расписание и флот в блок-часах за месяц — чтобы игрок не поставил рейсов больше, чем могут самолёты. */
+export function planBlockHours(s: AirlineState): {
+  needed: number
+  available: number
+  routes: Map<RouteState, { type: AircraftType | null; km: number; blockHours: number }>
+} {
+  const al = withState(airlines.get(s.icao)!, s)
+  const routes = new Map<RouteState, { type: AircraftType | null; km: number; blockHours: number }>()
+  let needed = 0
+  for (const r of s.routes) {
+    const h = airports.get(r.hub)
+    const d = airports.get(r.dest)
+    if (!h || !d) continue
+    const km = distanceKm(h.lat, h.lon, d.lat, d.lon)
+    const type = r.freq > 0 ? routeType(al, r, km) : null
+    const blockHours = type ? (blockMinutes(type, km) / 60) * r.freq * 2 * DAYS : 0
+    routes.set(r, { type, km, blockHours })
+    needed += blockHours
+  }
+  const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
+  return { needed, available: fleetCount * BLOCK_HOURS_PER_DAY * DAYS, routes }
 }
 
 // ——— старт мира ———
@@ -269,6 +306,8 @@ export interface MonthResult {
   restarted: string[]
   /** Дивиденды на акцию за этот месяц, $. */
   dividends: Record<string, number>
+  /** Зарплата CEO-игроку по компаниям, $ до налога. */
+  ceoPay: Record<string, number>
 }
 
 export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: number, seed: string): MonthResult {
@@ -280,6 +319,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
   const news: NewsDraft[] = []
   const restarted: string[] = []
   const dividends: Record<string, number> = {}
+  const ceoPay: Record<string, number> = {}
   const quarter = [0, 3, 6, 9].includes(new Date(monthStart).getUTCMonth())
 
   for (const s of states.values()) {
@@ -288,9 +328,13 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     const level = macro.cpi
     const monthlyCosts = Math.max(1, fin.costs)
 
-    // Деньги и долги.
+    // Деньги и долги. Зарплату CEO-игроку платим, только пока у компании есть деньги.
     s.cash += fin.profit
-    s.cash -= s.debt * 0.007
+    if (s.ceoSalary && s.cash > s.ceoSalary) {
+      s.cash -= s.ceoSalary
+      ceoPay[s.icao] = s.ceoSalary
+    }
+    s.cash -= s.debt * (s.debtRate ?? 0.007)
     if (s.cash < 0) {
       s.debt += -s.cash + monthlyCosts * 0.5
       s.cash = monthlyCosts * 0.5
@@ -339,10 +383,11 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     // Цена плавно тянется к оценке (15% разрыва в месяц) — крупные компании не скачут на десятки процентов.
     s.sharePrice = Math.max(0.05, +((s.sharePrice + (fair - s.sharePrice) * 0.15) * noise).toFixed(2))
 
-    // Дивиденды раз в квартал: 30% прибыли, если компания здорова.
+    // Дивиденды раз в квартал: 30% прибыли (у компаний игрока — сколько он решил), если компания здорова.
     const qProfit = s.recentProfit.reduce((a, b) => a + b, 0)
-    if (quarter && qProfit > 0 && s.cash > s.debt * 0.3 && s.status === 'ok') {
-      const total = qProfit * 0.3
+    const payout = s.payout ?? 0.3
+    if (quarter && payout > 0 && qProfit > 0 && s.cash > s.debt * 0.3 && s.status === 'ok') {
+      const total = qProfit * payout
       s.cash -= total
       dividends[s.icao] = +(total / (s.shares * 1e6)).toFixed(4)
     }
@@ -353,7 +398,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     ).run(s.icao, monthStart, fin.revenue, fin.profit, fin.lf, s.sharePrice, Math.round(s.cash))
   }
   saveStates(db, states)
-  return { news, restarted, dividends }
+  return { news, restarted, dividends, ceoPay }
 }
 
 function restartAirline(s: AirlineState, al: Airline, level: number): void {
@@ -366,6 +411,9 @@ function restartAirline(s: AirlineState, al: Airline, level: number): void {
   const hub = al.network[0].hub
   const best = s.routes.filter((r) => r.hub === hub && r.freq > 0).sort((a, b) => b.profit - a.profit)[0] ?? s.routes[0]
   s.fleet = { [type.id]: 1 }
+  // Кредиторы забирают и свои самолёты, и ещё не пришедшие.
+  s.owned = {}
+  s.deliveries = []
   s.routes = s.routes.map((r) => ({ ...r, freq: r === best ? 1 : 0, badMonths: 0 }))
   s.debt = 0
   s.cash = type.valueMusd * 1e6 * LEASE_RATE * 6 * level
@@ -381,9 +429,12 @@ function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => numb
   const news: NewsDraft[] = []
   const fin = s.last!
   const city = (icao: string) => airports.get(icao)?.city ?? icao
+  // Разделы, которые игрок взял на себя, ИИ не трогает.
+  const aiFleet = s.autopilot?.fleet ?? true
+  const aiRoutes = s.autopilot?.routes ?? true
 
   // 1. Маршруты в затяжном убытке — сокращаем, потом закрываем.
-  for (const r of s.routes) {
+  for (const r of aiRoutes ? s.routes : []) {
     if (r.freq <= 0) continue
     r.badMonths = r.profit < 0 && r.lf < 0.6 ? r.badMonths + 1 : 0
     if (r.badMonths >= 3) {
@@ -398,21 +449,21 @@ function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => numb
   // 2. Флот под расписание.
   const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
   const used = mostUsedType(s, al)
-  if (fin.utilization > 1.02 && used) {
+  if (fin.utilization > 1.02 && used && (aiFleet || aiRoutes)) {
     const need = Math.min(5, Math.ceil((fin.utilization - 0.92) * fleetCount))
     const deposit = used.valueMusd * 1e6 * LEASE_RATE * 3 * macro.cpi * need
-    if (s.cash > deposit && s.status === 'ok') {
+    if (aiFleet && s.cash > deposit && s.status === 'ok') {
       s.fleet[used.id] = (s.fleet[used.id] ?? 0) + need
       s.cash -= deposit
       if (need >= 3 && news.length < 2) {
         news.push({ t, category: 'airline', title: `${al.name} пополняет флот`, body: `В лизинг взяты ещё ${need} ${used.name} — расписанию не хватало самолётов.` })
       }
-    } else fitFrequencies(s)
+    } else if (aiRoutes) fitFrequencies(s)
   }
 
   // 3. Рост: прибыльная компания с занятым флотом и полными рейсами берёт ещё самолёты.
   const margin = fin.revenue ? fin.profit / fin.revenue : 0
-  if (s.status === 'ok' && used && fin.utilization >= 0.95 && fin.lf > 0.85 && margin > 0.1) {
+  if (aiFleet && s.status === 'ok' && used && fin.utilization >= 0.95 && fin.lf > 0.85 && margin > 0.1) {
     const add = Math.min(5, Math.max(1, Math.round(fleetCount * 0.03)))
     const deposit = used.valueMusd * 1e6 * LEASE_RATE * 3 * macro.cpi * add
     if (s.cash > deposit + fin.costs) {
@@ -425,14 +476,14 @@ function decide(s: AirlineState, al: Airline, macro: MacroState, rng: () => numb
   }
 
   // 4. Больше рейсов на полные маршруты и новые направления, если есть деньги.
-  if (s.status === 'ok' && fin.profit > 0 && fin.utilization < 0.95) {
+  if (aiRoutes && s.status === 'ok' && fin.profit > 0 && fin.utilization < 0.95) {
     s.routes
       .filter((r) => r.freq > 0 && r.lf > 0.88 && r.profit > 0)
       .sort((a, b) => b.lf - a.lf)
       .slice(0, 2)
       .forEach((r) => (r.freq = Math.min(maxFreq(r), r.freq + 1)))
   }
-  if (s.status === 'ok' && s.cash > fin.costs * 2 && fin.utilization < 0.9 && rng() < 0.3) {
+  if (aiRoutes && s.status === 'ok' && s.cash > fin.costs * 2 && fin.utilization < 0.9 && rng() < 0.3) {
     const opened = openRoute(s, al, rng)
     if (opened && news.length < 2) {
       news.push({

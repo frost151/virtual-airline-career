@@ -117,6 +117,9 @@ export function ActiveFlight() {
               <Button variant="light" color="grape" onClick={() => start('demo')}>
                 Демо-полёт Пулково → Шереметьево
               </Button>
+              <Button variant="subtle" onClick={() => navigate('/sim-check')}>
+                Проверка симулятора
+              </Button>
             </Group>
             {simStatus !== 'connected' && (
               <Text size="sm" c="dimmed">

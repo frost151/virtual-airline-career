@@ -8,6 +8,7 @@ import {
   Checkbox,
   NumberInput,
   Group,
+  Popover,
   SegmentedControl,
   Stack,
   Text,
@@ -15,6 +16,7 @@ import {
   Title
 } from '@mantine/core'
 import type { CreateProfileInput, GameMode, OwnerStart, ProfileSummary } from '@shared/types'
+import { OWNER_CAPITAL_OPTIONS } from '@shared/airlines'
 import { MODE_LABEL, formatUtc } from '../format'
 
 interface Props {
@@ -37,6 +39,18 @@ export function ProfileSelect({ onOpened }: Props) {
     setError(null)
     try {
       onOpened(await action())
+    } catch (e) {
+      setError(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : String(e))
+    }
+  }
+
+  const remove = async (id: string) => {
+    setError(null)
+    try {
+      await window.api.profiles.delete(id)
+      const list = await window.api.profiles.list()
+      setProfiles(list)
+      setCreating(list.length === 0)
     } catch (e) {
       setError(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : String(e))
     }
@@ -72,7 +86,10 @@ export function ProfileSelect({ onOpened }: Props) {
                       {p.pilotName} · мир с {formatUtc(p.worldStartUtc)}
                     </Text>
                   </Stack>
-                  <Button onClick={() => run(() => window.api.profiles.open(p.id))}>Продолжить</Button>
+                  <Group gap="xs" wrap="nowrap">
+                    <Button onClick={() => run(() => window.api.profiles.open(p.id))}>Продолжить</Button>
+                    <DeleteButton profile={p} onDeleted={remove} />
+                  </Group>
                 </Group>
               </Card>
             ))}
@@ -83,6 +100,42 @@ export function ProfileSelect({ onOpened }: Props) {
         )}
       </Stack>
     </Center>
+  )
+}
+
+/** Удаление с подтверждением: профиль не восстановить. */
+function DeleteButton({ profile, onDeleted }: { profile: ProfileSummary; onDeleted(id: string): void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover opened={open} onChange={setOpen} position="bottom-end" withArrow>
+      <Popover.Target>
+        <Button variant="subtle" color="red" onClick={() => setOpen((v) => !v)}>
+          Удалить
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs" maw={280}>
+          <Text size="sm">
+            Профиль «{profile.name}» будет удалён безвозвратно: мир, карьера, бортжурнал и все деньги.
+          </Text>
+          <Group justify="flex-end">
+            <Button size="xs" variant="subtle" onClick={() => setOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              size="xs"
+              color="red"
+              onClick={() => {
+                setOpen(false)
+                onDeleted(profile.id)
+              }}
+            >
+              Удалить навсегда
+            </Button>
+          </Group>
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
   )
 }
 
@@ -97,6 +150,7 @@ function CreateForm({ canCancel, onCancel, onSubmit }: CreateFormProps) {
   const [pilotName, setPilotName] = useState('')
   const [mode, setMode] = useState<GameMode>('pilot')
   const [ownerStart, setOwnerStart] = useState<OwnerStart>('new')
+  const [capital, setCapital] = useState('5')
   const [partner, setPartner] = useState(false)
   const [children, setChildren] = useState(0)
 
@@ -129,6 +183,21 @@ function CreateForm({ canCancel, onCancel, onSubmit }: CreateFormProps) {
             ]}
           />
         )}
+        {mode === 'owner' && (
+          <Stack gap={4}>
+            <Text size="sm" fw={500}>
+              Стартовый капитал
+            </Text>
+            <SegmentedControl
+              value={capital}
+              onChange={setCapital}
+              data={OWNER_CAPITAL_OPTIONS.map((m) => ({ value: String(m), label: `$${m} млн` }))}
+            />
+            <Text size="xs" c="dimmed">
+              $2 млн хватит на маленькую региональную компанию с кредитом, $100 млн — на долю в небольшой существующей.
+            </Text>
+          </Stack>
+        )}
         <Group align="flex-end">
           <Checkbox label="Супруг(а) / партнёр" checked={partner} onChange={(e) => setPartner(e.currentTarget.checked)} />
           <NumberInput label="Дети" min={0} max={6} value={children} onChange={(v) => setChildren(Number(v) || 0)} w={100} />
@@ -145,7 +214,7 @@ function CreateForm({ canCancel, onCancel, onSubmit }: CreateFormProps) {
           )}
           <Button
             disabled={!name.trim() || !pilotName.trim()}
-            onClick={() => onSubmit({ name, pilotName, mode, ownerStart: mode === 'owner' ? ownerStart : undefined, partner, children })}
+            onClick={() => onSubmit({ name, pilotName, mode, ownerStart: mode === 'owner' ? ownerStart : undefined, startCapitalMusd: Number(capital), partner, children })}
           >
             Начать
           </Button>

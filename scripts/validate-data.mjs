@@ -63,7 +63,17 @@ for (const file of readdirSync('data/airlines').filter((f) => f.endsWith('.json'
   }
 }
 
+// Профили аддонов: типы должны быть в каталоге, у профиля на L-переменных — сами переменные.
+const profiles = read('data/aircraft-profiles.json')
+for (const p of profiles) {
+  const tag = `aircraft-profiles.json ${p.id}`
+  for (const t of [p.defaultType, ...p.types.map((x) => x.type)])
+    if (!types.has(t)) errors.push(`${tag}: неизвестный тип ${t}`)
+  if (p.lights === 'lvars' && !Object.keys(p.lvars ?? {}).length) errors.push(`${tag}: lights=lvars без lvars`)
+  if (!p.match.length) errors.push(`${tag}: пустой match`)
+}
+
 for (const w of warnings) console.log('ПРЕДУПРЕЖДЕНИЕ', w)
 for (const e of errors) console.log('ОШИБКА', e)
-console.log(`Авиакомпаний: ${airlineCount}, маршрутов: ${routeCount}, ошибок: ${errors.length}, предупреждений: ${warnings.length}`)
+console.log(`Авиакомпаний: ${airlineCount}, маршрутов: ${routeCount}, профилей аддонов: ${profiles.length}, ошибок: ${errors.length}, предупреждений: ${warnings.length}`)
 process.exit(errors.length ? 1 : 0)

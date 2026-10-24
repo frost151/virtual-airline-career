@@ -199,7 +199,35 @@ const MIGRATIONS: string[] = [
   `,
   `ALTER TABLE bookings ADD COLUMN avg_fare REAL;`,
   // Налёт, добавленный в режиме читера.
-  `ALTER TABLE pilot ADD COLUMN bonus_hours REAL NOT NULL DEFAULT 0;`
+  `ALTER TABLE pilot ADD COLUMN bonus_hours REAL NOT NULL DEFAULT 0;`,
+  // Режим владельца: доли игрока в авиакомпаниях (своя компания — доля с founded = 1).
+  `
+  CREATE TABLE stakes (
+    icao        TEXT PRIMARY KEY,
+    pct         REAL NOT NULL,
+    cost        REAL NOT NULL,
+    dividends   REAL NOT NULL DEFAULT 0,
+    founded     INTEGER NOT NULL DEFAULT 0,
+    guaranteed  INTEGER NOT NULL DEFAULT 0,
+    acquired_at INTEGER NOT NULL
+  );
+  `,
+  // Авиакомпании, основанные игроком: статичная часть (живое состояние — в airline_state).
+  `
+  CREATE TABLE player_airline (
+    icao       TEXT PRIMARY KEY,
+    iata       TEXT NOT NULL,
+    name       TEXT NOT NULL,
+    callsign   TEXT NOT NULL,
+    country    TEXT NOT NULL,
+    archetype  TEXT NOT NULL,
+    hub        TEXT NOT NULL,
+    logo       TEXT,
+    founded_at INTEGER NOT NULL
+  );
+  `,
+  // Фото пилота для личного кабинета (data URL).
+  `ALTER TABLE profile ADD COLUMN photo TEXT;`
 ]
 
 export function openDatabase(file: string): Db {
