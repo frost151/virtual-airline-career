@@ -1,4 +1,4 @@
-import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, RouteState } from '@shared/airlines'
+import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, RouteState, Staff } from '@shared/airlines'
 import type { Airline } from '@shared/world'
 import { transaction, type Db } from '../db'
 import { airlines } from '../world'
@@ -37,6 +37,8 @@ export interface AirlineState {
   owned?: Record<string, number>
   /** Самолёты в пути: после заказа их перегоняют и готовят около недели. */
   deliveries?: Delivery[]
+  /** Штат экипажей, когда персоналом управляет игрок. */
+  staff?: Staff
   /** Зарплата CEO в месяц, $ (до налога). */
   ceoSalary?: number
   /** Доля квартальной прибыли на дивиденды (по умолчанию 0,3). */

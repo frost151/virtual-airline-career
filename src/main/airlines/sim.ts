@@ -1,4 +1,4 @@
-import type { RouteState } from '@shared/airlines'
+import type { AirlineFinance, RouteState, Staff } from '@shared/airlines'
 import type { MacroState } from '@shared/economy'
 import type { AircraftType, Airline, Airport } from '@shared/world'
 import { between, seededRng } from '@shared/random'
@@ -44,6 +44,60 @@ const AIRLINE_PILOT_RATE: Record<AircraftType['category'], number> = {
   widebody: 137,
   freighter: 122,
   bizjet: 115
+}
+
+// ——— персонал ———
+
+/** Блок-часов в месяц на одного члена экипажа — верхняя российская норма по соглашению с работником (решение пользователя). */
+export const CREW_HOURS_PER_MONTH = 90
+/** Надбавка к ставке экипажа: налоги, соцпакет, гостиницы, командировочные (как в flightCost). */
+const CREW_OVERHEAD = 2.6
+const CABIN_RATE = 35
+/** Сервис на борту: питание, наборы, обучение — $ на пассажира за каждую единицу уровня. */
+const SERVICE_COST_PER_PAX = 8
+/** Текучка экипажей в месяц при рыночной зарплате. */
+const BASE_ATTRITION = 0.015
+
+export const cabinPerFlight = (t: AircraftType): number => Math.ceil(t.seats / 50)
+export const pilotRate = (t: AircraftType): number => AIRLINE_PILOT_RATE[t.category]
+
+/** Экипажами управляет игрок (иначе расходы считаются по налёту, как у всех компаний). */
+export const staffManaged = (s: AirlineState): boolean => !!s.staff && s.autopilot?.staff === false
+
+/** Зарплата в месяц на одного с налогами и соцпакетом, $. */
+export function crewSalaries(s: AirlineState, avgPilotRate: number, level: number): { pilot: number; cabin: number } {
+  const k = CREW_HOURS_PER_MONTH * CREW_OVERHEAD * level * (s.staff?.payLevel ?? 1) * COST_PROFILE[airlines.get(s.icao)!.archetype].ops
+  return { pilot: Math.round(avgPilotRate * k), cabin: Math.round(CABIN_RATE * k) }
+}
+
+/** Уходит в месяц: ниже рынка — больше, выше — меньше. */
+export function attritionRate(payLevel: number): number {
+  return BASE_ATTRITION * (payLevel < 1 ? 1 + (1 - payLevel) * 10 : Math.max(0.3, 1 - (payLevel - 1) * 3))
+}
+
+/** Сколько экипажей нужно расписанию и средняя ставка пилота по типам флота. */
+export function staffNeeds(s: AirlineState): { pilots: number; cabin: number; avgPilotRate: number } {
+  let pilotH = 0
+  let cabinH = 0
+  let rateH = 0
+  for (const [, p] of planBlockHours(s).routes) {
+    if (!p.type) continue
+    pilotH += p.blockHours * 2
+    cabinH += p.blockHours * cabinPerFlight(p.type)
+    rateH += p.blockHours * pilotRate(p.type)
+  }
+  const bh = pilotH / 2
+  return {
+    pilots: Math.ceil(pilotH / CREW_HOURS_PER_MONTH),
+    cabin: Math.ceil(cabinH / CREW_HOURS_PER_MONTH),
+    avgPilotRate: bh ? rateH / bh : AIRLINE_PILOT_RATE.narrowbody
+  }
+}
+
+/** Штат на старте: под расписание с запасом 10%. */
+export function initialStaff(s: AirlineState): Staff {
+  const need = staffNeeds(s)
+  return { pilots: Math.ceil(need.pilots * 1.1), cabin: Math.ceil(need.cabin * 1.1), payLevel: 1, service: 1, training: [] }
 }
 
 interface RouteCalc {
@@ -148,9 +202,29 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
     let lfWeighted = 0
     let flightsTotal = 0
     let blockHours = 0
+    // Экипажи игрока: если людей меньше, чем требует расписание, часть рейсов отменяется.
+    const managed = staffManaged(s)
+    let staffFactor = 1
+    let pilotH = 0
+    let rateH = 0
+    if (managed) {
+      let cabinH = 0
+      for (const c of list) {
+        const bh = c.blockH * c.route.freq * 2 * DAYS
+        pilotH += bh * 2
+        cabinH += bh * cabinPerFlight(c.type)
+        rateH += bh * pilotRate(c.type)
+      }
+      const st = s.staff!
+      staffFactor = Math.min(
+        1,
+        pilotH ? (st.pilots * CREW_HOURS_PER_MONTH) / pilotH : 1,
+        cabinH ? (st.cabin * CREW_HOURS_PER_MONTH) / cabinH : 1
+      )
+    }
     for (const c of list) {
       const r = c.route
-      const flights = r.freq * 2 * DAYS
+      const flights = r.freq * 2 * DAYS * staffFactor
       let revFlight: number
       let paxFlight = 0
       if (c.type.category === 'freighter') {
@@ -168,6 +242,11 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
       fc.crew *= ops
       fc.airport *= ops
       fc.handling *= ops
+      if (managed) {
+        // Экипаж игрока на окладе — считаем после цикла по штату, а не по налёту.
+        fc.crew = 0
+        fc.handling += paxFlight * SERVICE_COST_PER_PAX * level * (s.staff!.service - 1)
+      }
       const costFlight = Object.values(fc).reduce((a, b) => a + b, 0)
       for (const [k, v] of Object.entries(fc)) cost[k] += v * flights
       r.profit = Math.round((revFlight - costFlight) * flights)
@@ -176,6 +255,12 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
       lfWeighted += r.lf * flights
       flightsTotal += flights
       blockHours += c.blockH * flights
+    }
+    if (managed) {
+      // Оклады платим всему штату, даже если людей больше, чем нужно; делим по маршрутам по блок-часам.
+      const sal = crewSalaries(s, pilotH ? rateH / (pilotH / 2) : AIRLINE_PILOT_RATE.narrowbody, level)
+      cost.crew = s.staff!.pilots * sal.pilot + s.staff!.cabin * sal.cabin
+      for (const c of list) r_share(c.route, (c.blockH * c.route.freq * 2 * DAYS * staffFactor) / (blockHours || 1), cost.crew)
     }
     const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
     // В данных у компании только часть реальной сети: остальные самолёты летают по маршрутам, которых
@@ -198,7 +283,8 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
       pax: Math.round(pax),
       lf: flightsTotal ? +(lfWeighted / flightsTotal).toFixed(3) : 0,
       utilization: fleetCount ? +(blockHours / (fleetCount * BLOCK_HOURS_PER_DAY * DAYS)).toFixed(3) : 0,
-      costBreakdown: Object.fromEntries(Object.entries(cost).map(([k, v]) => [k, Math.round(v)]))
+      costBreakdown: Object.fromEntries(Object.entries(cost).map(([k, v]) => [k, Math.round(v)])),
+      ...(managed ? { cancelled: +(1 - staffFactor).toFixed(3) } : {})
     }
   }
   return calcs
@@ -225,6 +311,11 @@ export function planBlockHours(s: AirlineState): {
   }
   const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
   return { needed, available: fleetCount * BLOCK_HOURS_PER_DAY * DAYS, routes }
+}
+
+/** Доля расходов на экипаж — в прибыль маршрута. */
+function r_share(r: RouteState, share: number, crew: number): void {
+  r.profit = Math.round(r.profit - crew * share)
 }
 
 // ——— старт мира ———
@@ -346,6 +437,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     }
     s.recentProfit = [...s.recentProfit, fin.profit].slice(-3)
     s.reputation = Math.max(10, Math.min(95, s.reputation + (fin.profit > 0 && fin.lf > 0.75 ? 0.3 : fin.profit < 0 ? -0.3 : 0)))
+    if (staffManaged(s)) news.push(...staffMonth(s, al, fin, t))
     const revenueBase = Math.max(fin.revenue, monthlyCosts * 0.5)
     s.status = s.debt > revenueBase * 4 ? 'distress' : s.status === 'restarted' && s.debt < revenueBase ? 'ok' : s.status === 'distress' ? 'ok' : s.status
 
@@ -399,6 +491,27 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
   }
   saveStates(db, states)
   return { news, restarted, dividends, ceoPay }
+}
+
+/** Месяц для экипажей игрока: текучка, репутация от сервиса и отмен. */
+function staffMonth(s: AirlineState, al: Airline, fin: AirlineFinance, t: number): NewsDraft[] {
+  const st = s.staff!
+  const rate = attritionRate(st.payLevel)
+  st.pilots = Math.max(0, st.pilots - Math.round(st.pilots * rate))
+  st.cabin = Math.max(0, st.cabin - Math.round(st.cabin * rate))
+  const cancelled = fin.cancelled ?? 0
+  // Хороший сервис понемногу поднимает репутацию, отмены рейсов бьют по ней сильно.
+  const delta = (st.service - 1) * 4 - cancelled * 15 - (st.payLevel < 0.9 ? 0.5 : 0)
+  s.reputation = Math.max(10, Math.min(95, s.reputation + delta))
+  if (cancelled < 0.05) return []
+  return [
+    {
+      t,
+      category: 'airline',
+      title: `${al.name} отменяет рейсы`,
+      body: `Компании не хватает экипажей: за месяц отменено ${Math.round(cancelled * 100)}% рейсов. Пассажиры недовольны.`
+    }
+  ]
 }
 
 function restartAirline(s: AirlineState, al: Airline, level: number): void {

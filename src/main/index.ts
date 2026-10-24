@@ -208,6 +208,10 @@ function registerIpc(): void {
   ipcMain.handle('manage:repay', manageAction(manage.repay))
   ipcMain.handle('manage:setCeoSalary', manageAction(manage.setCeoSalary))
   ipcMain.handle('manage:setPayout', manageAction(manage.setPayout))
+  ipcMain.handle('manage:hire', manageAction(manage.hireStaff))
+  ipcMain.handle('manage:fire', manageAction(manage.fireStaff))
+  ipcMain.handle('manage:setPayLevel', manageAction(manage.setPayLevel))
+  ipcMain.handle('manage:setService', manageAction(manage.setService))
   ipcMain.handle('life:carImage', (_e, id: string) => {
     const car = CARS.find((c) => c.id === id)
     return car?.wiki ? wikiImage(car.wiki) : null

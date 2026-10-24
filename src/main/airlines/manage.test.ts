@@ -10,7 +10,6 @@ import { destinationOptions, foundAirline, registerPlayerAirlines } from './play
 import * as m from './manage'
 
 const START = Date.UTC(2026, 9, 23, 12)
-const DAY = 86_400_000
 const ICAO = 'NVQ'
 
 function newDb(): Db {
@@ -53,7 +52,7 @@ describe('управление своей компанией', () => {
   it('своя компания по умолчанию без заместителей, ИИ не трогает флот и сеть', () => {
     const db = newDb()
     const st = m.manageState(db, ICAO)
-    expect(st.autopilot).toEqual({ fleet: false, routes: false, fares: false })
+    expect(st.autopilot).toEqual({ fleet: false, routes: false, fares: false, staff: false })
     const fleet = { ...loadStates(db).get(ICAO)!.fleet }
     const routes = st.routes.map((r) => `${r.dest}:${r.freq}`)
     for (let i = 0; i < 3; i++) month(db)
@@ -71,17 +70,13 @@ describe('управление своей компанией', () => {
     expect(m.manageState(db, ICAO).routes.find((x) => x.dest === r.dest)!.freq).toBe(r.freq - 1)
   })
 
-  it('новый самолёт приходит через неделю, после этого можно открыть рейс', () => {
+  it('новый самолёт сразу в строю, на нём можно открыть рейс', () => {
     const db = newDb()
     const cash0 = m.manageState(db, ICAO).cash
-    m.leaseAircraft(db, ICAO, 'A320', 1)
-    const st = m.manageState(db, ICAO)
-    expect(st.cash).toBeLessThan(cash0)
-    expect(st.deliveries).toHaveLength(1)
     const dest = m.routeOptions(db, ICAO, 'UUWW')[0].icao
     expect(() => m.openRoute(db, ICAO, 'UUWW', dest, 3)).toThrow(/не хватит/)
-
-    m.airlinesDaily(db, Date.now() + 8 * DAY)
+    m.leaseAircraft(db, ICAO, 'A320', 1)
+    expect(m.manageState(db, ICAO).cash).toBeLessThan(cash0)
     expect(loadStates(db).get(ICAO)!.fleet.A320).toBe(2)
     m.openRoute(db, ICAO, 'UUWW', dest, 2)
     expect(m.manageState(db, ICAO).routes.some((r) => r.dest === dest && r.freq === 2)).toBe(true)
@@ -94,7 +89,6 @@ describe('управление своей компанией', () => {
     expect(leased).toBeGreaterThan(0)
     loadStates(db).get(ICAO)!.cash = 1e8
     m.buyAircraft(db, ICAO, 'A320', 1)
-    m.airlinesDaily(db, Date.now() + 8 * DAY)
     m.returnLease(db, ICAO, 'A320')
     month(db)
     expect(loadStates(db).get(ICAO)!.last!.costBreakdown.fleet).toBe(0)
@@ -141,7 +135,7 @@ describe('управление своей компанией', () => {
     const icao = [...loadStates(db).values()].find((s) => !FLAG_CARRIERS.has(s.icao) && s.status === 'ok' && s.icao !== ICAO)!.icao
     expect(() => m.manageState(db, icao)).toThrow(/контроля/)
     buyStake(db, icao, 51)
-    expect(m.manageState(db, icao).autopilot).toEqual({ fleet: true, routes: true, fares: true })
+    expect(m.manageState(db, icao).autopilot).toEqual({ fleet: true, routes: true, fares: true, staff: true })
     m.setAutopilot(db, icao, { fares: false })
     m.setFareMult(db, icao, 0.9)
     m.setCeoSalary(db, icao, 10_000)
@@ -150,5 +144,60 @@ describe('управление своей компанией', () => {
     expect(s.autopilot).toBeUndefined()
     expect(s.fareMult).toBeUndefined()
     expect(s.ceoSalary).toBeUndefined()
+  })
+})
+
+describe('персонал своей компании', () => {
+  it('при полном штате экипажи стоят примерно как у заместителя, рейсы не отменяются', () => {
+    const own = newDb()
+    const ai = newDb()
+    expect(m.manageState(own, ICAO).staff).not.toBeNull()
+    m.setAutopilot(ai, ICAO, { staff: true })
+    expect(m.manageState(ai, ICAO).staff).toBeNull()
+    month(own)
+    month(ai)
+    const a = loadStates(own).get(ICAO)!.last!
+    const b = loadStates(ai).get(ICAO)!.last!
+    expect(a.cancelled).toBe(0)
+    // Штат с запасом 10% и округлением — чуть дороже оплаты по налёту.
+    expect(a.costBreakdown.crew / b.costBreakdown.crew).toBeGreaterThan(1)
+    expect(a.costBreakdown.crew / b.costBreakdown.crew).toBeLessThan(1.35)
+  })
+
+  it('нехватка пилотов отменяет рейсы и бьёт по репутации', () => {
+    const db = newDb()
+    const st = m.manageState(db, ICAO).staff!
+    const rep0 = loadStates(db).get(ICAO)!.reputation
+    m.fireStaff(db, ICAO, 'pilots', Math.ceil(st.pilots / 2))
+    const news = month(db)
+    const s = loadStates(db).get(ICAO)!
+    expect(s.last!.cancelled!).toBeGreaterThan(0.3)
+    expect(s.reputation).toBeLessThan(rep0 - 3)
+    expect(news.some((n) => n.title.includes('отменяет рейсы'))).toBe(true)
+  })
+
+  it('нанятые сразу выходят в рейсы', () => {
+    const db = newDb()
+    const before = m.manageState(db, ICAO).staff!.pilots
+    m.hireStaff(db, ICAO, 'pilots', 4)
+    expect(m.manageState(db, ICAO).staff!.pilots).toBe(before + 4)
+  })
+
+  it('низкие зарплаты — больше уходит людей, высокий сервис дороже', () => {
+    const db = newDb()
+    m.hireStaff(db, ICAO, 'pilots', 40)
+    m.setPayLevel(db, ICAO, 0.8)
+    expect(m.manageState(db, ICAO).staff!.attritionPct).toBeGreaterThan(4)
+    const pilots = m.manageState(db, ICAO).staff!.pilots
+    month(db)
+    expect(m.manageState(db, ICAO).staff!.pilots).toBeLessThanOrEqual(pilots - 2)
+
+    const cheap = newDb()
+    const lux = newDb()
+    m.setService(lux, ICAO, 1.3)
+    month(cheap)
+    month(lux)
+    expect(loadStates(lux).get(ICAO)!.last!.costBreakdown.handling).toBeGreaterThan(loadStates(cheap).get(ICAO)!.last!.costBreakdown.handling)
+    expect(loadStates(lux).get(ICAO)!.reputation).toBeGreaterThan(loadStates(cheap).get(ICAO)!.reputation)
   })
 })

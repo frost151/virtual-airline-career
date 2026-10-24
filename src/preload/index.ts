@@ -130,7 +130,11 @@ const api: Api = {
     borrow: (icao, amount) => ipcRenderer.invoke('manage:borrow', icao, amount),
     repay: (icao, amount) => ipcRenderer.invoke('manage:repay', icao, amount),
     setCeoSalary: (icao, amount) => ipcRenderer.invoke('manage:setCeoSalary', icao, amount),
-    setPayout: (icao, pct) => ipcRenderer.invoke('manage:setPayout', icao, pct)
+    setPayout: (icao, pct) => ipcRenderer.invoke('manage:setPayout', icao, pct),
+    hire: (icao, role, count) => ipcRenderer.invoke('manage:hire', icao, role, count),
+    fire: (icao, role, count) => ipcRenderer.invoke('manage:fire', icao, role, count),
+    setPayLevel: (icao, level) => ipcRenderer.invoke('manage:setPayLevel', icao, level),
+    setService: (icao, level) => ipcRenderer.invoke('manage:setService', icao, level)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

@@ -7,7 +7,7 @@ import { blockMinutes } from '../career/schedule'
 import { addTransaction, pilotRow, resign } from '../career/career'
 import { macroState } from '../economy/state'
 import { dailyDemand } from './demand'
-import { LEASE_RATE } from './sim'
+import { LEASE_RATE, initialStaff } from './sim'
 import { loadStates, saveStates, type AirlineState } from './state'
 
 /**
@@ -280,7 +280,7 @@ export function foundAirline(db: Db, input: FoundAirlineInput): PlayerAirline {
     cash: q.cashAfter,
     debt: loan,
     debtRate: input.guaranteed ? RATE_GUARANTEED : RATE_PLAIN,
-    autopilot: { fleet: false, routes: false, fares: false },
+    autopilot: { fleet: false, routes: false, fares: false, staff: false },
     // Пока игрок не назначил себе зарплату и дивиденды, прибыль остаётся в компании.
     ceoSalary: 0,
     payout: 0,
@@ -331,6 +331,8 @@ export function foundAirline(db: Db, input: FoundAirlineInput): PlayerAirline {
       now
     )
     registerPlayerAirlines(db)
+    // Штат под стартовое расписание с запасом: экипажи набраны к первому рейсу.
+    state.staff = initialStaff(state)
     const states = loadStates(db)
     states.set(icao, state)
     saveStates(db, states)

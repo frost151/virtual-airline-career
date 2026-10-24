@@ -21,6 +21,12 @@ export function Capacity({ st }: { st: ManageState }) {
         </Text>
       </Group>
       <Progress value={Math.min(100, pct)} color={pct > 100 ? 'red' : pct > 85 ? 'green' : 'yellow'} />
+      {st.staff && (st.staff.pilots < st.staff.pilotsNeeded || st.staff.cabin < st.staff.cabinNeeded) && (
+        <Text size="sm" c="red">
+          Экипажей на это расписание не хватит: пилотов {st.staff.pilots} из {st.staff.pilotsNeeded}, бортпроводников{' '}
+          {st.staff.cabin} из {st.staff.cabinNeeded}. Наймите людей в разделе «Персонал», иначе рейсы будут отменяться.
+        </Text>
+      )}
       <Text size="xs" c="dimmed">
         Самолёт летает до 13 часов в сутки. Если расписание занимает флот меньше чем на 85%, самолёты простаивают и
         лизинг тратится зря.
@@ -163,7 +169,7 @@ function OrderCard({ m, st }: { m: Managed; st: ManageState }) {
         </Group>
       )}
       <Text size="xs" c="dimmed" mt="xs">
-        Самолёт войдёт в строй примерно через неделю. Свой самолёт не платит лизинг и при продаже вернёт 85% цены. Лизинговый
+        Самолёт сразу входит в строй. Свой самолёт не платит лизинг и при продаже вернёт 85% цены. Лизинговый
         можно вернуть: из залога отдадут два месяца.
       </Text>
     </Card>

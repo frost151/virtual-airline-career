@@ -14,6 +14,7 @@ import { Fleet } from './Fleet'
 import { PilotProfile } from './PilotProfile'
 import { RoutesScreen } from './RoutesScreen'
 import { Finance } from './Finance'
+import { Staff } from './Staff'
 import { Logbook } from './Logbook'
 import { Home } from './Home'
 import { Dispatch } from './Dispatch'
@@ -24,7 +25,7 @@ import { Life } from './Life'
 import { CatchUpModal } from '../components/CatchUpModal'
 
 /** Разделы, у которых уже есть настоящий экран. */
-const READY = ['home', 'profile', 'dispatch', 'market', 'flight', 'logbook', 'career', 'company', 'fleet', 'routes', 'finance', 'settings', 'economy', 'life']
+const READY = ['home', 'profile', 'dispatch', 'market', 'flight', 'logbook', 'career', 'company', 'fleet', 'routes', 'finance', 'staff', 'settings', 'economy', 'life']
 
 interface Section {
   path: string
@@ -130,6 +131,7 @@ export function Shell({ profile, onExit }: Props) {
           <Route path="/fleet" element={<Fleet />} />
           <Route path="/routes" element={<RoutesScreen />} />
           <Route path="/finance" element={<Finance />} />
+          <Route path="/staff" element={<Staff />} />
           <Route path="/logbook" element={<Logbook />} />
           {sections
             .filter((s) => !READY.includes(s.path))

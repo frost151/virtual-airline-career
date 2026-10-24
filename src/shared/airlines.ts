@@ -29,6 +29,8 @@ export interface AirlineFinance {
   /** Использование флота: блок-часы, нужные расписанию, к доступным. */
   utilization: number
   costBreakdown: Record<string, number>
+  /** Доля рейсов, отменённых из-за нехватки экипажей. */
+  cancelled?: number
 }
 
 export interface AirlineMarketRow {
@@ -182,6 +184,38 @@ export interface Autopilot {
   fleet: boolean
   routes: boolean
   fares: boolean
+  staff: boolean
+}
+
+/** Штат компании, если персоналом управляет игрок. */
+export interface Staff {
+  pilots: number
+  cabin: number
+  /** Уровень зарплат к рынку, 0,8–1,3. */
+  payLevel: number
+  /** Уровень сервиса на борту, 0,8–1,3. */
+  service: number
+  /** Новички на переподготовке: выйдут в рейсы к readyAt. */
+  training: { pilots: number; cabin: number; readyAt: number }[]
+}
+
+export const STAFF_LEVEL_MIN = 0.8
+export const STAFF_LEVEL_MAX = 1.3
+
+export interface StaffInfo extends Staff {
+  /** Сколько нужно расписанию. */
+  pilotsNeeded: number
+  cabinNeeded: number
+  /** Зарплата в месяц на одного (с налогами и соцпакетом), $. */
+  pilotSalary: number
+  cabinSalary: number
+  /** Фонд оплаты труда экипажей в месяц, $. */
+  payroll: number
+  /** Найм и переподготовка одного новичка, $. */
+  hireCostPilot: number
+  hireCostCabin: number
+  /** Сколько людей уходит в месяц при нынешних зарплатах, %. */
+  attritionPct: number
 }
 
 export interface Delivery {
@@ -238,6 +272,8 @@ export interface ManageState {
   debtRatePct: number
   /** Сколько ещё можно занять, $. */
   borrowLimit: number
+  /** Персонал: null — экипажами управляет заместитель, расходы считаются по налёту. */
+  staff: StaffInfo | null
   ceoSalary: number
   /** Больше совет директоров не утвердит, $ в месяц. */
   ceoSalaryCap: number

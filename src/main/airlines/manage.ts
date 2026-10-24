@@ -2,16 +2,20 @@ import {
   CONTROL_PCT,
   FARE_MULT_MAX,
   FARE_MULT_MIN,
+  STAFF_LEVEL_MAX,
+  STAFF_LEVEL_MIN,
   type Autopilot,
   type DestinationOption,
   type FleetRow,
-  type ManageState
+  type ManageState,
+  type Staff,
+  type StaffInfo
 } from '@shared/airlines'
 import type { Db } from '../db'
 import { aircraftTypes, airlines, airports } from '../world'
 import { distanceKm } from '../tracker/geo'
 import { macroState } from '../economy/state'
-import { LEASE_RATE, maxFreq, planBlockHours } from './sim'
+import { LEASE_RATE, attritionRate, crewSalaries, initialStaff, maxFreq, planBlockHours, staffManaged, staffNeeds } from './sim'
 import { loadStates, saveStates, type AirlineState } from './state'
 import { destinationOptions, foundTypeOptions, typeFits } from './player'
 
@@ -21,9 +25,6 @@ import { destinationOptions, foundTypeOptions, typeFits } from './player'
  * ведёт ИИ (decide в sim.ts), и игрок их не правит.
  */
 
-const DAY_MS = 86_400_000
-/** Перегон и подготовка нового самолёта. */
-const DELIVERY_DAYS = 7
 /** Залог за лизинг — 3 месяца; при возврате самолёта отдают 2. */
 const LEASE_DEPOSIT_MONTHS = 3
 const LEASE_REFUND_MONTHS = 2
@@ -45,10 +46,10 @@ function requireControl(db: Db, icao: string): AirlineState {
   return s
 }
 
-const autopilotOf = (s: AirlineState): Autopilot => s.autopilot ?? { fleet: true, routes: true, fares: true }
+const autopilotOf = (s: AirlineState): Autopilot => ({ fleet: true, routes: true, fares: true, staff: true, ...s.autopilot })
 
 function requireManual(s: AirlineState, part: keyof Autopilot): void {
-  const label = { fleet: 'Флотом', routes: 'Маршрутами', fares: 'Тарифами' }[part]
+  const label = { fleet: 'Флотом', routes: 'Маршрутами', fares: 'Тарифами', staff: 'Персоналом' }[part]
   if (autopilotOf(s)[part]) throw new Error(`${label} сейчас управляет заместитель — возьмите раздел на себя`)
 }
 
@@ -127,6 +128,7 @@ export function manageState(db: Db, icao: string): ManageState {
     debt: Math.round(s.debt),
     debtRatePct: +((s.debtRate ?? 0.007) * 100).toFixed(2),
     borrowLimit: borrowLimit(db, s),
+    staff: staffInfo(db, s),
     ceoSalary: s.ceoSalary ?? 0,
     ceoSalaryCap: ceoSalaryCap(db, s),
     payoutPct: Math.round((s.payout ?? 0.3) * 100),
@@ -140,6 +142,8 @@ export function setAutopilot(db: Db, icao: string, patch: Partial<Autopilot>): v
   s.autopilot = { ...autopilotOf(s), ...patch }
   // Тарифы заместитель держит рыночными.
   if (s.autopilot.fares) s.fareMult = 1
+  // Берём персонал на себя — заместитель передаёт штат под нынешнее расписание.
+  if (!s.autopilot.staff && !s.staff) s.staff = initialStaff(s)
   commit(db, s)
 }
 
@@ -231,8 +235,10 @@ export function openRoute(db: Db, icao: string, origin: string, dest: string, fr
 
 // ——— флот ———
 
-function addDelivery(s: AirlineState, type: string, count: number, owned: boolean): void {
-  s.deliveries = [...(s.deliveries ?? []), { type, count, owned, arriveAt: Date.now() + DELIVERY_DAYS * DAY_MS }]
+/** Самолёт входит в строй сразу: ждать перегона в игре скучно. */
+function addAircraft(s: AirlineState, type: string, count: number, owned: boolean): void {
+  s.fleet[type] = (s.fleet[type] ?? 0) + count
+  if (owned) s.owned = { ...s.owned, [type]: (s.owned?.[type] ?? 0) + count }
 }
 
 export function leaseAircraft(db: Db, icao: string, typeId: string, count: number): void {
@@ -243,7 +249,7 @@ export function leaseAircraft(db: Db, icao: string, typeId: string, count: numbe
   const deposit = Math.round(t.valueMusd * 1e6 * LEASE_RATE * cpi(db) * LEASE_DEPOSIT_MONTHS * n)
   if (s.cash < deposit) throw new Error(`Не хватает денег на залог: нужно $${deposit.toLocaleString('ru-RU')}`)
   s.cash -= deposit
-  addDelivery(s, t.id, n, false)
+  addAircraft(s, t.id, n, false)
   commit(db, s)
 }
 
@@ -255,7 +261,7 @@ export function buyAircraft(db: Db, icao: string, typeId: string, count: number)
   const price = Math.round(t.valueMusd * 1e6 * cpi(db) * n)
   if (s.cash < price) throw new Error(`Не хватает денег: нужно $${price.toLocaleString('ru-RU')}`)
   s.cash -= price
-  addDelivery(s, t.id, n, true)
+  addAircraft(s, t.id, n, true)
   commit(db, s)
 }
 
@@ -306,7 +312,87 @@ export function airlinesDaily(db: Db, now: number): void {
     s.version++
     changed = true
   }
+  // Новички закончили переподготовку и выходят в рейсы.
+  for (const s of states.values()) {
+    const ready = s.staff?.training.filter((x) => x.readyAt <= now)
+    if (!ready?.length) continue
+    for (const x of ready) {
+      s.staff!.pilots += x.pilots
+      s.staff!.cabin += x.cabin
+    }
+    s.staff!.training = s.staff!.training.filter((x) => x.readyAt > now)
+    changed = true
+  }
   if (changed) saveStates(db, states)
+}
+
+// ——— персонал ———
+
+/** Найм с переподготовкой на тип; люди выходят в рейсы сразу. */
+const HIRE_COST = { pilots: 12_000, cabin: 2_500 }
+/** Выходное пособие при сокращении — две зарплаты. */
+const SEVERANCE_MONTHS = 2
+
+function staffInfo(db: Db, s: AirlineState): StaffInfo | null {
+  if (!staffManaged(s)) return null
+  const st = s.staff!
+  const need = staffNeeds(s)
+  const level = cpi(db)
+  const sal = crewSalaries(s, need.avgPilotRate, level)
+  return {
+    ...st,
+    pilotsNeeded: need.pilots,
+    cabinNeeded: need.cabin,
+    pilotSalary: sal.pilot,
+    cabinSalary: sal.cabin,
+    payroll: st.pilots * sal.pilot + st.cabin * sal.cabin,
+    hireCostPilot: Math.round(HIRE_COST.pilots * level),
+    hireCostCabin: Math.round(HIRE_COST.cabin * level),
+    attritionPct: +(attritionRate(st.payLevel) * 100).toFixed(1)
+  }
+}
+
+function requireStaff(db: Db, icao: string): AirlineState & { staff: Staff } {
+  const s = requireControl(db, icao)
+  requireManual(s, 'staff')
+  if (!s.staff) s.staff = initialStaff(s)
+  return s as AirlineState & { staff: Staff }
+}
+
+export function hireStaff(db: Db, icao: string, role: 'pilots' | 'cabin', count: number): void {
+  const s = requireStaff(db, icao)
+  const n = Math.max(1, Math.round(count))
+  const cost = Math.round(HIRE_COST[role] * cpi(db) * n)
+  if (s.cash < cost) throw new Error(`Не хватает денег на найм и переподготовку: нужно $${cost.toLocaleString('ru-RU')}`)
+  s.cash -= cost
+  s.staff[role] += n
+  commit(db, s)
+}
+
+export function fireStaff(db: Db, icao: string, role: 'pilots' | 'cabin', count: number): void {
+  const s = requireStaff(db, icao)
+  const n = Math.min(s.staff[role], Math.max(1, Math.round(count)))
+  if (!n) throw new Error('Сокращать некого')
+  const sal = crewSalaries(s, staffNeeds(s).avgPilotRate, cpi(db))
+  const severance = Math.round((role === 'pilots' ? sal.pilot : sal.cabin) * SEVERANCE_MONTHS * n)
+  if (s.cash < severance) throw new Error(`Не хватает денег на выходные пособия: нужно $${severance.toLocaleString('ru-RU')}`)
+  s.cash -= severance
+  s.staff[role] -= n
+  commit(db, s)
+}
+
+const clampLevel = (v: number) => Math.round(Math.min(STAFF_LEVEL_MAX, Math.max(STAFF_LEVEL_MIN, v)) * 20) / 20
+
+export function setPayLevel(db: Db, icao: string, level: number): void {
+  const s = requireStaff(db, icao)
+  s.staff.payLevel = clampLevel(level)
+  commit(db, s)
+}
+
+export function setService(db: Db, icao: string, level: number): void {
+  const s = requireStaff(db, icao)
+  s.staff.service = clampLevel(level)
+  commit(db, s)
 }
 
 // ——— деньги ———

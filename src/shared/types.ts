@@ -417,6 +417,10 @@ export interface Api {
     repay(icao: string, amount: number): Promise<ManageState>
     setCeoSalary(icao: string, amount: number): Promise<ManageState>
     setPayout(icao: string, pct: number): Promise<ManageState>
+    hire(icao: string, role: 'pilots' | 'cabin', count: number): Promise<ManageState>
+    fire(icao: string, role: 'pilots' | 'cabin', count: number): Promise<ManageState>
+    setPayLevel(icao: string, level: number): Promise<ManageState>
+    setService(icao: string, level: number): Promise<ManageState>
   }
   settings: {
     get(): Promise<Settings>
