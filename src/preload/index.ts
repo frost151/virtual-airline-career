@@ -134,7 +134,9 @@ const api: Api = {
     hire: (icao, role, count) => ipcRenderer.invoke('manage:hire', icao, role, count),
     fire: (icao, role, count) => ipcRenderer.invoke('manage:fire', icao, role, count),
     setPayLevel: (icao, level) => ipcRenderer.invoke('manage:setPayLevel', icao, level),
-    setService: (icao, level) => ipcRenderer.invoke('manage:setService', icao, level)
+    setService: (icao, level) => ipcRenderer.invoke('manage:setService', icao, level),
+    inject: (icao, amount) => ipcRenderer.invoke('manage:inject', icao, amount),
+    ipo: (icao, pct) => ipcRenderer.invoke('manage:ipo', icao, pct)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

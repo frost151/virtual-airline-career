@@ -2,7 +2,7 @@ import type { MacroState } from '@shared/economy'
 import type { NewsDraft } from '../economy/macro'
 import { between, pick } from '@shared/random'
 import type { Db } from '../db'
-import { addTransaction, changeReputation, pilotRow } from '../career/career'
+import { addTransaction, ceoOf, changeReputation, pilotRow } from '../career/career'
 import { getSettings } from '../settings'
 import { monthlySalary } from '@shared/career'
 import { CARS, COLLECTIBLES, GA_AIRCRAFT, HOUSING, SUBSCRIPTIONS, countryParams, familyLivingFactor, housingRent, roomsNeeded, serviceFactor } from './catalog'
@@ -140,8 +140,8 @@ export function lifeMonthly(db: Db, macro: MacroState, prevCpi: number, t: numbe
     db.prepare('UPDATE assets SET value = ? WHERE id = ?').run(Math.max(0, r.value * k), r.id)
   }
 
-  // 5. Оклад пилота в штате: фиксированная часть зарплаты, растёт со званием и инфляцией.
-  if (p.employer_id) {
+  // 5. Оклад пилота в штате: фиксированная часть зарплаты, растёт со званием и инфляцией. У CEO его нет.
+  if (p.employer_id && !ceoOf(db)) {
     const gross = monthlySalary(p.rank) * level * getSettings(db).payMultiplier
     const net = Math.round(gross * (1 - cp.tax / 100))
     addTransaction(db, net, `Оклад за месяц (налог ${cp.tax}%)`)

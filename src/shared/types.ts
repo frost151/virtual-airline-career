@@ -139,7 +139,10 @@ export interface RatingInfo {
 export interface PilotState {
   name: string
   rank: RankId
+  /** У CEO своей компании звание всегда «CEO». */
   rankName: string
+  /** Пилот — генеральный директор своей компании и летает в ней. */
+  ceo: boolean
   employerKind: EmployerKind | null
   employerId: string | null
   employerName: string | null
@@ -421,6 +424,10 @@ export interface Api {
     fire(icao: string, role: 'pilots' | 'cabin', count: number): Promise<ManageState>
     setPayLevel(icao: string, level: number): Promise<ManageState>
     setService(icao: string, level: number): Promise<ManageState>
+    /** Вложить личные деньги в компанию. */
+    inject(icao: string, amount: number): Promise<ManageState>
+    /** Выйти на биржу, продав pct% компании. */
+    ipo(icao: string, pct: number): Promise<ManageState>
   }
   settings: {
     get(): Promise<Settings>

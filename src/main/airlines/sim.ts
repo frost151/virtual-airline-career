@@ -11,6 +11,7 @@ import { blockMinutes, frequency, pickType } from '../career/schedule'
 import { serviceFactor, countryParams } from '../lifestyle/catalog'
 import { COST_PROFILE, PRICE_APPEAL, averageFare, cargoRatePerKg, dailyDemand } from './demand'
 import { FLAG_CARRIERS, loadStates, saveStates, withState, type AirlineState } from './state'
+import { macroState } from '../economy/state'
 
 /**
  * Месячная экономика всех авиакомпаний: рынок по маршрутам, выручка и расходы,
@@ -18,7 +19,7 @@ import { FLAG_CARRIERS, loadStates, saveStates, withState, type AirlineState } f
  * ценовых войн ниже себестоимости нет.
  */
 
-const DAYS = 30
+export const DAYS = 30
 /** Блок-часов в сутки, которые реально выжимают из самолёта. */
 const BLOCK_HOURS_PER_DAY = 13
 /** Ставка лизинга в месяц от стоимости самолёта. */
@@ -51,7 +52,7 @@ const AIRLINE_PILOT_RATE: Record<AircraftType['category'], number> = {
 /** Блок-часов в месяц на одного члена экипажа — верхняя российская норма по соглашению с работником (решение пользователя). */
 export const CREW_HOURS_PER_MONTH = 90
 /** Надбавка к ставке экипажа: налоги, соцпакет, гостиницы, командировочные (как в flightCost). */
-const CREW_OVERHEAD = 2.6
+export const CREW_OVERHEAD = 2.6
 const CABIN_RATE = 35
 /** Сервис на борту: питание, наборы, обучение — $ на пассажира за каждую единицу уровня. */
 const SERVICE_COST_PER_PAX = 8
@@ -318,6 +319,23 @@ function r_share(r: RouteState, share: number, crew: number): void {
   r.profit = Math.round(r.profit - crew * share)
 }
 
+/**
+ * Прогноз месяца для одной компании, не меняя мира: рынок считается на копии состояний.
+ * Нужен для маршрутов без итогов — новой компании или только что открытого рейса.
+ */
+export function projectAirline(db: Db, icao: string): AirlineState | null {
+  const macro = macroState(db)
+  const day = new Date(macro.day * 86_400_000)
+  const clone = new Map([...loadStates(db)].map(([k, v]) => [k, structuredClone(v)]))
+  computeMonth(clone, {
+    macro,
+    monthStart: Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), 1),
+    rng: seededRng(`project|${icao}|${macro.day}`),
+    apply: false
+  })
+  return clone.get(icao) ?? null
+}
+
 // ——— старт мира ———
 
 /** Начальное состояние: сеть из статичных данных, частоты подогнаны под флот. */
@@ -383,7 +401,7 @@ function fitFrequencies(s: AirlineState): void {
 }
 
 /** Оценка компании: выручка, прибыль и деньги за вычетом долгов. */
-function fairValue(s: AirlineState): number {
+export function fairValue(s: AirlineState): number {
   const rev = (s.last?.revenue ?? 0) * 12
   const profit = (s.last?.profit ?? 0) * 12
   return Math.max(rev * 0.05, rev * 0.12 + Math.max(-rev * 0.08, profit) * 8 + (s.cash - s.debt) * 0.6)
@@ -399,6 +417,8 @@ export interface MonthResult {
   dividends: Record<string, number>
   /** Зарплата CEO-игроку по компаниям, $ до налога. */
   ceoPay: Record<string, number>
+  /** Долг обанкротившихся компаний в момент банкротства, $ (для поручительства игрока). */
+  bankruptDebt: Record<string, number>
 }
 
 export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: number, seed: string): MonthResult {
@@ -411,6 +431,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
   const restarted: string[] = []
   const dividends: Record<string, number> = {}
   const ceoPay: Record<string, number> = {}
+  const bankruptDebt: Record<string, number> = {}
   const quarter = [0, 3, 6, 9].includes(new Date(monthStart).getUTCMonth())
 
   for (const s of states.values()) {
@@ -455,6 +476,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
           body: `Правительство списало часть долгов национального перевозчика и влило деньги в капитал. Компания продолжает работу.`
         })
       } else {
+        bankruptDebt[s.icao] = Math.round(s.debt)
         restartAirline(s, al, level)
         restarted.push(s.icao)
         news.push({
@@ -490,7 +512,7 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     ).run(s.icao, monthStart, fin.revenue, fin.profit, fin.lf, s.sharePrice, Math.round(s.cash))
   }
   saveStates(db, states)
-  return { news, restarted, dividends, ceoPay }
+  return { news, restarted, dividends, ceoPay, bankruptDebt }
 }
 
 /** Месяц для экипажей игрока: текучка, репутация от сервиса и отмен. */

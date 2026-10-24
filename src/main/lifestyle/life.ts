@@ -4,7 +4,7 @@ import { airlines, airports } from '../world'
 import { sharePrice } from '../airlines/economy'
 import { listStakes } from '../airlines/stakes'
 import { macroState, priceLevel } from '../economy/state'
-import { addTransaction, pilotRow } from '../career/career'
+import { addTransaction, ceoOf, pilotRow } from '../career/career'
 import { getSettings } from '../settings'
 import { monthlySalary } from '@shared/career'
 import {
@@ -440,7 +440,8 @@ export function monthlyBudget(db: Db): BudgetLine[] {
   const rows = assetRows(db)
   const pilot = pilotRow(db)
   const lines: BudgetLine[] = [
-    ...(pilot.employer_id
+    // У CEO оклада пилота нет: он получает зарплату CEO и долю с рейсов.
+    ...(pilot.employer_id && !ceoOf(db)
       ? [{ label: `Оклад после налога (${p.tax}%)`, amount: Math.round(monthlySalary(pilot.rank) * level * getSettings(db).payMultiplier * (1 - p.tax / 100)) }]
       : []),
     { label: f.partner || f.children ? 'Жизнь семьи (еда, связь, быт)' : 'Жизнь (еда, связь, быт)', amount: -Math.round(p.col * familyLivingFactor(f.partner, f.children) * level) }

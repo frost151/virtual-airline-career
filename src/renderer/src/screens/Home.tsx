@@ -33,7 +33,14 @@ export function Home({ profile }: { profile: ProfileSummary }) {
     window.api.owner.companies().then(setCompanies)
   }, [pilot])
   if (!pilot || !companies) return <Loader />
-  if (companies.length) return <CeoHome company={companies[0]} />
+  const own = companies.find((c) => c.active)
+  if (own && pilot.ceo)
+    return (
+      <Stack>
+        <CeoHome company={own} />
+        <Dashboard pilot={pilot} />
+      </Stack>
+    )
   return (
     <Stack>
       {profile.mode === 'owner' && <OwnerStart />}
@@ -70,9 +77,7 @@ function OwnerStart() {
 function CeoHome({ company }: { company: PlayerAirline }) {
   const navigate = useNavigate()
   return (
-    <Stack>
-      <Title order={3}>Главная</Title>
-      <Card withBorder padding="lg">
+    <Card withBorder padding="lg">
         <Group justify="space-between">
           <Group>
             <AirlineLogo iata={company.iata} name={company.name} h={40} />
@@ -86,11 +91,6 @@ function CeoHome({ company }: { company: PlayerAirline }) {
           <Button onClick={() => navigate('/company')}>Открыть компанию</Button>
         </Group>
       </Card>
-      <Text size="sm" c="dimmed">
-        Полёты рейсами своей компании появятся в одной из следующих частей этапа. Пока можно летать свободно в разделе
-        «Активный полёт».
-      </Text>
-    </Stack>
   )
 }
 
@@ -168,7 +168,7 @@ function Dashboard({ pilot }: { pilot: PilotState }) {
 
         <Card withBorder>
           <Stack gap="sm">
-            <Text fw={600}>{pilot.nextRank ? `До звания «${pilot.nextRank.name}»` : 'Высшее звание'}</Text>
+            <Text fw={600}>{pilot.nextRank ? `До звания «${pilot.nextRank.name}»` : pilot.ceo ? 'Звание CEO' : 'Высшее звание'}</Text>
             {pilot.nextRank ? (
               <>
                 <Req label="Налёт" have={pilot.stats.hours} need={pilot.nextRank.minHours} unit="ч" />
@@ -179,7 +179,11 @@ function Dashboard({ pilot }: { pilot: PilotState }) {
                 )}
               </>
             ) : (
-              <Text c="dimmed">Вы достигли вершины карьеры пилота.</Text>
+              <Text c="dimmed">
+                {pilot.ceo
+                  ? 'Вы летаете в своей компании: за рейс — 10% его прибыли, звание не меняется.'
+                  : 'Вы достигли вершины карьеры пилота.'}
+              </Text>
             )}
           </Stack>
         </Card>

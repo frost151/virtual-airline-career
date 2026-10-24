@@ -5,9 +5,15 @@ import { formatNum } from '../format'
 import { errMsg, notifyCareerChanged } from '../lib'
 import { Stat } from './FlightParts'
 
-/** Крупные суммы — в миллионах, мелкие — целиком. */
-export const bigMoney = (n: number): string =>
-  Math.abs(n) >= 1e6 ? `${n < 0 ? '−' : ''}$${formatNum(Math.abs(n) / 1e6)} млн` : `${n < 0 ? '−' : ''}$${formatNum(Math.abs(n))}`
+const millions = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 })
+
+/** Крупные суммы — в миллионах (до 100 млн — с десятыми), мелкие — целиком. */
+export const bigMoney = (n: number): string => {
+  const sign = n < 0 ? '−' : ''
+  const a = Math.abs(n)
+  if (a < 1e6) return `${sign}$${formatNum(a)}`
+  return `${sign}$${a < 1e8 ? millions.format(a / 1e6) : formatNum(Math.round(a / 1e6))} млн`
+}
 
 /** Блок «Доля в компании» в карточке авиакомпании: покупка пакета 10/25/51% и продажа. */
 export function StakeCard({ icao, onChanged }: { icao: string; onChanged(): void }) {

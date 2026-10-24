@@ -214,6 +214,8 @@ function registerIpc(): void {
   ipcMain.handle('manage:fire', manageAction(manage.fireStaff))
   ipcMain.handle('manage:setPayLevel', manageAction(manage.setPayLevel))
   ipcMain.handle('manage:setService', manageAction(manage.setService))
+  ipcMain.handle('manage:inject', manageAction(manage.injectCapital))
+  ipcMain.handle('manage:ipo', manageAction(manage.goPublic))
   ipcMain.handle('life:carImage', (_e, id: string) => {
     const car = CARS.find((c) => c.id === id)
     return car?.wiki ? wikiImage(car.wiki) : null

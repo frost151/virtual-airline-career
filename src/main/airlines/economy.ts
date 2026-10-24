@@ -1,9 +1,9 @@
 import type { AirlineDetailEconomy, AirlineMarketRow } from '@shared/airlines'
 import type { MacroState } from '@shared/economy'
-import type { Db } from '../db'
+import { transaction, type Db } from '../db'
 import type { NewsDraft } from '../economy/macro'
 import { airlines, airports } from '../world'
-import { addTransaction, pilotRow, resign } from '../career/career'
+import { addTransaction, leaveEmployer, pilotRow } from '../career/career'
 import { countryParams } from '../lifestyle/catalog'
 import { FLAG_CARRIERS, hasAirlineStates, loadStates, type AirlineState } from './state'
 import { initAirlineStates, simulateAirlinesMonth } from './sim'
@@ -29,16 +29,6 @@ export function airlinesMonthly(db: Db, macro: MacroState, seed: string): NewsDr
   const t = monthStart + 13 * 3_600_000
   const p = pilotRow(db)
 
-  if (p.employer_kind === 'airline' && p.employer_id && res.restarted.includes(p.employer_id)) {
-    resign(db)
-    news.push({
-      t,
-      category: 'career',
-      title: 'Вы потеряли работу',
-      body: `${airlines.get(p.employer_id)?.name} обанкротилась и сократила почти весь персонал. Найдите новую работу на главной.`
-    })
-  }
-
   // Дивиденды по акциям пилота, налог — по ставке страны базы (×0,75: льготная ставка на дивиденды).
   const holdings = db.prepare("SELECT icao, SUM(quantity) AS q FROM investments WHERE kind = 'shares' GROUP BY icao").all() as {
     icao: string
@@ -60,17 +50,76 @@ export function airlinesMonthly(db: Db, macro: MacroState, seed: string): NewsDr
     if (net > 0) addTransaction(db, net, `Зарплата CEO ${airlines.get(icao)?.name ?? icao}`)
   }
 
+  // Банкротства: сначала сгорают доли (и CEO перестаёт им быть), потом пилот теряет работу.
   for (const icao of res.restarted) {
     const burned = burnStake(db, icao)
     if (!burned) continue
+    const name = airlines.get(icao)?.name ?? icao
     news.push({
       t,
       category: 'career',
-      title: 'Ваша доля сгорела',
-      body: `${airlines.get(icao)?.name} обанкротилась: кредиторы забрали флот, доля ${burned.pct}% больше ничего не стоит.`
+      title: burned.founded ? `Ваша компания ${name} обанкротилась` : 'Ваша доля сгорела',
+      body: burned.founded
+        ? 'Кредиторы забрали флот и компанию. Ваша доля больше ничего не стоит, вы больше не CEO — но налёт, допуски и деньги остаются при вас.'
+        : `${name} обанкротилась: кредиторы забрали флот, доля ${burned.pct}% больше ничего не стоит.`
+    })
+    if (burned.guaranteed) news.push(collectGuarantee(db, name, res.bankruptDebt[icao] ?? 0, t))
+  }
+  if (p.employer_kind === 'airline' && p.employer_id && res.restarted.includes(p.employer_id)) {
+    leaveEmployer(db)
+    news.push({
+      t,
+      category: 'career',
+      title: 'Вы потеряли работу',
+      body: `${airlines.get(p.employer_id)?.name} обанкротилась и сократила почти весь персонал. Найдите новую работу на главной.`
+    })
+  }
+
+  // Своя компания в долгах — предупреждаем каждый месяц, пока не поздно.
+  const own = db.prepare('SELECT icao FROM stakes WHERE founded = 1').get() as { icao: string } | undefined
+  const ownState = own && loadStates(db).get(own.icao)
+  if (ownState?.status === 'distress') {
+    news.push({
+      t,
+      category: 'career',
+      title: `${airlines.get(own!.icao)?.name}: банк грозит банкротством`,
+      body: 'Долги компании слишком велики. Сократите убыточные рейсы, верните лишние самолёты или вложите личные деньги в «Финансах».'
     })
   }
   return news
+}
+
+/** Доля долга, которую банк взыскивает с поручителя: остальное покрывают изъятые самолёты и имущество. */
+const GUARANTEE_SHARE = 0.6
+/** Остаток долга по поручительству банк растягивает на 10 лет под 12% годовых. */
+const GUARANTEE_RATE = 12
+const GUARANTEE_MONTHS = 120
+
+/** Взыскание по личному поручительству: сколько есть — со счёта, остальное — личный кредит. */
+function collectGuarantee(db: Db, name: string, debt: number, t: number): NewsDraft {
+  const owed = Math.round(debt * GUARANTEE_SHARE)
+  const cash = Math.max(0, Math.floor(pilotRow(db).cash))
+  const paid = Math.min(cash, owed)
+  const rest = owed - paid
+  transaction(db, () => {
+    if (paid > 0) addTransaction(db, -paid, `Взыскание по поручительству за ${name}`)
+    if (rest > 0) {
+      const r = GUARANTEE_RATE / 1200
+      const payment = Math.round((rest * r) / (1 - Math.pow(1 + r, -GUARANTEE_MONTHS)))
+      db.prepare(
+        "INSERT INTO loans (kind, asset_id, principal, balance, rate, payment, months_left, opened_at) VALUES ('guarantee', NULL, ?, ?, ?, ?, ?, ?)"
+      ).run(rest, rest, GUARANTEE_RATE, payment, GUARANTEE_MONTHS, t)
+    }
+  })
+  return {
+    t,
+    category: 'career',
+    title: 'Банк взыскивает долг по поручительству',
+    body:
+      `По личному поручительству за ${name} вы должны $${owed.toLocaleString('ru-RU')}.` +
+      (paid ? ` Со счёта списано $${paid.toLocaleString('ru-RU')}.` : '') +
+      (rest ? ` Остаток $${rest.toLocaleString('ru-RU')} оформлен как личный кредит на 10 лет.` : '')
+  }
 }
 
 function row(s: AirlineState): AirlineMarketRow {

@@ -64,7 +64,7 @@ export function Company() {
   useEffect(() => window.api.world.onChanged(load), [])
 
   if (!companies) return <Loader />
-  const own = companies[0]
+  const own = companies.find((c) => c.active)
   return (
     <Stack>
       <Title order={3}>Моя компания</Title>

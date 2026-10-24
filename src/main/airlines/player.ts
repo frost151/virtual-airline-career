@@ -4,10 +4,10 @@ import { transaction, type Db } from '../db'
 import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { distanceKm } from '../tracker/geo'
 import { blockMinutes } from '../career/schedule'
-import { addTransaction, pilotRow, resign } from '../career/career'
+import { addTransaction, leaveEmployer, pilotRow } from '../career/career'
 import { macroState } from '../economy/state'
 import { dailyDemand } from './demand'
-import { LEASE_RATE, initialStaff } from './sim'
+import { LEASE_RATE, initialStaff, projectAirline } from './sim'
 import { loadStates, saveStates, type AirlineState } from './state'
 
 /**
@@ -69,21 +69,31 @@ export function registerPlayerAirlines(db: Db | null): void {
     airlines.set(r.icao, toAirline(r))
     playerAirlineIds.add(r.icao)
   }
-  // Компании, основанные до того, как база CEO стала базой компании.
-  const own = rows(db)[0]
-  if (own && !pilotRow(db).base) homeAtHub(db, own.hub)
+  // Компании, основанные до того, как CEO стал летать в своей компании.
+  const own = activeRow(db)
+  if (own && !pilotRow(db).employer_id) employAsCeo(db, own.icao, own.hub)
+}
+
+/** Своя компания, которой игрок владеет сейчас (после банкротства её нет, хотя в мире она живёт дальше). */
+function activeRow(db: Db): PlayerAirlineRow | undefined {
+  const founded = db.prepare('SELECT icao FROM stakes WHERE founded = 1').get() as { icao: string } | undefined
+  return founded ? rows(db).find((r) => r.icao === founded.icao) : undefined
 }
 
 /**
- * База CEO — база его компании: по её стране считаются цены, налоги и личная жизнь.
- * Где пилот физически находится, не меняем, если он уже где-то есть.
+ * CEO работает в своей компании: рейсы берёт в её расписании, база — база компании
+ * (по её стране считаются цены, налоги и личная жизнь). Где пилот находится, не меняем, если он уже где-то есть.
  */
-function homeAtHub(db: Db, hub: string): void {
-  db.prepare('UPDATE pilot SET base = ?, location = COALESCE(location, ?) WHERE id = 1').run(hub, hub)
+function employAsCeo(db: Db, icao: string, hub: string): void {
+  db.prepare(
+    `UPDATE pilot SET employer_kind = 'airline', employer_id = ?, base = ?, location = COALESCE(location, ?), hired_at = ? WHERE id = 1`
+  ).run(icao, hub, hub, new Date().toISOString())
 }
 
 export function playerAirlines(db: Db): PlayerAirline[] {
+  const active = activeRow(db)?.icao
   return rows(db).map((r) => ({
+    active: r.icao === active,
     icao: r.icao,
     iata: r.iata,
     name: r.name,
@@ -179,7 +189,7 @@ function validate(db: Db, input: FoundAirlineInput): string[] {
   const name = input.name.trim()
   const icao = input.icao.trim().toUpperCase()
   const iata = input.iata.trim().toUpperCase()
-  if (rows(db).length) errors.push('У вас уже есть своя компания')
+  if (activeRow(db)) errors.push('У вас уже есть своя компания')
   if (!name) errors.push('Укажите название')
   else if ([...airlines.values()].some((a) => a.name.toLowerCase() === name.toLowerCase()))
     errors.push('Такое название уже занято')
@@ -307,8 +317,8 @@ export function foundAirline(db: Db, input: FoundAirlineInput): PlayerAirline {
   }
 
   transaction(db, () => {
-    if (pilotRow(db).employer_id) resign(db)
-    homeAtHub(db, hub.icao)
+    if (pilotRow(db).employer_id) leaveEmployer(db)
+    employAsCeo(db, icao, hub.icao)
     addTransaction(db, -contribution, `Вложение в капитал ${name}`)
     db.prepare(
       `INSERT INTO player_airline (icao, iata, name, callsign, country, archetype, hub, logo, founded_at)
@@ -335,6 +345,12 @@ export function foundAirline(db: Db, input: FoundAirlineInput): PlayerAirline {
     state.staff = initialStaff(state)
     const states = loadStates(db)
     states.set(icao, state)
+    // Прогноз первого месяца: загрузка, тариф и прибыль маршрутов видны сразу (в расписании и у CEO).
+    const proj = projectAirline(db, icao)
+    state.routes.forEach((r, i) => {
+      const p = proj?.routes[i]
+      if (p) Object.assign(r, { lf: p.lf, fare: p.fare, profit: p.profit })
+    })
     saveStates(db, states)
     db.prepare('INSERT INTO news (t, category, title, body) VALUES (?, ?, ?, ?)').run(
       now,

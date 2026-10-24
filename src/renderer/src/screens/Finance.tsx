@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Group, NumberInput, SimpleGrid, Slider, Table, Text } from '@mantine/core'
+import { Button, Card, Group, NumberInput, Progress, SimpleGrid, Slider, Table, Text } from '@mantine/core'
 import type { ManageState } from '@shared/airlines'
 import { COST_LABEL, formatNum } from '../format'
 import { Stat } from '../components/FlightParts'
@@ -18,6 +18,7 @@ function FinanceBody({ m, st }: { m: Managed; st: ManageState }) {
   const f = st.last
   return (
     <>
+      <DebtRisk st={st} />
       <Card withBorder>
         <SimpleGrid cols={4}>
           <Stat label="Деньги компании" value={bigMoney(st.cash)} />
@@ -94,12 +95,99 @@ function FinanceBody({ m, st }: { m: Managed; st: ManageState }) {
         </Card>
       )}
 
-      <SimpleGrid cols={{ base: 1, md: 3 }}>
+      <SimpleGrid cols={{ base: 1, md: 2, xl: 4 }}>
         <LoanCard m={m} st={st} />
+        <InjectCard m={m} />
         <SalaryCard m={m} st={st} />
         <PayoutCard m={m} st={st} />
       </SimpleGrid>
+
+      {st.ipo && <IpoCard m={m} st={st} />}
     </>
+  )
+}
+
+/** Насколько компания близка к банкротству. */
+function DebtRisk({ st }: { st: ManageState }) {
+  if (!st.debt && st.status === 'ok') return null
+  const pct = st.bankruptcyDebt ? (st.debt / st.bankruptcyDebt) * 100 : 0
+  const color = st.status === 'distress' || pct > 60 ? 'red' : pct > 35 ? 'yellow' : 'green'
+  return (
+    <Card withBorder style={st.status === 'distress' ? { borderColor: 'var(--mantine-color-red-7)' } : undefined}>
+      <Group justify="space-between" mb={4}>
+        <Text fw={600} c={st.status === 'distress' ? 'red' : undefined}>
+          {st.status === 'distress' ? 'Компания в долгах — банк грозит банкротством' : 'Долговая нагрузка'}
+        </Text>
+        <Text size="sm" className="mono">
+          {bigMoney(st.debt)} из {bigMoney(st.bankruptcyDebt)}
+        </Text>
+      </Group>
+      <Progress value={Math.min(100, pct)} color={color} />
+      <Text size="xs" c="dimmed" mt={4}>
+        Банк начнёт банкротство, если долг превысит восемь месячных выручек. Тогда кредиторы заберут компанию, ваша доля сгорит,
+        а вы перестанете быть CEO.
+        {st.founded &&
+          (st.guaranteed
+            ? ' По кредиту есть ваше личное поручительство: банк взыщет с вас 60% долга.'
+            : ' Личного поручительства нет — ваши личные деньги не пострадают.')}
+      </Text>
+    </Card>
+  )
+}
+
+function InjectCard({ m }: { m: Managed }) {
+  const [amount, setAmount] = useState(500_000)
+  return (
+    <Card withBorder>
+      <Text fw={600} mb="xs">
+        Вложить свои деньги
+      </Text>
+      <NumberInput
+        label="Сумма из вашего кошелька"
+        min={0}
+        step={100_000}
+        thousandSeparator=" "
+        prefix="$"
+        value={amount}
+        onChange={(v) => setAmount(Number(v) || 0)}
+      />
+      <Button size="xs" mt="sm" disabled={!amount} onClick={() => m.act((icao) => window.api.manage.inject(icao, amount))}>
+        Вложить
+      </Button>
+      <Text size="xs" c="dimmed" mt="xs">
+        Деньги уходят на счёт компании и в стоимость вашей доли. Помогает пережить кризис без новых долгов.
+      </Text>
+    </Card>
+  )
+}
+
+function IpoCard({ m, st }: { m: Managed; st: ManageState }) {
+  const ipo = st.ipo!
+  return (
+    <Card withBorder>
+      <Group justify="space-between" mb="xs">
+        <Text fw={600}>Выход на биржу (IPO)</Text>
+        <Text size="sm" c="dimmed">
+          Оценка компании: <b>{bigMoney(ipo.valuation)}</b>
+        </Text>
+      </Group>
+      <Text size="sm" mb="sm">
+        Инвесторы покупают часть компании, деньги получает компания (банки-организаторы берут 7%). Вы остаётесь CEO с
+        контрольным пакетом и получаете дивиденды по своей доле. Выйти на биржу можно один раз.
+      </Text>
+      {ipo.blocked && (
+        <Text size="sm" c="orange" mb="sm">
+          {ipo.blocked}
+        </Text>
+      )}
+      <Group>
+        {ipo.options.map((o) => (
+          <Button key={o.pct} variant="light" disabled={!!ipo.blocked} onClick={() => m.act((icao) => window.api.manage.ipo(icao, o.pct))}>
+            Продать {o.pct}% — компании {bigMoney(o.proceeds)}
+          </Button>
+        ))}
+      </Group>
+    </Card>
   )
 }
 

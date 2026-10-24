@@ -166,6 +166,8 @@ export interface DestinationOption {
 }
 
 export interface PlayerAirline {
+  /** Игрок владеет ею сейчас (false — компания потеряна при банкротстве и живёт дальше без него). */
+  active: boolean
   icao: string
   iata: string
   name: string
@@ -274,6 +276,17 @@ export interface ManageState {
   borrowLimit: number
   /** Персонал: null — экипажами управляет заместитель, расходы считаются по налёту. */
   staff: StaffInfo | null
+  status: AirlineStatus
+  /** При каком долге банк начнёт банкротство, $. */
+  bankruptcyDebt: number
+  /** Компанию основал игрок. */
+  founded: boolean
+  /** Поручительство игрока по долгам компании. */
+  guaranteed: boolean
+  /** Доля игрока, %. */
+  pct: number
+  /** Выход на биржу: null — уже на бирже или компания не своя. */
+  ipo: IpoOffer | null
   ceoSalary: number
   /** Больше совет директоров не утвердит, $ в месяц. */
   ceoSalaryCap: number
@@ -281,6 +294,18 @@ export interface ManageState {
   payoutPct: number
   last: AirlineFinance | null
   history: AirlineHistoryPoint[]
+}
+
+/** Пакеты, которые можно продать на бирже при IPO: контроль остаётся у игрока. */
+export const IPO_LEVELS = [10, 25, 49] as const
+
+export interface IpoOffer {
+  /** Почему пока нельзя (null — можно). */
+  blocked: string | null
+  /** Оценка компании, $. */
+  valuation: number
+  /** Сколько получит компания за пакет после комиссии банков, $. */
+  options: { pct: number; proceeds: number }[]
 }
 
 export interface AirlineDetailEconomy {

@@ -8,14 +8,17 @@ import {
   type DestinationOption,
   type FleetRow,
   type ManageState,
+  IPO_LEVELS,
+  type IpoOffer,
   type Staff,
   type StaffInfo
 } from '@shared/airlines'
-import type { Db } from '../db'
+import { transaction, type Db } from '../db'
+import { addTransaction, pilotRow } from '../career/career'
 import { aircraftTypes, airlines, airports } from '../world'
 import { distanceKm } from '../tracker/geo'
 import { macroState } from '../economy/state'
-import { LEASE_RATE, attritionRate, crewSalaries, initialStaff, maxFreq, planBlockHours, staffManaged, staffNeeds } from './sim'
+import { LEASE_RATE, attritionRate, crewSalaries, fairValue, initialStaff, maxFreq, planBlockHours, projectAirline, staffManaged, staffNeeds } from './sim'
 import { loadStates, saveStates, type AirlineState } from './state'
 import { destinationOptions, foundTypeOptions, typeFits } from './player'
 
@@ -38,8 +41,16 @@ const BORROW_OWNED_SHARE = 0.6
 const CEO_SALARY_SHARE = 0.03
 const CEO_SALARY_MIN_CAP = 15_000
 
+interface StakeInfoRow {
+  pct: number
+  founded: number
+  guaranteed: number
+}
+
+const stakeOf = (db: Db, icao: string) => db.prepare('SELECT pct, founded, guaranteed FROM stakes WHERE icao = ?').get(icao) as StakeInfoRow | undefined
+
 function requireControl(db: Db, icao: string): AirlineState {
-  const row = db.prepare('SELECT pct FROM stakes WHERE icao = ?').get(icao) as { pct: number } | undefined
+  const row = stakeOf(db, icao)
   if (!row || row.pct < CONTROL_PCT) throw new Error('У вас нет контроля над этой компанией')
   const s = loadStates(db).get(icao)
   if (!s) throw new Error('Авиакомпания не найдена')
@@ -72,12 +83,15 @@ function aircraftType(s: AirlineState, typeId: string) {
 function borrowLimit(db: Db, s: AirlineState): number {
   const level = cpi(db)
   const ownedValue = Object.entries(s.owned ?? {}).reduce((sum, [t, n]) => sum + (aircraftTypes.get(t)?.valueMusd ?? 0) * 1e6 * level * n, 0)
-  const base = Math.max(BORROW_MIN * level, (s.last?.revenue ?? 0) * BORROW_REVENUE_MONTHS)
+  const base = Math.max(BORROW_MIN * level, monthRevenue(db, s) * BORROW_REVENUE_MONTHS)
   return Math.max(0, Math.round(base + ownedValue * BORROW_OWNED_SHARE - s.debt))
 }
 
 const ceoSalaryCap = (db: Db, s: AirlineState): number =>
-  Math.round(Math.max(CEO_SALARY_MIN_CAP * cpi(db), (s.last?.revenue ?? 0) * CEO_SALARY_SHARE))
+  Math.round(Math.max(CEO_SALARY_MIN_CAP * cpi(db), monthRevenue(db, s) * CEO_SALARY_SHARE))
+
+/** Выручка за месяц; у новой компании без итогов — по прогнозу. */
+const monthRevenue = (db: Db, s: AirlineState): number => (s.last ?? projectAirline(db, s.icao)?.last)?.revenue ?? 0
 
 // ——— сводка ———
 
@@ -129,6 +143,12 @@ export function manageState(db: Db, icao: string): ManageState {
     debtRatePct: +((s.debtRate ?? 0.007) * 100).toFixed(2),
     borrowLimit: borrowLimit(db, s),
     staff: staffInfo(db, s),
+    status: s.status,
+    bankruptcyDebt: bankruptcyDebt(db, s),
+    founded: !!stakeOf(db, icao)?.founded,
+    guaranteed: !!stakeOf(db, icao)?.guaranteed,
+    pct: stakeOf(db, icao)?.pct ?? 0,
+    ipo: ipoOffer(db, s),
     ceoSalary: s.ceoSalary ?? 0,
     ceoSalaryCap: ceoSalaryCap(db, s),
     payoutPct: Math.round((s.payout ?? 0.3) * 100),
@@ -396,6 +416,73 @@ export function setService(db: Db, icao: string, level: number): void {
 }
 
 // ——— деньги ———
+
+/** Банк начинает банкротство, когда долг больше восьми месячных выручек (как в sim.ts). */
+const BANKRUPTCY_REVENUE_MONTHS = 8
+
+/** Порог банкротства; у новой компании без итогов — по прогнозу месяца. */
+function bankruptcyDebt(db: Db, s: AirlineState): number {
+  const fin = s.last ?? projectAirline(db, s.icao)?.last ?? null
+  return Math.round(Math.max(fin?.revenue ?? 0, (fin?.costs ?? 0) * 0.5) * BANKRUPTCY_REVENUE_MONTHS)
+}
+/** Комиссия банков-организаторов IPO. */
+const IPO_FEE = 0.07
+/** До IPO компания должна поработать и выйти в прибыль. */
+const IPO_MIN_MONTHS = 3
+
+/** Вложить личные деньги в компанию — например, чтобы спасти её от банкротства. */
+export function injectCapital(db: Db, icao: string, amount: number): void {
+  const s = requireControl(db, icao)
+  const a = Math.round(amount)
+  if (!(a > 0)) throw new Error('Укажите сумму')
+  if (pilotRow(db).cash < a) throw new Error('У вас нет столько денег')
+  transaction(db, () => {
+    addTransaction(db, -a, `Вложение в капитал ${airlines.get(icao)?.name ?? icao}`)
+    db.prepare('UPDATE stakes SET cost = cost + ? WHERE icao = ?').run(a, icao)
+    s.cash += a
+    commit(db, s)
+  })
+}
+
+function ipoOffer(db: Db, s: AirlineState): IpoOffer | null {
+  if (!stakeOf(db, s.icao)?.founded || s.listed) return null
+  const months = (db.prepare('SELECT COUNT(*) AS n FROM airline_monthly WHERE icao = ?').get(s.icao) as { n: number }).n
+  const valuation = Math.round(fairValue(s))
+  let blocked: string | null = null
+  if (months < IPO_MIN_MONTHS) blocked = `Биржа ждёт отчётность хотя бы за ${IPO_MIN_MONTHS} месяца (сейчас ${months})`
+  else if (!s.last || s.last.profit <= 0) blocked = 'Инвесторы не купят убыточную компанию: нужна прибыль за прошлый месяц'
+  else if (s.status !== 'ok') blocked = 'Компания в долгах — сначала оздоровите финансы'
+  return {
+    blocked,
+    valuation,
+    options: IPO_LEVELS.map((pct) => ({ pct, proceeds: Math.round(valuation * (pct / 100) * (1 - IPO_FEE)) }))
+  }
+}
+
+/** Выход на биржу: продаём часть своей компании инвесторам, деньги — компании, контроль остаётся. */
+export function goPublic(db: Db, icao: string, pct: number): void {
+  const s = requireControl(db, icao)
+  const offer = ipoOffer(db, s)
+  if (!offer) throw new Error('Компания уже на бирже')
+  if (offer.blocked) throw new Error(offer.blocked)
+  const opt = offer.options.find((o) => o.pct === pct)
+  if (!opt) throw new Error('Такого пакета нет')
+  transaction(db, () => {
+    db.prepare('UPDATE stakes SET pct = pct - ? WHERE icao = ?').run(pct, icao)
+    s.cash += opt.proceeds
+    s.listed = true
+    // Капитализация — по оценке; акции начинают торговаться с $10.
+    s.sharePrice = s.prevSharePrice = 10
+    s.shares = Math.max(0.01, offer.valuation / 10 / 1e6)
+    commit(db, s)
+    db.prepare('INSERT INTO news (t, category, title, body) VALUES (?, ?, ?, ?)').run(
+      Date.now(),
+      'airline',
+      `${airlines.get(icao)?.name} выходит на биржу`,
+      `Инвесторы купили ${pct}% компании. Она привлекла $${opt.proceeds.toLocaleString('ru-RU')} на развитие.`
+    )
+  })
+}
 
 export function borrow(db: Db, icao: string, amount: number): void {
   const s = requireControl(db, icao)

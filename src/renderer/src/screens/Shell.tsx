@@ -42,7 +42,7 @@ const SECTIONS: Section[] = [
   { path: 'dispatch', label: 'Диспетчерская', stage: 3 },
   { path: 'flight', label: 'Активный полёт', stage: 2 },
   { path: 'logbook', label: 'Бортжурнал', stage: 2 },
-  { path: 'career', label: 'Карьера', stage: 3, pilotOnly: true },
+  { path: 'career', label: 'Карьера', stage: 3 },
   { path: 'company', label: 'Моя компания', stage: 7 },
   { path: 'life', label: 'Личная жизнь', stage: 5 },
   { path: 'fleet', label: 'Флот', stage: 7, ownerOnly: true },

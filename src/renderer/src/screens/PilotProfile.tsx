@@ -121,7 +121,7 @@ export function PilotProfile({ profile }: { profile: ProfileSummary }) {
 
   if (!pilot || !life || photo === undefined) return <Loader />
 
-  const company = companies[0]
+  const company = companies.find((c) => c.active)
   const ceo = !!company
   const stake = company ? stakes.find((s) => s.icao === company.icao) : undefined
   const ep = EPAULETTE[pilot.rank]

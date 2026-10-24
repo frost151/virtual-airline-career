@@ -131,6 +131,16 @@ function Job({ pilot }: { pilot: PilotState }) {
   }, [pilot.employerId])
 
   if (!pilot.employerId) return <Text c="dimmed">Вы сейчас без работы — найти её можно на главной.</Text>
+  if (pilot.ceo)
+    return (
+      <Card withBorder maw={600}>
+        <Text>
+          Вы — CEO <b>{pilot.employerName}</b> и летаете рейсами своей компании. За каждый рейс вы получаете 10% его
+          прибыли (за убыточный — ничего), а компания экономит на одном пилоте. Звание у вас одно — CEO, оклада пилота нет:
+          зарплату CEO вы назначаете себе в «Финансах».
+        </Text>
+      </Card>
+    )
   return (
     <Stack maw={600}>
       {error && <Alert color="red">{error}</Alert>}

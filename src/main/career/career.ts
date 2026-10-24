@@ -38,6 +38,7 @@ import { countryParams } from '../lifestyle/catalog'
 import { needsInspection } from '../tracker/landing'
 import { departuresFrom, findScheduledFlight } from './schedule'
 import { effectiveAirline } from '../airlines/state'
+import { CEO_FLIGHT_SHARE, ceoFlightCut, crewSaving, foundedAirline, settleCeoFlight } from '../airlines/ceo'
 import { CHARTER_BASES, CHARTER_OPERATORS, charterOffers, charterOperator, createPerson, updateRelationship } from './charter'
 
 const HOUR = 3_600_000
@@ -116,14 +117,22 @@ function employerName(kind: EmployerKind | null, id: string | null): string | nu
   return kind === 'airline' ? (airlines.get(id)?.name ?? id) : (charterOperator(id)?.name ?? id)
 }
 
+/** Пилот летает в своей компании как CEO: звание не растёт, оплата — доля прибыли рейса. */
+export function ceoOf(db: Db): string | null {
+  const icao = foundedAirline(db)
+  return icao && pilotRow(db).employer_id === icao ? icao : null
+}
+
 export function pilotState(db: Db): PilotState {
   const p = pilotRow(db)
   const profile = db.prepare('SELECT pilot_name FROM profile WHERE id = 1').get() as { pilot_name: string }
-  const next = RANKS[rankIndex(p.rank) + 1] ?? null
+  const ceo = !!ceoOf(db)
+  const next = ceo ? null : (RANKS[rankIndex(p.rank) + 1] ?? null)
   return {
     name: profile.pilot_name,
     rank: p.rank,
-    rankName: rankById(p.rank).name,
+    rankName: ceo ? 'CEO' : rankById(p.rank).name,
+    ceo,
     employerKind: p.employer_kind,
     employerId: p.employer_id,
     employerName: employerName(p.employer_kind, p.employer_id),
@@ -226,6 +235,12 @@ export function hire(db: Db, input: HireInput): PilotState {
 }
 
 export function resign(db: Db): PilotState {
+  if (ceoOf(db)) throw new Error('CEO не может уволиться из своей компании')
+  return leaveEmployer(db)
+}
+
+/** Уйти от работодателя (в том числе перед основанием своей компании). */
+export function leaveEmployer(db: Db): PilotState {
   transaction(db, () => {
     cancelOpenBookings(db)
     db.prepare('UPDATE pilot SET employer_kind = NULL, employer_id = NULL, base = NULL, hired_at = NULL WHERE id = 1').run()
@@ -256,8 +271,12 @@ export function returnToBase(db: Db): PilotState {
 
 export function changeBase(db: Db, base: string): PilotState {
   const p = pilotRow(db)
-  const opt = hireOptions(db).find((o) => o.kind === p.employer_kind && o.id === p.employer_id)
-  if (!opt?.bases.includes(base)) throw new Error('У работодателя нет такой базы')
+  const ceo = ceoOf(db)
+  // CEO может перебраться в любую базу своей компании.
+  const bases = ceo
+    ? effectiveAirline(db, ceo).network.map((n) => n.hub)
+    : (hireOptions(db).find((o) => o.kind === p.employer_kind && o.id === p.employer_id)?.bases ?? [])
+  if (!bases.includes(base)) throw new Error('У работодателя нет такой базы')
   const cost = Math.round(BASE_CHANGE_COST * priceLevel(db))
   if (p.cash < cost) throw new Error('Недостаточно денег на переезд')
   if (openBooking(db)) throw new Error('Сначала выполните или отмените бронь')
@@ -364,12 +383,17 @@ export function dispatchSchedule(db: Db, now: number): DispatchFlight[] {
   if (!p.location) return []
   const rated = new Set(ownedRatings(db).map((r) => r.id))
   const mult = getSettings(db).payMultiplier * priceLevel(db)
+  const ceo = ceoOf(db)
   return departuresFrom(al, p.location, now - 30 * 60_000, now + 24 * HOUR).map((f) => {
     const t = aircraftTypes.get(f.typeId)!
     let blockedReason: string | null = null
     if (!rated.has(ratingFor(t).id)) blockedReason = `Нет допуска: ${ratingFor(t).name}`
-    else if (!canFlyCategory(p.rank, t.category)) blockedReason = 'Стажёров не ставят на широкофюзеляжные'
-    const estPay = Math.round((f.blockMin / 60) * hourlyRate(t.category, p.rank) * mult)
+    else if (!ceo && !canFlyCategory(p.rank, t.category)) blockedReason = 'Стажёров не ставят на широкофюзеляжные'
+    const estPay = Math.round(
+      ceo
+        ? ceoFlightCut(db, ceo, f.dep, f.arr) * getSettings(db).payMultiplier
+        : (f.blockMin / 60) * hourlyRate(t.category, p.rank) * mult
+    )
     return { ...f, typeName: t.name, bookable: !blockedReason, blockedReason, estPay }
   })
 }
@@ -552,8 +576,13 @@ function finalizeBooking(db: Db, bookingId: number, delayCode: string | null): C
   const notes: string[] = []
   let rep = 0
 
+  const ceo = ceoOf(db) === b.operator ? b.operator : null
   let pay: number
-  if (b.charter) {
+  if (ceo) {
+    // CEO получает долю прибыли рейса; компания платит её и экономит на одном пилоте.
+    pay = ceoFlightCut(db, ceo, b.dep, b.arr) * getSettings(db).payMultiplier
+    notes.push(pay > 0 ? `${Math.round(CEO_FLIGHT_SHARE * 100)}% прибыли рейса` : 'рейс убыточный — доли с прибыли нет')
+  } else if (b.charter) {
     const details = b.charter as CharterDetails & { pilotPay: number }
     const punctual = !f.blockOffAt || f.blockOffAt <= details.deadline
     pay = details.pilotPay * (punctual ? 1 : 0.8)
@@ -615,6 +644,10 @@ function finalizeBooking(db: Db, bookingId: number, delayCode: string | null): C
     addTransaction(db, pay, `Рейс ${b.flightNo} ${b.dep} → ${b.arr}${tax ? ` (налог ${taxPct}%: −$${tax})` : ''}`)
     addFlightFatigue(db, blockHours)
     changeReputation(db, rep)
+    if (ceo) {
+      settleCeoFlight(db, ceo, gross, crewSaving(ceo, b.typeId, blockHours, priceLevel(db)))
+      return undefined
+    }
     // Статистика уже с учётом этого рейса (бронь помечена завершённой выше).
     const next = nextRankIfEligible(p.rank, pilotStats(db), hasEducation(db, 'tri'))
     if (next) db.prepare('UPDATE pilot SET rank = ? WHERE id = 1').run(next)
@@ -636,7 +669,7 @@ function finalizeBooking(db: Db, bookingId: number, delayCode: string | null): C
 
 function fireIfNeeded(db: Db): { fired?: boolean } {
   const p = pilotRow(db)
-  if (p.employer_id && p.reputation < FIRE_BELOW_REPUTATION) {
+  if (p.employer_id && p.reputation < FIRE_BELOW_REPUTATION && !ceoOf(db)) {
     resign(db)
     return { fired: true }
   }

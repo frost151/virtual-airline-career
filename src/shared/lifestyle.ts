@@ -106,7 +106,7 @@ export interface Asset {
   loanId: number | null
 }
 
-export type LoanKind = 'mortgage' | 'auto' | 'aircraft'
+export type LoanKind = 'mortgage' | 'auto' | 'aircraft' | 'guarantee'
 
 export interface Loan {
   id: number
@@ -208,7 +208,8 @@ export const INVESTMENT_LABEL: Record<InvestmentKind, string> = {
 export const LOAN_LABEL: Record<LoanKind, string> = {
   mortgage: 'Ипотека',
   auto: 'Автокредит',
-  aircraft: 'Кредит на самолёт'
+  aircraft: 'Кредит на самолёт',
+  guarantee: 'Долг по поручительству'
 }
 
 /** Порог усталости, после которого рейсы недоступны. */
