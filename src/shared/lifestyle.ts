@@ -49,6 +49,8 @@ export interface GaAircraft {
 export interface RestOption {
   id: string
   name: string
+  /** Сколько длится отдых: на это время мир перематывается. */
+  hours: number
   price: number
   fatigue: number
   satisfaction: number

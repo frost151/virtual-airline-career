@@ -8,6 +8,11 @@ import type {
   AirlineMarketRow,
   Autopilot,
   DestinationOption,
+  FarePreview,
+  LiveFlight,
+  NetworkMap,
+  TailPosition,
+  RouteAdvice,
   FoundAirlineInput,
   FoundQuote,
   FoundTypeOption,
@@ -90,6 +95,8 @@ export interface ScheduledFlight {
   cargoKg: number
   /** Средний тариф в одну сторону, $ (из экономики авиакомпании). */
   avgFare: number | null
+  /** Рейс в одну сторону без обратного: самолёт остаётся в аэропорту прилёта. */
+  oneWay?: true
 }
 
 export interface DispatchFlight extends ScheduledFlight {
@@ -283,6 +290,14 @@ export interface Settings {
   demoCountsForCareer: boolean
   /** Режим читера: панель с деньгами, налётом, отдыхом и т.д. */
   cheatMode: boolean
+  /** Какие новости показывать (пусто — все). */
+  newsFilter: NewsFilter
+}
+
+/** Фильтр новостей: компании (ICAO) и темы. */
+export interface NewsFilter {
+  airlines: string[]
+  topics: string[]
 }
 
 export interface WikiImage {
@@ -290,6 +305,23 @@ export interface WikiImage {
   /** Страница-источник в Википедии (для подписи). */
   page: string
   title: string
+}
+
+/** Состояние обновления программы. */
+export interface UpdateStatus {
+  /** disabled — режим разработки; available — только у портативной версии, её скачивают вручную. */
+  state: 'idle' | 'disabled' | 'checking' | 'none' | 'available' | 'downloading' | 'ready' | 'error'
+  /** Установленная версия. */
+  current: string
+  portable: boolean
+  /** Новая версия. */
+  version?: string
+  notes?: string
+  percent?: number
+  /** Ссылка на скачивание (портативная версия). */
+  url?: string
+  error?: string
+  checkedAt?: number
 }
 
 export interface Api {
@@ -418,9 +450,12 @@ export interface Api {
     routeQuote(icao: string, origin: string, dest: string): Promise<RouteQuote>
     setAutopilot(icao: string, patch: Partial<Autopilot>): Promise<ManageState>
     setFareMult(icao: string, mult: number): Promise<ManageState>
+    /** Наценка на одном рейсе (null — общая по компании). */
+    setRouteFare(icao: string, hub: string, dest: string, mult: number | null): Promise<ManageState>
+    farePreview(icao: string, hub: string, dest: string): Promise<FarePreview>
     setFrequency(icao: string, hub: string, dest: string, freq: number): Promise<ManageState>
-    /** typeId — тип самолёта из флота, который выполняет рейс. */
-    openRoute(icao: string, origin: string, dest: string, freq: number, typeId: string): Promise<ManageState>
+    /** typeId — тип самолёта из флота; withReturn = false — рейс в одну сторону, самолёт останется в аэропорту прилёта. */
+    openRoute(icao: string, origin: string, dest: string, freq: number, typeId: string, withReturn?: boolean): Promise<ManageState>
     setRouteType(icao: string, hub: string, dest: string, typeId: string | null): Promise<ManageState>
     lease(icao: string, typeId: string, count: number): Promise<ManageState>
     buy(icao: string, typeId: string, count: number): Promise<ManageState>
@@ -437,11 +472,35 @@ export interface Api {
     /** Вложить личные деньги в компанию. */
     inject(icao: string, amount: number): Promise<ManageState>
     /** Выйти на биржу, продав pct% компании. */
+    /** Выставить pct% своей компании на биржу: инвесторы раскупают акции постепенно. */
     ipo(icao: string, pct: number): Promise<ManageState>
+    cancelOffering(icao: string): Promise<ManageState>
+    /** Обратный рейс к рейсу в одну сторону. */
+    createReturn(icao: string, hub: string, dest: string, freq: number): Promise<ManageState>
+    /** Перегнать самолёт обратно без пассажиров (рейс в одну сторону отменяется). */
+    ferryBack(icao: string, hub: string, dest: string): Promise<ManageState>
+    setRouteNumber(icao: string, hub: string, dest: string, num: number): Promise<ManageState>
+    setRegistration(icao: string, oldReg: string, newReg: string): Promise<ManageState>
+    /** Борта компании и где они сейчас. */
+    tails(icao: string): Promise<TailPosition[]>
+    /** Советник по маршрутам. */
+    advice(icao: string): Promise<RouteAdvice>
   }
   settings: {
     get(): Promise<Settings>
     set(patch: Partial<Settings>): Promise<Settings>
+  }
+  map: {
+    /** Борта в воздухе сейчас (по часам мира): у перечисленных компаний или у всех. */
+    flights(only?: string[]): Promise<LiveFlight[]>
+    network(icao: string): Promise<NetworkMap>
+  }
+  update: {
+    status(): Promise<UpdateStatus>
+    check(): Promise<UpdateStatus>
+    /** Перезапустить программу и поставить скачанное обновление. */
+    install(): Promise<void>
+    onStatus(cb: (s: UpdateStatus) => void): () => void
   }
   /** Открыть ссылку во внешнем браузере. */
   openExternal(url: string): Promise<void>

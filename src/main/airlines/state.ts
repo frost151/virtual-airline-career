@@ -1,5 +1,6 @@
-import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, RouteState, Staff } from '@shared/airlines'
-import type { Airline } from '@shared/world'
+import type { AirlineFinance, AirlineStatus, Autopilot, Delivery, Offering, RouteState, Staff } from '@shared/airlines'
+import type { Airline, OneWayLeg } from '@shared/world'
+import { newRegistration } from './registrations'
 import { transaction, type Db } from '../db'
 import { aircraftTypes, airlines, airports, playerAirlineIds } from '../world'
 import { distanceKm } from '../tracker/geo'
@@ -47,6 +48,44 @@ export interface AirlineState {
   ceoSalary?: number
   /** Доля квартальной прибыли на дивиденды (по умолчанию 0,3). */
   payout?: number
+  /** Акции своей компании, выставленные игроком на биржу и ещё не раскупленные. */
+  offering?: Offering
+  /** Регистрации бортов по типам: столько же, сколько самолётов во fleet. */
+  regs?: Record<string, string[]>
+  /** Рейсы в одну сторону, ждущие обратного: их самолёты стоят в аэропорту прилёта. */
+  legs?: OneWayLeg[]
+}
+
+/** Сколько самолётов каждого типа стоит без дела после рейса в одну сторону. */
+export function parkedByType(s: AirlineState): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const l of s.legs ?? []) out.set(l.type, (out.get(l.type) ?? 0) + 1)
+  return out
+}
+
+/** Самолётов типа, которые могут летать по расписанию. */
+export const flyingCount = (s: AirlineState, typeId: string): number =>
+  Math.max(0, (s.fleet[typeId] ?? 0) - (parkedByType(s).get(typeId) ?? 0))
+
+/** Регистрации под нынешний флот: новым самолётам — новые номера, проданные уходят с конца списка. */
+export function syncRegs(s: AirlineState, taken?: Set<string>): void {
+  const al = airlines.get(s.icao)
+  if (!al) return
+  s.regs ??= {}
+  let used = taken
+  for (const [type, count] of Object.entries(s.fleet)) {
+    const list = (s.regs[type] ??= [])
+    while (list.length < count) {
+      used ??= new Set(Object.values(s.regs).flat())
+      const reg = newRegistration(s.icao, al.country, type, used, `${type}|${list.length}|${s.restarts}`)
+      used.add(reg)
+      list.push(reg)
+    }
+    if (list.length > count) list.length = Math.max(0, count)
+  }
+  for (const type of Object.keys(s.regs)) if (!(type in s.fleet)) delete s.regs[type]
+  // Самолёт продан — его рейс в одну сторону отменяется.
+  if (s.legs?.length) s.legs = s.legs.filter((l) => s.regs![l.type]?.includes(l.reg))
 }
 
 /** Национальные перевозчики: при банкротстве их спасает государство. */
@@ -57,6 +96,14 @@ export const FLAG_CARRIERS = new Set([
 ])
 
 const memo = new WeakMap<Db, Map<string, AirlineState>>()
+/** Метка объекта состояния: у разных профилей одинаковые version не должны делить кэш расписания. */
+const epochs = new WeakMap<AirlineState, number>()
+let epochCounter = 0
+function epochOf(s: AirlineState): number {
+  let e = epochs.get(s)
+  if (!e) epochs.set(s, (e = ++epochCounter))
+  return e
+}
 
 export function hasAirlineStates(db: Db): boolean {
   return !!db.prepare('SELECT 1 FROM airline_state LIMIT 1').get()
@@ -67,6 +114,8 @@ export function loadStates(db: Db): Map<string, AirlineState> {
   if (cached) return cached
   const rows = db.prepare('SELECT icao, data FROM airline_state').all() as { icao: string; data: string }[]
   const map = new Map(rows.map((r) => [r.icao, JSON.parse(r.data) as AirlineState]))
+  // Старые сохранения без регистраций — выдаём номера при первом открытии.
+  for (const s of map.values()) if (!s.regs) syncRegs(s)
   memo.set(db, map)
   return map
 }
@@ -74,7 +123,10 @@ export function loadStates(db: Db): Map<string, AirlineState> {
 export function saveStates(db: Db, states: Map<string, AirlineState>): void {
   const stmt = db.prepare('INSERT INTO airline_state (icao, data) VALUES (?, ?) ON CONFLICT(icao) DO UPDATE SET data = excluded.data')
   transaction(db, () => {
-    for (const s of states.values()) stmt.run(s.icao, JSON.stringify(s))
+    for (const s of states.values()) {
+      syncRegs(s)
+      stmt.run(s.icao, JSON.stringify(s))
+    }
   })
   memo.set(db, states)
 }
@@ -83,6 +135,7 @@ export function saveStates(db: Db, states: Map<string, AirlineState>): void {
 export function releaseControl(s: AirlineState): void {
   delete s.autopilot
   delete s.fareMult
+  for (const r of s.routes) delete r.fareMult
   delete s.ceoSalary
   delete s.payout
 }
@@ -108,7 +161,7 @@ const DAYS = 30
 function autoTypes(al: Airline, s: AirlineState): Map<RouteState, string> {
   const out = new Map<RouteState, string>()
   if (!playerAirlineIds.has(s.icao)) return out
-  const free = new Map(al.fleet.map((f) => [f.type, f.count * BLOCK_HOURS_PER_DAY * DAYS]))
+  const free = new Map(al.fleet.map((f) => [f.type, flyingCount(s, f.type) * BLOCK_HOURS_PER_DAY * DAYS]))
   const legs = s.routes
     .filter((r) => r.freq > 0)
     .map((r) => {
@@ -152,13 +205,16 @@ export function withState(base: Airline, s: AirlineState): Airline {
     n.fare![r.dest] = r.fare
     const type = r.type ?? auto.get(r)
     if (type) n.type![r.dest] = type
+    if (r.num) (n.num ??= {})[r.dest] = r.num
   }
   return {
     ...base,
     reputation: Math.round(s.reputation),
     fleet,
     network: [...byHub.values()],
-    version: s.version
+    ...(s.legs?.length ? { legs: s.legs } : {}),
+    version: s.version,
+    cacheKey: `${epochOf(s)}:${s.version}`
   }
 }
 

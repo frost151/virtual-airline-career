@@ -11,7 +11,9 @@ import { getBooking, onFlightFinished } from './career/career'
 import type { CatchUpReport, SkipPreset } from '@shared/economy'
 import { advanceWorld } from './economy/clock'
 import { clockOffset, worldNow } from './worldTime'
-import { prepareDeparture, skipPresetMs, skipWorld } from './timeSkip'
+import { prepareDeparture, requireSkippable, skipPresetMs, skipWorld } from './timeSkip'
+import { takeRest as restNow } from './lifestyle/life'
+import { REST } from './lifestyle/catalog'
 import { MsfsSource } from './sim/msfs'
 import { DemoSource, generateDemoFlight } from './sim/demo'
 import { identifyAircraft } from './sim/aircraft'
@@ -172,6 +174,18 @@ export function skipTime(preset: SkipPreset): void {
   if (tracker) throw new Error('Во время полёта время не перематывается')
   const db = activeDb()
   const report = skipWorld(db, skipPresetMs(db, preset))
+  if (report) showReport(report)
+  else send('world:changed', null)
+}
+
+/** Платный отдых: оплата и эффект сразу, потом мир перематывается на время отдыха. */
+export function takeRest(id: string): void {
+  if (tracker) throw new Error('Во время полёта отдыхать нельзя')
+  const db = activeDb()
+  const hours = REST.find((r) => r.id === id)?.hours ?? 0
+  requireSkippable(db, hours * 3_600_000)
+  restNow(db, id)
+  const report = hours ? skipWorld(db, hours * 3_600_000) : null
   if (report) showReport(report)
   else send('world:changed', null)
 }

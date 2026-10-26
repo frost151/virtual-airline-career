@@ -9,7 +9,7 @@ const PAYLOAD_KG = 14000
 /**
  * Синтетический полёт A320 от гейта до гейта.
  * Нужен, чтобы проверять трекер без симулятора. В наборе специально есть
- * 10-секундное превышение 250 узлов ниже FL100 — трекер должен его поймать.
+ * 20-секундное превышение 250 узлов ниже FL100 (дольше отсрочки в 15 с) — трекер должен его поймать.
  */
 export function generateDemoFlight(dep: Airport, arr: Airport, startT: number): SimSample[] {
   const out: SimSample[] = []
@@ -135,7 +135,7 @@ export function generateDemoFlight(dep: Airport, arr: Airport, startT: number): 
 
   // 5. Полёт: набор, крейсер, снижение, заход.
   let airborneSec = 0
-  let blipLeft = 10
+  let blipLeft = 20
   let mode: 'climb' | 'cruise' | 'descent' | 'approach' = 'climb'
   for (;;) {
     const agl = alt - groundElevation()

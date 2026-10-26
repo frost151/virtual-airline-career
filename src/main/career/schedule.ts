@@ -66,18 +66,28 @@ export function frequency(al: Airline, km: number, dest: string): number {
 
 const cache = new Map<string, ScheduledFlight[]>()
 
+/** Маршруты в порядке расписания: от него зависят номера рейсов по умолчанию. */
+function orderedRoutes(al: Airline) {
+  return al.network
+    .flatMap((n) => n.destinations.map((d) => ({ hub: n.hub, dest: d, live: n })))
+    .sort((a, b) => hashString(`${a.hub}${a.dest}`) - hashString(`${b.hub}${b.dest}`))
+}
+
+/** Номер первого рейса маршрута «туда»: заданный владельцем или по порядку. Дальше — +2 на частоту, обратный — +1. */
+export function routeNumbers(al: Airline): Map<string, number> {
+  return new Map(orderedRoutes(al).map(({ hub, dest, live }, i) => [`${hub}-${dest}`, live.num?.[dest] ?? 100 + i * 6]))
+}
+
 /**
  * Расписание авиакомпании на сутки (рейсы, вылетающие из хабов в эти UTC-сутки, и обратные к ним).
  * Номера и время стабильны изо дня в день; загрузка меняется по дням.
  */
 export function airlineDaySchedule(al: Airline, dayStart: number): ScheduledFlight[] {
-  const key = `${al.icao}|${dayStart}|${al.version ?? 0}`
+  const key = `${al.icao}|${dayStart}|${al.cacheKey ?? al.version ?? 0}`
   const hit = cache.get(key)
   if (hit) return hit
 
-  const routes = al.network
-    .flatMap((n) => n.destinations.map((d) => ({ hub: n.hub, dest: d, live: n })))
-    .sort((a, b) => hashString(`${a.hub}${a.dest}`) - hashString(`${b.hub}${b.dest}`))
+  const routes = orderedRoutes(al)
 
   const out: ScheduledFlight[] = []
   const weekday = new Date(dayStart).getUTCDay()
@@ -111,7 +121,7 @@ export function airlineDaySchedule(al: Airline, dayStart: number): ScheduledFlig
       const utcMin = Math.round(localMin - (h.lon / 15) * 60)
       const depAt = dayStart + roundTo5(utcMin) * 60_000
       const block = blockMinutes(type, km)
-      const num = 100 + i * 6 + k * 2
+      const num = (live.num?.[dest] ?? 100 + i * 6) + k * 2
       const base = { airline: al.icao, distanceKm: Math.round(km), typeId: type.id, blockMin: block }
 
       // Загрузка — из модели спроса за прошлый месяц с разбросом по рейсам; без экономики — случайная.
@@ -152,7 +162,35 @@ export function airlineDaySchedule(al: Airline, dayStart: number): ScheduledFlig
     }
   })
 
-  if (cache.size > 200) cache.clear()
+  // Рейсы в одну сторону (без обратного): самолёт улетает один раз и остаётся в аэропорту прилёта.
+  for (const leg of al.legs ?? []) {
+    if (leg.depAt < dayStart || leg.depAt >= dayStart + DAY_MS) continue
+    const h = airports.get(leg.hub)
+    const d = airports.get(leg.dest)
+    const type = aircraftTypes.get(leg.type)
+    if (!h || !d || !type) continue
+    const km = distanceKm(h.lat, h.lon, d.lat, d.lon)
+    const block = blockMinutes(type, km)
+    out.push({
+      airline: al.icao,
+      distanceKm: Math.round(km),
+      typeId: type.id,
+      blockMin: block,
+      pax: Math.round(type.seats * 0.5),
+      cargoKg: Math.round(type.cargoKg * 0.3),
+      avgFare: null,
+      id: `${al.icao}${leg.num}-${dayStart}`,
+      flightNo: `${al.iata}${leg.num}`,
+      callsign: `${al.icao}${leg.num}`,
+      dep: leg.hub,
+      arr: leg.dest,
+      depAt: leg.depAt,
+      arrAt: leg.depAt + block * 60_000,
+      oneWay: true
+    })
+  }
+
+  if (cache.size > 600) cache.clear()
   cache.set(key, out)
   return out
 }

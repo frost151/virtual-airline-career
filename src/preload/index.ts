@@ -124,8 +124,11 @@ const api: Api = {
     routeQuote: (icao, origin, dest) => ipcRenderer.invoke('manage:routeQuote', icao, origin, dest),
     setAutopilot: (icao, patch) => ipcRenderer.invoke('manage:setAutopilot', icao, patch),
     setFareMult: (icao, mult) => ipcRenderer.invoke('manage:setFareMult', icao, mult),
+    setRouteFare: (icao, hub, dest, mult) => ipcRenderer.invoke('manage:setRouteFare', icao, hub, dest, mult),
+    farePreview: (icao, hub, dest) => ipcRenderer.invoke('manage:farePreview', icao, hub, dest),
     setFrequency: (icao, hub, dest, freq) => ipcRenderer.invoke('manage:setFrequency', icao, hub, dest, freq),
-    openRoute: (icao, origin, dest, freq, typeId) => ipcRenderer.invoke('manage:openRoute', icao, origin, dest, freq, typeId),
+    openRoute: (icao, origin, dest, freq, typeId, withReturn = true) =>
+      ipcRenderer.invoke('manage:openRoute', icao, origin, dest, freq, typeId, withReturn),
     setRouteType: (icao, hub, dest, typeId) => ipcRenderer.invoke('manage:setRouteType', icao, hub, dest, typeId),
     lease: (icao, typeId, count) => ipcRenderer.invoke('manage:lease', icao, typeId, count),
     buy: (icao, typeId, count) => ipcRenderer.invoke('manage:buy', icao, typeId, count),
@@ -140,11 +143,28 @@ const api: Api = {
     setPayLevel: (icao, level) => ipcRenderer.invoke('manage:setPayLevel', icao, level),
     setService: (icao, level) => ipcRenderer.invoke('manage:setService', icao, level),
     inject: (icao, amount) => ipcRenderer.invoke('manage:inject', icao, amount),
-    ipo: (icao, pct) => ipcRenderer.invoke('manage:ipo', icao, pct)
+    ipo: (icao, pct) => ipcRenderer.invoke('manage:ipo', icao, pct),
+    cancelOffering: (icao) => ipcRenderer.invoke('manage:cancelOffering', icao),
+    createReturn: (icao, hub, dest, freq) => ipcRenderer.invoke('manage:createReturn', icao, hub, dest, freq),
+    ferryBack: (icao, hub, dest) => ipcRenderer.invoke('manage:ferryBack', icao, hub, dest),
+    setRouteNumber: (icao, hub, dest, num) => ipcRenderer.invoke('manage:setRouteNumber', icao, hub, dest, num),
+    setRegistration: (icao, oldReg, newReg) => ipcRenderer.invoke('manage:setRegistration', icao, oldReg, newReg),
+    tails: (icao) => ipcRenderer.invoke('manage:tails', icao),
+    advice: (icao) => ipcRenderer.invoke('manage:advice', icao)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
     set: (patch) => ipcRenderer.invoke('settings:set', patch)
+  },
+  map: {
+    flights: (only) => ipcRenderer.invoke('map:flights', only),
+    network: (icao) => ipcRenderer.invoke('map:network', icao)
+  },
+  update: {
+    status: () => ipcRenderer.invoke('update:status'),
+    check: () => ipcRenderer.invoke('update:check'),
+    install: () => ipcRenderer.invoke('update:install'),
+    onStatus: (cb) => subscribe('update:status', cb)
   },
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url)
 }

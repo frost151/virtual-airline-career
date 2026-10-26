@@ -51,6 +51,19 @@ export interface AircraftType {
 
 export type AirlineArchetype = 'legacy' | 'lowcost' | 'regional' | 'leisure' | 'cargo'
 
+/** Рейс в одну сторону: самолёт улетает один раз и остаётся в аэропорту прилёта, пока не создан обратный рейс. */
+export interface OneWayLeg {
+  hub: string
+  dest: string
+  type: string
+  /** Вылет, мс UTC мира. */
+  depAt: number
+  /** Номер рейса. */
+  num: number
+  /** Регистрация борта. */
+  reg: string
+}
+
 export interface Airline {
   icao: string
   iata: string
@@ -72,7 +85,13 @@ export interface Airline {
     fare?: Record<string, number>
     /** Тип самолёта, назначенный владельцем на направление. */
     type?: Record<string, string>
+    /** Номер первого рейса «туда», заданный владельцем. */
+    num?: Record<string, number>
   }[]
+  /** Рейсы в одну сторону, ждущие обратного (у компании игрока). */
+  legs?: OneWayLeg[]
   /** Версия живого состояния — сбрасывает кэш расписания при изменениях сети. */
   version?: number
+  /** Ключ кэша расписания: версия плюс метка профиля (у разных профилей версии совпадают). */
+  cacheKey?: string
 }

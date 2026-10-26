@@ -41,6 +41,20 @@ export interface MacroOverview {
   news: NewsItem[]
 }
 
+/** Итоги месяца своей компании (или компании, где у игрока контрольный пакет). */
+export interface CompanyMonth {
+  icao: string
+  name: string
+  /** Начало месяца, за который подведены итоги. */
+  month: number
+  revenue: number
+  costs: number
+  profit: number
+  pax: number
+  lf: number
+  cash: number
+}
+
 /** Сводка «Пока вас не было». */
 export interface CatchUpReport {
   from: number
@@ -52,6 +66,8 @@ export interface CatchUpReport {
   cpiTo: number
   cycle: EconomicCycle
   missedBookings: number
+  /** Итоги месяцев по компаниям под контролем игрока (если за это время подводились итоги месяца). */
+  companies?: CompanyMonth[]
   /** Время перемотал игрок (иначе — программа была закрыта). */
   skipped?: boolean
 }

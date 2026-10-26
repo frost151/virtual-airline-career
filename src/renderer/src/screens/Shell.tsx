@@ -18,15 +18,18 @@ import { Finance } from './Finance'
 import { Staff } from './Staff'
 import { Logbook } from './Logbook'
 import { Home } from './Home'
+import { MapScreen } from './MapScreen'
 import { Dispatch } from './Dispatch'
 import { Career } from './Career'
 import { SettingsScreen } from './SettingsScreen'
 import { Economy } from './Economy'
 import { Life } from './Life'
 import { CatchUpModal } from '../components/CatchUpModal'
+import { UpdateBadge } from '../components/Update'
+import { SpeedWatch } from '../components/SpeedWatch'
 
 /** Разделы, у которых уже есть настоящий экран. */
-const READY = ['home', 'profile', 'dispatch', 'market', 'flight', 'logbook', 'career', 'company', 'fleet', 'routes', 'finance', 'staff', 'settings', 'economy', 'life']
+const READY = ['home', 'map', 'profile', 'dispatch', 'market', 'flight', 'logbook', 'career', 'company', 'fleet', 'routes', 'finance', 'staff', 'settings', 'economy', 'life']
 
 interface Section {
   path: string
@@ -39,6 +42,7 @@ interface Section {
 
 const SECTIONS: Section[] = [
   { path: 'home', label: 'Главная', stage: 3 },
+  { path: 'map', label: 'Карта', stage: 8 },
   { path: 'profile', label: 'Личный кабинет', stage: 7 },
   { path: 'dispatch', label: 'Диспетчерская', stage: 3 },
   { path: 'flight', label: 'Активный полёт', stage: 2 },
@@ -86,6 +90,7 @@ export function Shell({ profile, onExit }: Props) {
             </Text>
           </Group>
           <Group gap="md">
+            <UpdateBadge />
             <CheatBadge />
             <SimBadge />
             <WorldClock />
@@ -118,8 +123,10 @@ export function Shell({ profile, onExit }: Props) {
 
       <AppShell.Main>
         <CatchUpModal />
+        <SpeedWatch />
         <Routes>
           <Route path="/home" element={<Home profile={profile} />} />
+          <Route path="/map" element={<MapScreen />} />
           <Route path="/dispatch" element={<Dispatch />} />
           <Route path="/career" element={<Career />} />
           <Route path="/settings" element={<SettingsScreen />} />

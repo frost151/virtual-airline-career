@@ -21,13 +21,13 @@
     { "id": "cj4", "name": "Cessna Citation CJ4", "price": 11000000, "monthly": 16000, "prestige": 30, "comfort": 12, "match": ["cj4"], "burnKgH": 520 }
   ],
   "rest": [
-    { "id": "restaurant", "name": "Ужин в хорошем ресторане", "price": 120, "fatigue": 6, "satisfaction": 2, "health": 0, "family": false },
-    { "id": "spa", "name": "СПА-день", "price": 300, "fatigue": 15, "satisfaction": 3, "health": 1, "family": false },
-    { "id": "weekend", "name": "Выходные за городом", "price": 650, "fatigue": 28, "satisfaction": 5, "health": 1, "family": true },
-    { "id": "sanatorium", "name": "Неделя в санатории", "price": 1800, "fatigue": 40, "satisfaction": 4, "health": 12, "family": false },
-    { "id": "beach", "name": "Неделя у моря", "price": 2600, "fatigue": 55, "satisfaction": 10, "health": 3, "family": true },
-    { "id": "vacation", "name": "Отпуск за границей (2 недели)", "price": 6000, "fatigue": 85, "satisfaction": 18, "health": 5, "family": true },
-    { "id": "maldives", "name": "Две недели на Мальдивах", "price": 16000, "fatigue": 100, "satisfaction": 28, "health": 6, "family": true }
+    { "id": "restaurant", "hours": 4, "name": "Ужин в хорошем ресторане", "price": 120, "fatigue": 6, "satisfaction": 2, "health": 0, "family": false },
+    { "id": "spa", "hours": 10, "name": "СПА-день", "price": 300, "fatigue": 15, "satisfaction": 3, "health": 1, "family": false },
+    { "id": "weekend", "hours": 48, "name": "Выходные за городом", "price": 650, "fatigue": 28, "satisfaction": 5, "health": 1, "family": true },
+    { "id": "sanatorium", "hours": 168, "name": "Неделя в санатории", "price": 1800, "fatigue": 40, "satisfaction": 4, "health": 12, "family": false },
+    { "id": "beach", "hours": 168, "name": "Неделя у моря", "price": 2600, "fatigue": 55, "satisfaction": 10, "health": 3, "family": true },
+    { "id": "vacation", "hours": 336, "name": "Отпуск за границей (2 недели)", "price": 6000, "fatigue": 85, "satisfaction": 18, "health": 5, "family": true },
+    { "id": "maldives", "hours": 336, "name": "Две недели на Мальдивах", "price": 16000, "fatigue": 100, "satisfaction": 28, "health": 6, "family": true }
   ],
   "subscriptions": [
     { "id": "gym", "name": "Абонемент в спортзал", "monthly": 70, "health": 2, "fatigueDaily": 0.5, "satisfaction": 2, "prestige": 0 },

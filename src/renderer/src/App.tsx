@@ -3,6 +3,7 @@ import { Center, Loader } from '@mantine/core'
 import type { ProfileSummary } from '@shared/types'
 import { ProfileSelect } from './screens/ProfileSelect'
 import { Shell } from './screens/Shell'
+import { ChangelogOnUpdate } from './components/Changelog'
 
 export function App() {
   const [profile, setProfile] = useState<ProfileSummary | null | undefined>(undefined)
@@ -19,15 +20,20 @@ export function App() {
     )
   }
 
-  if (!profile) return <ProfileSelect onOpened={setProfile} />
-
   return (
-    <Shell
-      profile={profile}
-      onExit={async () => {
-        await window.api.profiles.close()
-        setProfile(null)
-      }}
-    />
+    <>
+      <ChangelogOnUpdate />
+      {profile ? (
+        <Shell
+          profile={profile}
+          onExit={async () => {
+            await window.api.profiles.close()
+            setProfile(null)
+          }}
+        />
+      ) : (
+        <ProfileSelect onOpened={setProfile} />
+      )}
+    </>
   )
 }

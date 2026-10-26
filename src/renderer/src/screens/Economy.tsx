@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Badge, Card, Group, Loader, SegmentedControl, SimpleGrid, Stack, Switch, Table, Text, Title } from '@mantine/core'
+import { Badge, Card, Divider, Group, Loader, SegmentedControl, SimpleGrid, Stack, Switch, Table, Text, Title } from '@mantine/core'
 import type { MacroOverview, MacroPoint, NewsItem } from '@shared/economy'
 import { CYCLE_LABEL } from '@shared/economy'
 import { LineChart } from '../components/LineChart'
 import { Stat } from '../components/FlightParts'
 import { formatUtc } from '../format'
+import { NewsFilterPanel, newsMatches, useAirlineNames, useNewsFilter } from '../components/NewsFilter'
 
 const DAY_MS = 86_400_000
 const dateOf = (day: number) =>
@@ -106,13 +107,29 @@ export function Economy() {
         </SimpleGrid>
       )}
 
-      <Card withBorder>
-        <Text fw={600} mb="xs">
-          Новости
-        </Text>
-        <NewsList news={data.news} />
-      </Card>
+      <NewsCard news={data.news} />
     </Stack>
+  )
+}
+
+function NewsCard({ news }: { news: NewsItem[] }) {
+  const [filter, setFilter] = useNewsFilter()
+  const { names, options } = useAirlineNames()
+  const shown = news.filter((n) => newsMatches(n, filter, names))
+  return (
+    <Card withBorder>
+      <Group justify="space-between" mb="xs">
+        <Text fw={600}>Новости</Text>
+        {shown.length < news.length && (
+          <Text size="xs" c="dimmed">
+            Показано {shown.length} из {news.length}
+          </Text>
+        )}
+      </Group>
+      <NewsFilterPanel filter={filter} onChange={setFilter} options={options} />
+      <Divider my="sm" />
+      {shown.length || !news.length ? <NewsList news={shown} /> : <Text c="dimmed">Под фильтр ничего не попало.</Text>}
+    </Card>
   )
 }
 

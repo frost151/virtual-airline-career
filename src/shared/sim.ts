@@ -185,3 +185,11 @@ export const PHASE_LABEL: Record<FlightPhase, string> = {
   taxi_in: 'Руление на стоянку',
   on_block: 'На стоянке'
 }
+
+/** Ограничение скорости ниже FL100 и допуск к нему: штраф — только выше 260 узлов. */
+export const FL100_SPEED_LIMIT = 250
+export const SPEED_TOLERANCE_KT = 10
+/** Сколько секунд даётся, чтобы снизить скорость, прежде чем снять баллы. */
+export const OVERSPEED_GRACE_S = 15
+/** Посадочные фары можно включать где угодно между 10 000 ft и этой высотой. */
+export const LANDING_LIGHTS_BELOW_FT = 5000

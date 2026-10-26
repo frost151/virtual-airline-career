@@ -1,12 +1,12 @@
 import { randomUUID } from 'crypto'
-import type { CatchUpReport, MacroOverview, MacroPoint, NewsItem } from '@shared/economy'
+import type { CatchUpReport, CompanyMonth, MacroOverview, MacroPoint, NewsItem } from '@shared/economy'
 import { seededRng } from '@shared/random'
 import { transaction, type Db } from '../db'
 import { expireBookings } from '../career/career'
 import { isFirstOfMonth, jetFuelUsdPerKg, stepDay, stepMonth, type NewsDraft } from './macro'
 import { dayOf, getWorld, insertMacroPoint, macroState, setWorld } from './state'
 import { lifeDaily, lifeMonthly } from '../lifestyle/ticks'
-import { airlinesMonthly, ensureAirlines } from '../airlines/economy'
+import { airlinesMonthly, controlledMonth, ensureAirlines } from '../airlines/economy'
 import { airlinesDaily } from '../airlines/manage'
 
 /**
@@ -40,6 +40,7 @@ export function advanceWorld(db: Db, now: number): CatchUpReport | null {
   const fromMs = Date.parse((db.prepare('SELECT last_simulated_utc AS v FROM profile WHERE id = 1').get() as { v: string }).v)
 
   let state = start
+  const companies: CompanyMonth[] = []
   const firstNewsId = (db.prepare('SELECT COALESCE(MAX(id), 0) AS m FROM news').get() as { m: number }).m
   if (target > start.day) {
     transaction(db, () => {
@@ -57,6 +58,7 @@ export function advanceWorld(db: Db, now: number): CatchUpReport | null {
           // Личная жизнь видит уже новый уровень цен; состояние сохраняем, чтобы она его прочла.
           setWorld(db, 'macro', JSON.stringify(state))
           airlinesMonthly(db, state, seed).forEach((n) => insertNews(db, n))
+          companies.push(...controlledMonth(db, state.day))
           const t = state.day * 86_400_000 + 11 * 3_600_000
           lifeMonthly(db, state, prevCpi, t, seededRng(`${seed}|life|${state.day}`)).forEach((n) => insertNews(db, n))
         }
@@ -80,7 +82,8 @@ export function advanceWorld(db: Db, now: number): CatchUpReport | null {
     cpiFrom: start.cpi,
     cpiTo: state.cpi,
     cycle: state.cycle,
-    missedBookings: missed
+    missedBookings: missed,
+    ...(companies.length ? { companies } : {})
   }
 }
 

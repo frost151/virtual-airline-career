@@ -5,6 +5,7 @@ import { formatNum } from '../format'
 import { Stat } from '../components/FlightParts'
 import { bigMoney } from '../components/StakePanel'
 import { AutopilotSwitch, ManagedPage, useManaged, type Managed } from '../components/Managed'
+import { TailsCard } from '../components/TailsCard'
 
 /** Залог за лизинг — 3 месяца (как в main/airlines/manage.ts). */
 const LEASE_DEPOSIT_MONTHS = 3
@@ -148,6 +149,7 @@ function FleetBody({ m, st }: { m: Managed; st: ManageState }) {
       </Card>
 
       {manual && <OrderCard m={m} st={st} />}
+      <TailsCard m={m} st={st} />
     </>
   )
 }

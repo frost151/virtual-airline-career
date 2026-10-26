@@ -294,3 +294,99 @@ describe('заместитель по маршрутам', () => {
     expect(a320.needed / a320.available).toBeGreaterThan(0.75)
   })
 })
+
+describe('цены на рейсе, конкуренты, советник', () => {
+  it('наценка на отдельный рейс: дешевле — выше прогноз загрузки, видны конкуренты', () => {
+    const db = newDb()
+    m.leaseAircraft(db, ICAO, 'A320', 1)
+    // Направление, где компании ещё нет, а конкуренты есть.
+    const served = new Set(m.manageState(db, ICAO).routes.map((r) => r.dest))
+    const dest = destinationOptions(db, 'UUWW', 'A320').find((d) => !served.has(d.icao) && m.routeQuote(db, ICAO, 'UUWW', d.icao).competitors > 0)!.icao
+    m.openRoute(db, ICAO, 'UUWW', dest, 1, 'A320')
+    const p = m.farePreview(db, ICAO, 'UUWW', dest)
+    expect(p.competitors.length).toBeGreaterThan(0)
+    expect(p.competitors.every((c) => c.fare > 0)).toBe(true)
+    const cheap = p.curve.find((x) => x.mult === 0.8)!
+    const dear = p.curve.find((x) => x.mult === 1.2)!
+    // Загрузка не растёт с ценой (может упираться в потолок 97%, если спроса больше, чем мест).
+    for (let i = 1; i < p.curve.length; i++) expect(p.curve[i].lf).toBeLessThanOrEqual(p.curve[i - 1].lf)
+    expect(cheap.lf).toBeGreaterThanOrEqual(dear.lf)
+    expect(cheap.fare).toBeLessThan(dear.fare)
+
+    // Наценка на рейс поднимает его тариф в экономике месяца.
+    month(db)
+    const before = loadStates(db).get(ICAO)!.routes.find((x) => x.dest === dest)!.fare
+    m.setRouteFare(db, ICAO, 'UUWW', dest, 1.2)
+    expect(loadStates(db).get(ICAO)!.routes.find((x) => x.dest === dest)!.fareMult).toBe(1.2)
+    month(db)
+    const after = loadStates(db).get(ICAO)!.routes.find((x) => x.dest === dest)!
+    expect(after.fare).toBeGreaterThan(before)
+    m.setRouteFare(db, ICAO, 'UUWW', dest, null)
+    expect(loadStates(db).get(ICAO)!.routes.find((x) => x.dest === dest)!.fareMult).toBeUndefined()
+  })
+
+  it('советник разбирает рейсы и предлагает новые направления', () => {
+    const db = newDb()
+    m.leaseAircraft(db, ICAO, 'A320', 2)
+    const a = m.routeAdvice(db, ICAO)
+    expect(a.existing.length).toBe(m.manageState(db, ICAO).routes.length)
+    expect(a.suggestions.length).toBeGreaterThan(0)
+    expect(a.suggestions.every((s) => s.profit > 0)).toBe(true)
+    expect(a.suggestions.some((s) => s.fits)).toBe(true)
+  })
+})
+
+describe('борта, номера рейсов, рейсы в одну сторону', () => {
+  it('регистрации у всех бортов, сменить можно только на свободную', () => {
+    const db = newDb()
+    const tails = m.fleetTails(db, ICAO)
+    expect(tails.length).toBe(1)
+    expect(tails[0].reg).toMatch(/^RA-/)
+    m.setRegistration(db, ICAO, tails[0].reg, 'ra-73999')
+    expect(m.fleetTails(db, ICAO)[0].reg).toBe('RA-73999')
+    const taken = Object.values(loadStates(db).get('AFL')!.regs!).flat()[0]
+    expect(() => m.setRegistration(db, ICAO, 'RA-73999', taken)).toThrow(/занята/)
+    expect(() => m.setRegistration(db, ICAO, 'RA-73999', 'плохо')).toThrow(/латинские/)
+  })
+
+  it('номер рейса меняется и попадает в расписание; пересечения запрещены', () => {
+    const db = newDb()
+    const [r1, r2] = m.manageState(db, ICAO).routes
+    m.setRouteNumber(db, ICAO, r1.hub, r1.dest, 700)
+    const day = utcDayStart(START) + 86_400_000
+    const flights = airlineDaySchedule(effectiveAirline(db, ICAO), day)
+    expect(flights.some((f) => f.flightNo === 'Q7700' && f.dep === r1.hub)).toBe(true)
+    expect(flights.some((f) => f.flightNo === 'Q7701' && f.dep === r1.dest)).toBe(true)
+    expect(() => m.setRouteNumber(db, ICAO, r2.hub, r2.dest, 700)).toThrow(/пересекаются/)
+  })
+
+  it('рейс в одну сторону: самолёт остаётся в аэропорту прилёта, обратный рейс возвращает его в расписание', () => {
+    const db = newDb()
+    m.leaseAircraft(db, ICAO, 'A320', 1)
+    m.openRoute(db, ICAO, 'UUWW', 'LTAI', 1, 'A320', false)
+    const st = m.manageState(db, ICAO)
+    expect(st.legs).toHaveLength(1)
+    const leg = st.legs[0]
+    // Один из двух A320 стоит: расписание остальных — только на один самолёт.
+    expect(st.typeHours.find((h) => h.typeId === 'A320')!.available).toBeLessThan(2 * 13 * 30)
+    const day = utcDayStart(leg.depAt)
+    const flights = airlineDaySchedule(effectiveAirline(db, ICAO), day).filter((f) => f.oneWay)
+    expect(flights).toHaveLength(1)
+    expect(flights[0]).toMatchObject({ dep: 'UUWW', arr: 'LTAI' })
+    expect(flights.some((f) => f.dep === 'LTAI')).toBe(false)
+
+    m.createReturn(db, ICAO, 'UUWW', 'LTAI', 1)
+    const after = m.manageState(db, ICAO)
+    expect(after.legs).toHaveLength(0)
+    expect(after.routes.some((r) => r.hub === 'UUWW' && r.dest === 'LTAI' && r.freq === 1)).toBe(true)
+  })
+
+  it('заместитель по маршрутам сам ставит обратный рейс', () => {
+    const db = newDb()
+    m.leaseAircraft(db, ICAO, 'A320', 1)
+    m.openRoute(db, ICAO, 'UUWW', 'LTAI', 1, 'A320', false)
+    m.setAutopilot(db, ICAO, { routes: true })
+    m.airlinesDaily(db, START + 86_400_000)
+    expect(m.manageState(db, ICAO).legs).toHaveLength(0)
+  })
+})

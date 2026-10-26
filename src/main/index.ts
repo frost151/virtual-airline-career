@@ -24,6 +24,7 @@ import {
   skipTime,
   startFlight,
   takeReport,
+  takeRest,
   trackerState,
   worldClockOffset
 } from './session'
@@ -46,7 +47,9 @@ import { airlineEconomy, marketRows } from './airlines/economy'
 import * as stakes from './airlines/stakes'
 import * as player from './airlines/player'
 import * as manage from './airlines/manage'
+import { liveFlights, networkMap } from './airlines/tails'
 import * as cheats from './cheats'
+import { checkForUpdates, initUpdater, installUpdate, updateStatus } from './updater'
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -170,7 +173,10 @@ function registerIpc(): void {
   ipcMain.handle('life:buyCollectible', lifeAction(life.buyCollectible))
   ipcMain.handle('life:sell', lifeAction(life.sellAsset))
   ipcMain.handle('life:repayLoan', lifeAction(life.repayLoan))
-  ipcMain.handle('life:rest', lifeAction(life.takeRest))
+  ipcMain.handle('life:rest', (_e, id: string) => {
+    takeRest(id)
+    return life.lifeState(activeDb())
+  })
   ipcMain.handle('life:subscribe', lifeAction(life.subscribe))
   ipcMain.handle('life:enroll', lifeAction(life.enroll))
   ipcMain.handle('life:renewMedical', lifeAction((db) => life.renewMedical(db)))
@@ -208,6 +214,8 @@ function registerIpc(): void {
   ipcMain.handle('manage:routeQuote', (_e, icao: string, origin: string, dest: string) => manage.routeQuote(activeDb(), icao, origin, dest))
   ipcMain.handle('manage:setAutopilot', manageAction(manage.setAutopilot))
   ipcMain.handle('manage:setFareMult', manageAction(manage.setFareMult))
+  ipcMain.handle('manage:setRouteFare', manageAction(manage.setRouteFare))
+  ipcMain.handle('manage:farePreview', (_e, icao: string, hub: string, dest: string) => manage.farePreview(activeDb(), icao, hub, dest))
   ipcMain.handle('manage:setFrequency', manageAction(manage.setFrequency))
   ipcMain.handle('manage:openRoute', manageAction(manage.openRoute))
   ipcMain.handle('manage:setRouteType', manageAction(manage.setRouteType))
@@ -225,6 +233,15 @@ function registerIpc(): void {
   ipcMain.handle('manage:setService', manageAction(manage.setService))
   ipcMain.handle('manage:inject', manageAction(manage.injectCapital))
   ipcMain.handle('manage:ipo', manageAction(manage.goPublic))
+  ipcMain.handle('manage:cancelOffering', manageAction(manage.cancelOffering))
+  ipcMain.handle('manage:createReturn', manageAction(manage.createReturn))
+  ipcMain.handle('manage:ferryBack', manageAction(manage.ferryBack))
+  ipcMain.handle('manage:setRouteNumber', manageAction(manage.setRouteNumber))
+  ipcMain.handle('manage:setRegistration', manageAction(manage.setRegistration))
+  ipcMain.handle('manage:tails', (_e, icao: string) => manage.fleetTails(activeDb(), icao))
+  ipcMain.handle('manage:advice', (_e, icao: string) => manage.routeAdvice(activeDb(), icao))
+  ipcMain.handle('map:flights', (_e, only?: string[]) => liveFlights(activeDb(), worldNow(activeDb()), only))
+  ipcMain.handle('map:network', (_e, icao: string) => networkMap(activeDb(), icao))
   ipcMain.handle('life:carImage', (_e, id: string) => {
     const car = CARS.find((c) => c.id === id)
     return car?.wiki ? wikiImage(car.wiki) : null
@@ -234,6 +251,14 @@ function registerIpc(): void {
     // Наружу открываем только https — ссылка приходит из интерфейса.
     if (/^https:\/\//.test(url)) return shell.openExternal(url)
   })
+  ipcMain.handle('update:status', () => updateStatus())
+  ipcMain.handle('update:check', () => checkForUpdates())
+  ipcMain.handle('update:install', () =>
+    installUpdate(trackerState().active, () => {
+      shutdownSession()
+      closeProfile()
+    })
+  )
   ipcMain.handle('settings:get', () => getSettings(activeDb()))
   ipcMain.handle('settings:set', (_e, patch: Partial<Settings>) => saveSettings(activeDb(), patch))
 }
@@ -242,6 +267,7 @@ app.whenReady().then(() => {
   registerIpc()
   createWindow()
   initSession()
+  initUpdater()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })

@@ -169,7 +169,7 @@ describe('банкротство своей компании и IPO', () => {
     expect(loan!.balance).toBeGreaterThan(1e8)
   })
 
-  it('деньги можно вложить в компанию, IPO — после трёх прибыльных месяцев', () => {
+  it('деньги можно вложить в компанию, выпуск акций — после трёх прибыльных месяцев', () => {
     const db = newDb()
     const before = m.manageState(db, ICAO)
     m.injectCapital(db, ICAO, 1e6)
@@ -183,12 +183,21 @@ describe('банкротство своей компании и IPO', () => {
       )
     const st = m.manageState(db, ICAO)
     expect(st.ipo!.blocked).toBeNull()
-    const opt = st.ipo!.options.find((o) => o.pct === 25)!
+    expect(st.ipo!.maxPct).toBe(49)
+    expect(() => m.goPublic(db, ICAO, 50)).toThrow(/от 1 до 49/)
     m.goPublic(db, ICAO, 25)
+    const listed = m.manageState(db, ICAO)
+    // Акции выставлены, но инвесторы покупают их только в месячном шаге.
+    expect(listed.pct).toBe(100)
+    expect(listed.ipo!.offering!.pct).toBe(25)
+    expect(listed.ipo!.blocked).toMatch(/уже выставлены/)
+    m.offeringsMonthly(db, START)
     const after = m.manageState(db, ICAO)
-    expect(after.pct).toBe(75)
-    expect(after.ipo).toBeNull()
-    expect(after.cash).toBe(st.cash + opt.proceeds)
+    expect(after.pct).toBeLessThan(100)
+    expect(after.pct).toBeGreaterThanOrEqual(75)
+    expect(after.cash).toBeGreaterThan(st.cash)
+    m.cancelOffering(db, ICAO)
+    expect(m.manageState(db, ICAO).ipo!.offering).toBeNull()
     expect(career.pilotState(db).ceo).toBe(true)
   })
 })

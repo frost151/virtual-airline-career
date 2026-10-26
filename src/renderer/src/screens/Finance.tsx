@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Group, NumberInput, Progress, SimpleGrid, Slider, Table, Text } from '@mantine/core'
+import { Button, Card, Group, NumberInput, Progress, SimpleGrid, Slider, Stack, Table, Text } from '@mantine/core'
 import type { ManageState } from '@shared/airlines'
 import { COST_LABEL, formatNum } from '../format'
 import { Stat } from '../components/FlightParts'
@@ -163,30 +163,68 @@ function InjectCard({ m }: { m: Managed }) {
 
 function IpoCard({ m, st }: { m: Managed; st: ManageState }) {
   const ipo = st.ipo!
+  const [pct, setPct] = useState(Math.min(10, ipo.maxPct))
+  const o = ipo.offering
+  const gross = (pct / 100) * ipo.valuation * (1 - ipo.feePct / 100)
   return (
     <Card withBorder>
       <Group justify="space-between" mb="xs">
-        <Text fw={600}>Выход на биржу (IPO)</Text>
+        <Text fw={600}>{ipo.listed ? 'Выпуск акций' : 'Выход на биржу (IPO)'}</Text>
         <Text size="sm" c="dimmed">
-          Оценка компании: <b>{bigMoney(ipo.valuation)}</b>
+          {ipo.listed ? 'Капитализация' : 'Оценка компании'}: <b>{bigMoney(ipo.valuation)}</b> · ваша доля {+st.pct.toFixed(1)}%
         </Text>
       </Group>
       <Text size="sm" mb="sm">
-        Инвесторы покупают часть компании, деньги получает компания (банки-организаторы берут 7%). Вы остаётесь CEO с
-        контрольным пакетом и получаете дивиденды по своей доле. Выйти на биржу можно один раз.
+        Вы выставляете часть компании на биржу, а инвесторы раскупают акции постепенно, месяц за месяцем. Чем выше дивиденды и
+        рост выручки, тем быстрее. Деньги получает компания (банки берут {ipo.feePct}%), у вас остаётся не меньше 51%.
       </Text>
-      {ipo.blocked && (
-        <Text size="sm" c="orange" mb="sm">
-          {ipo.blocked}
-        </Text>
+      {o ? (
+        <Stack gap="xs">
+          <Text size="sm">
+            Выставлено {o.pct}%, раскуплено {o.sold}% · компания получила {bigMoney(o.proceeds)}
+          </Text>
+          <Progress value={(o.sold / o.pct) * 100} />
+          <Text size="sm" c="dimmed">
+            При нынешних дивидендах и росте инвесторы покупают около {ipo.appetitePct}% остатка в месяц.
+          </Text>
+          <Group>
+            <Button size="xs" variant="light" color="red" onClick={() => m.act((icao) => window.api.manage.cancelOffering(icao))}>
+              Снять остаток с продажи
+            </Button>
+          </Group>
+        </Stack>
+      ) : (
+        <Stack gap="xs">
+          {ipo.blocked && (
+            <Text size="sm" c="orange">
+              {ipo.blocked}
+            </Text>
+          )}
+          <Group align="flex-end">
+            <NumberInput
+              label="Сколько выставить, %"
+              min={1}
+              max={Math.max(1, ipo.maxPct)}
+              step={1}
+              decimalScale={1}
+              value={pct}
+              onChange={(v) => setPct(Number(v) || 0)}
+              w={180}
+              disabled={!!ipo.blocked}
+            />
+            <Button
+              disabled={!!ipo.blocked || pct < 1 || pct > ipo.maxPct}
+              onClick={() => m.act((icao) => window.api.manage.ipo(icao, pct))}
+            >
+              Выставить на биржу
+            </Button>
+          </Group>
+          <Text size="sm" c="dimmed">
+            Если раскупят всё — компания получит около {bigMoney(gross)} по нынешней оценке. Сейчас инвесторы покупали бы около{' '}
+            {ipo.appetitePct}% выставленного в месяц.
+          </Text>
+        </Stack>
       )}
-      <Group>
-        {ipo.options.map((o) => (
-          <Button key={o.pct} variant="light" disabled={!!ipo.blocked} onClick={() => m.act((icao) => window.api.manage.ipo(icao, o.pct))}>
-            Продать {o.pct}% — компании {bigMoney(o.proceeds)}
-          </Button>
-        ))}
-      </Group>
     </Card>
   )
 }
@@ -257,32 +295,45 @@ function SalaryCard({ m, st }: { m: Managed; st: ManageState }) {
 function PayoutCard({ m, st }: { m: Managed; st: ManageState }) {
   const [value, setValue] = useState(st.payoutPct)
   useEffect(() => setValue(st.payoutPct), [st.payoutPct])
+  const rec = st.payoutRecommended
+  const save = (v: number) => m.act((icao) => window.api.manage.setPayout(icao, v))
   return (
     <Card withBorder>
       <Text fw={600} mb="xs">
         Дивиденды
       </Text>
-      <Text size="sm" mb="md">
-        {value ? `${value}% квартальной прибыли — акционерам` : 'Вся прибыль остаётся в компании'}
-      </Text>
-      <Slider
-        min={0}
-        max={100}
-        step={10}
-        value={value}
-        onChange={setValue}
-        onChangeEnd={(v) => m.act((icao) => window.api.manage.setPayout(icao, v))}
-        label={(v) => `${v}%`}
-        marks={[
-          { value: 0, label: '0%' },
-          { value: 50, label: '50%' },
-          { value: 100, label: '100%' }
-        ]}
-        mb="lg"
-      />
-      <Text size="xs" c="dimmed">
+      <Group align="flex-end" mb="xs">
+        <NumberInput
+          label="Доля квартальной прибыли, %"
+          min={0}
+          max={100}
+          step={1}
+          value={value}
+          onChange={(v) => setValue(Math.max(0, Math.min(100, Math.round(Number(v) || 0))))}
+          onBlur={() => value !== st.payoutPct && save(value)}
+          w={190}
+        />
+      </Group>
+      <Slider min={0} max={100} step={1} value={value} onChange={setValue} onChangeEnd={save} label={(v) => `${v}%`} mb="sm" />
+      {rec === null ? (
+        <Text size="sm" c="orange">
+          Квартал пока убыточный — дивиденды не выплатятся при любой доле.
+        </Text>
+      ) : (
+        <Group gap="xs">
+          <Text size="sm" c={value > rec ? 'orange' : 'teal'}>
+            Рекомендуется не больше {rec}%: после выплаты у компании останется резерв на два месяца расходов.
+          </Text>
+          {value !== rec && (
+            <Button size="compact-xs" variant="light" onClick={() => save(rec)}>
+              Поставить {rec}%
+            </Button>
+          )}
+        </Group>
+      )}
+      <Text size="xs" c="dimmed" mt="xs">
         Выплачиваются в январе, апреле, июле и октябре, если квартал прибыльный и долг не слишком велик. Вы получаете их по
-        своей доле.
+        своей доле. Высокие дивиденды привлекают инвесторов, когда акции выставлены на биржу.
       </Text>
     </Card>
   )

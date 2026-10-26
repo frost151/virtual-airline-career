@@ -18,6 +18,7 @@ import {
 import type { CreateProfileInput, GameMode, OwnerStart, ProfileSummary } from '@shared/types'
 import { OWNER_CAPITAL_OPTIONS } from '@shared/airlines'
 import { MODE_LABEL, formatUtc } from '../format'
+import { UpdateNotice } from '../components/Update'
 
 interface Props {
   onOpened(profile: ProfileSummary): void
@@ -64,6 +65,7 @@ export function ProfileSelect({ onOpened }: Props) {
           <Text c="dimmed">Соло-карьера в виртуальной авиации · MSFS 2024</Text>
         </Stack>
 
+        <UpdateNotice />
         {error && <Alert color="red">{error}</Alert>}
 
         {creating ? (

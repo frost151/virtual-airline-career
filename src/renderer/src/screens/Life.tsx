@@ -662,12 +662,14 @@ function Aviation({ life, catalog, cash, run }: Ctx) {
 
 // ——— отдых ———
 
+const restDuration = (h: number): string => (h < 24 ? `${h} ч` : h % 168 === 0 ? `${h / 168} нед.` : `${h / 24} сут.`)
+
 function Rest({ life, catalog, cash, run }: Ctx) {
   return (
     <Stack>
       <Text c="dimmed">
         Усталость сейчас: <b>{life.fatigue}</b>. После каждого рейса она растёт; дома проходит совсем медленно — чтобы снова летать, нужен
-        отдых.
+        отдых. На время отдыха мир перематывается.
         {(life.family.partner || life.family.children > 0) && ' Поездки — на всю семью.'}
       </Text>
       <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }}>
@@ -676,7 +678,7 @@ function Rest({ life, catalog, cash, run }: Ctx) {
             <Stack gap="xs">
               <Text fw={600}>{r.name}</Text>
               <Text size="sm" c="dimmed">
-                Усталость −{r.fatigue} · настроение +{r.satisfaction}
+                {restDuration(r.hours)} · усталость −{r.fatigue} · настроение +{r.satisfaction}
                 {r.health ? ` · здоровье +${r.health}` : ''}
               </Text>
               <Button variant="light" disabled={cash < r.localPrice} onClick={() => run(() => window.api.life.rest(r.id))}>

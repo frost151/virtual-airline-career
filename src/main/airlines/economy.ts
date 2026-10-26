@@ -1,5 +1,6 @@
 import type { AirlineDetailEconomy, AirlineMarketRow } from '@shared/airlines'
-import type { MacroState } from '@shared/economy'
+import type { CompanyMonth, MacroState } from '@shared/economy'
+import { CONTROL_PCT } from '@shared/airlines'
 import { transaction, type Db } from '../db'
 import type { NewsDraft } from '../economy/macro'
 import { airlines, airports } from '../world'
@@ -8,6 +9,7 @@ import { countryParams } from '../lifestyle/catalog'
 import { FLAG_CARRIERS, hasAirlineStates, loadStates, type AirlineState } from './state'
 import { initAirlineStates, simulateAirlinesMonth } from './sim'
 import { burnStake, payStakeDividends } from './stakes'
+import { offeringsMonthly } from './manage'
 
 /** Связка экономики авиакомпаний с миром и карьерой пилота. */
 
@@ -21,12 +23,27 @@ export function ensureAirlines(db: Db, macro: MacroState, seed: string): void {
   if (!hasAirlineStates(db)) initAirlineStates(db, macro, monthStartOf(macro.day), seed)
 }
 
+/** Итоги только что посчитанного месяца по компаниям, где у игрока контроль. */
+export function controlledMonth(db: Db, dayIndex: number): CompanyMonth[] {
+  const states = loadStates(db)
+  const rows = db.prepare('SELECT icao FROM stakes WHERE pct >= ?').all(CONTROL_PCT) as { icao: string }[]
+  // Итоги считаются за прошлый месяц: 1-го числа подводятся итоги предыдущего.
+  const d = new Date(monthStartOf(dayIndex))
+  const month = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)
+  return rows.flatMap(({ icao }) => {
+    const s = states.get(icao)
+    if (!s?.last) return []
+    const { revenue, costs, profit, pax, lf } = s.last
+    return [{ icao, name: airlines.get(icao)?.name ?? icao, month, revenue, costs, profit, pax, lf, cash: s.cash }]
+  })
+}
+
 /** Месячный шаг: экономика, увольнение пилота при банкротстве работодателя, дивиденды. */
 export function airlinesMonthly(db: Db, macro: MacroState, seed: string): NewsDraft[] {
   const monthStart = monthStartOf(macro.day)
   const res = simulateAirlinesMonth(db, macro, monthStart, seed)
-  const news = [...res.news]
   const t = monthStart + 13 * 3_600_000
+  const news = [...res.news, ...offeringsMonthly(db, t)]
   const p = pilotRow(db)
 
   // Дивиденды по акциям пилота, налог — по ставке страны базы (×0,75: льготная ставка на дивиденды).

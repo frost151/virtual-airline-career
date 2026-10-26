@@ -5,7 +5,8 @@ const DEFAULTS: Settings = {
   simbriefUsername: '',
   payMultiplier: 1,
   demoCountsForCareer: false,
-  cheatMode: false
+  cheatMode: false,
+  newsFilter: { airlines: [], topics: [] }
 }
 
 export function getSettings(db: Db): Settings {

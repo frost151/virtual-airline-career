@@ -1,4 +1,4 @@
-import type { AirlineArchetype } from './world'
+import type { AircraftCategory, AirlineArchetype, OneWayLeg } from './world'
 
 /** Экономика авиакомпаний: общие типы для main и интерфейса. */
 
@@ -17,6 +17,10 @@ export interface RouteState {
   badMonths: number
   /** Тип самолёта, назначенный владельцем (без поля — выбирается по флоту). */
   type?: string
+  /** Наценка на этом рейсе (без поля — общая по компании). */
+  fareMult?: number
+  /** Номер первого рейса «туда», заданный владельцем (без поля — по порядку маршрутов). */
+  num?: number
 }
 
 export type AirlineStatus = 'ok' | 'distress' | 'restarted'
@@ -258,6 +262,65 @@ export interface ManagedRoute extends RouteState {
   typeOptions: { id: string; name: string }[]
   /** Блок-часов в месяц на маршруте. */
   blockHours: number
+  /** Номер первого рейса «туда» (без кода компании); следующие частоты +2, обратные +1. */
+  flightNum: number
+}
+
+/** Рынок маршрута: конкуренты и прогноз своего рейса при разной наценке. */
+export interface FarePreview {
+  /** Спрос, пассажиров в сутки в одну сторону. */
+  demand: number
+  /** Наценка сейчас. */
+  current: number
+  /** У рейса своя наценка (иначе — общая по компании). */
+  own: boolean
+  competitors: {
+    icao: string
+    iata: string
+    name: string
+    archetype: AirlineArchetype
+    freq: number
+    typeName: string
+    /** Средний тариф в одну сторону за прошлый месяц, $. */
+    fare: number
+    lf: number
+    reputation: number
+  }[]
+  /** Прогноз своего рейса: загрузка, тариф, пассажиров в сутки (в обе стороны), выручка и прибыль в месяц. */
+  curve: { mult: number; lf: number; fare: number; paxPerDay: number; revenue: number; profit: number }[]
+}
+
+/** Советник по маршрутам: разбор нынешних рейсов и лучшие новые направления. */
+export interface RouteAdvice {
+  existing: {
+    hub: string
+    dest: string
+    freq: number
+    typeName: string
+    /** Операционная прибыль в месяц: за прошлый месяц или прогноз, $. */
+    profit: number
+    lf: number
+    verdict: 'keep' | 'more' | 'less' | 'replace' | 'close'
+    reason: string
+    /** Чем заменить самолёт (verdict = replace). */
+    typeId?: string
+  }[]
+  suggestions: {
+    hub: string
+    dest: string
+    km: number
+    typeId: string
+    typeName: string
+    lf: number
+    fare: number
+    /** Прогноз операционной прибыли в месяц при одном рейсе в день, $. */
+    profit: number
+    competitors: number
+    /** Хватает свободных часов этого типа. */
+    fits: boolean
+  }[]
+  /** Свободные блок-часы по типам в месяц. */
+  spare: { typeId: string; name: string; hours: number }[]
 }
 
 /** Будущий рейс: для формы «Открыть рейс». */
@@ -277,7 +340,10 @@ export interface RouteQuote {
 
 export interface ManageState {
   icao: string
+  iata: string
   name: string
+  /** Рейсы в одну сторону, ждущие обратного. landed — самолёт уже стоит в аэропорту прилёта. */
+  legs: (OneWayLeg & { typeName: string; landed: boolean })[]
   archetype: AirlineArchetype
   autopilot: Autopilot
   fareMult: number
@@ -317,24 +383,91 @@ export interface ManageState {
   ceoSalaryCap: number
   /** Доля квартальной прибыли на дивиденды, %. */
   payoutPct: number
+  /** Сколько можно выплачивать, чтобы у компании остался резерв, %; null — квартал убыточный. */
+  payoutRecommended: number | null
   last: AirlineFinance | null
   history: AirlineHistoryPoint[]
 }
 
-/** Пакеты, которые можно продать на бирже при IPO: контроль остаётся у игрока. */
-export const IPO_LEVELS = [10, 25, 49] as const
+/** Выставленные на биржу акции своей компании. */
+export interface Offering {
+  /** Сколько процентов компании выставлено. */
+  pct: number
+  /** Сколько из них уже раскупили. */
+  sold: number
+  /** Сколько получила компания (после комиссии), $. */
+  proceeds: number
+  startedAt: number
+}
 
 export interface IpoOffer {
-  /** Почему пока нельзя (null — можно). */
+  /** Почему сейчас нельзя выставить акции (null — можно). */
   blocked: string | null
-  /** Оценка компании, $. */
+  /** Компания уже на бирже (следующие выпуски — дополнительные). */
+  listed: boolean
+  /** Капитализация или оценка компании, $. */
   valuation: number
-  /** Сколько получит компания за пакет после комиссии банков, $. */
-  options: { pct: number; proceeds: number }[]
+  /** Сколько процентов можно выставить, чтобы у игрока осталось 51%. */
+  maxPct: number
+  /** Комиссия банков, %. */
+  feePct: number
+  /** Какую долю выставленного инвесторы раскупят за месяц при нынешних дивидендах и росте, %. */
+  appetitePct: number
+  offering: Offering | null
 }
 
 export interface AirlineDetailEconomy {
   row: AirlineMarketRow
   history: AirlineHistoryPoint[]
   routes: RouteState[]
+}
+
+// ——— борта и карты ———
+
+/** Рейс в воздухе для карты полётов. */
+export interface LiveFlight {
+  id: string
+  airline: string
+  iata: string
+  name: string
+  flightNo: string
+  /** Регистрация борта. */
+  reg: string | null
+  typeId: string
+  typeName: string
+  /** Категория самолёта — от неё силуэт и размер на карте. */
+  category: AircraftCategory
+  dep: string
+  arr: string
+  depCity: string
+  arrCity: string
+  depAt: number
+  arrAt: number
+  /** Координаты вылета и прилёта [lat, lon]. */
+  from: [number, number]
+  to: [number, number]
+}
+
+/** Где сейчас борт компании. */
+export interface TailPosition {
+  reg: string
+  typeId: string
+  typeName: string
+  status: 'air' | 'ground'
+  /** Аэропорт, где стоит самолёт (на земле). */
+  at: string | null
+  flight: LiveFlight | null
+  next: { flightNo: string; dep: string; arr: string; depAt: number } | null
+  /** Улетел рейсом в одну сторону и ждёт обратного. */
+  stranded: boolean
+}
+
+/** Маршрутная сеть для карты. */
+export interface NetworkMap {
+  icao: string
+  iata: string
+  name: string
+  hubs: string[]
+  airports: Record<string, { lat: number; lon: number; name: string; iata: string | null }>
+  routes: { hub: string; dest: string; freq: number; oneWay?: boolean }[]
 }

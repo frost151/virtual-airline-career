@@ -22,12 +22,17 @@ export function skipPresetMs(db: Db, preset: SkipPreset): number {
   return Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 1) - now.getTime()
 }
 
-/** Перемотать мир. Перемотка мимо вылета своей брони сорвала бы рейс — её не даём. */
-export function skipWorld(db: Db, ms: number): CatchUpReport | null {
+/** Перемотка мимо вылета своей брони сорвала бы рейс — её не даём. */
+export function requireSkippable(db: Db, ms: number): void {
   const b = openBooking(db)
   if (b?.status === 'booked' && b.depAt < worldNow(db) + ms) {
     throw new Error(`Перемотка сорвёт рейс ${b.flightNo} — сначала выполните или отмените бронь`)
   }
+}
+
+/** Перемотать мир. */
+export function skipWorld(db: Db, ms: number): CatchUpReport | null {
+  requireSkippable(db, ms)
   shiftClock(db, ms)
   const report = advanceWorld(db, worldNow(db))
   return report && { ...report, skipped: true }

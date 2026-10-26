@@ -1,4 +1,4 @@
-import type { RouteState, Staff } from '@shared/airlines'
+import type { FarePreview, RouteState, Staff } from '@shared/airlines'
 import type { MacroState } from '@shared/economy'
 import type { AircraftType, Airline, Airport } from '@shared/world'
 import { between, seededRng } from '@shared/random'
@@ -10,7 +10,7 @@ import { distanceKm } from '../tracker/geo'
 import { assignedType, blockMinutes, frequency, pickType, typeServes } from '../career/schedule'
 import { serviceFactor, countryParams } from '../lifestyle/catalog'
 import { COST_PROFILE, PRICE_APPEAL, averageFare, cargoRatePerKg, dailyDemand } from './demand'
-import { FLAG_CARRIERS, loadStates, saveStates, withState, type AirlineState } from './state'
+import { FLAG_CARRIERS, flyingCount, loadStates, saveStates, withState, type AirlineState } from './state'
 import { macroState } from '../economy/state'
 
 /**
@@ -24,10 +24,11 @@ export const DAYS = 30
 const BLOCK_HOURS_PER_DAY = 13
 /** Ставка лизинга в месяц от стоимости самолёта. */
 export const LEASE_RATE = 0.0085
-/** Насколько цена билета сдвигает долю рынка и собственный спрос компании. */
-const FARE_SHARE_ELASTICITY = 1.5
+/** Насколько цена билета сдвигает долю рынка и собственный спрос компании: пассажиры в основном выбирают дешёвые рейсы. */
+const FARE_SHARE_ELASTICITY = 2.5
 const FARE_DEMAND_ELASTICITY = 0.8
-const fareMultOf = (s: AirlineState): number => s.fareMult ?? 1
+/** Наценка на рейсе: своя у маршрута, иначе общая по компании. У компаний мира — рыночная. */
+export const routeFareMult = (s: AirlineState, r: RouteState): number => r.fareMult ?? s.fareMult ?? 1
 
 /** Потолок частот: челночные маршруты между крупными аэропортами — до 12 рейсов в день. */
 export function maxFreq(r: RouteState): number {
@@ -119,6 +120,30 @@ function routeType(al: Airline, r: RouteState, km: number): AircraftType | null 
   return assignedType(al, typeId, km, r.hub, r.dest) ?? pickType(al, km, r.hub, r.dest, seededRng(`${al.icao}|${r.hub}|${r.dest}|0`))
 }
 
+/** Вес компании на рынке пары аэропортов: вместимость, репутация, тип компании и цена билета. */
+function marketWeight(c: RouteCalc, mult = routeFareMult(c.state, c.route)): number {
+  return (
+    Math.pow(c.route.freq * c.type.seats, 0.8) *
+    Math.pow(c.state.reputation / 60, 1.5) *
+    PRICE_APPEAL[c.al.archetype] *
+    Math.pow(mult, -FARE_SHARE_ELASTICITY)
+  )
+}
+
+/** Загрузка каждого участника рынка. override — другая наценка у одного участника (для прогноза). */
+function splitMarket(list: RouteCalc[], demand: number, override?: { index: number; mult: number }): number[] {
+  const multOf = (c: RouteCalc, i: number) => (override?.index === i ? override.mult : routeFareMult(c.state, c.route))
+  const weights = list.map((c, i) => marketWeight(c, multOf(c, i)))
+  const total = weights.reduce((a, b) => a + b, 0) || 1
+  return list.map((c, i) => {
+    const seats = c.route.freq * c.type.seats
+    // Дешёвый билет ещё и создаёт спрос: летят те, кто иначе остался бы дома.
+    const own = Math.pow(multOf(c, i), -FARE_DEMAND_ELASTICITY)
+    const pax = Math.min(seats * 0.97, (demand * weights[i] * own) / total)
+    return seats ? pax / seats : 0
+  })
+}
+
 /** Расходы на один рейс в одну сторону, $. */
 function flightCost(t: AircraftType, km: number, blockH: number, pax: number, dest: string, jet: number, level: number) {
   const local = serviceFactor(countryParams(airports.get(dest)?.country ?? null))
@@ -180,21 +205,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
   for (const list of markets.values()) {
     const first = list[0]
     const demand = dailyDemand(first.route.hub, first.route.dest, first.km, season, ctx.macro.demandIndex)
-    const weights = list.map(
-      (c) =>
-        Math.pow(c.route.freq * c.type.seats, 0.8) *
-        Math.pow(c.state.reputation / 60, 1.5) *
-        PRICE_APPEAL[c.al.archetype] *
-        Math.pow(fareMultOf(c.state), -FARE_SHARE_ELASTICITY)
-    )
-    const total = weights.reduce((a, b) => a + b, 0) || 1
-    list.forEach((c, i) => {
-      const seats = c.route.freq * c.type.seats
-      // Дешёвый билет ещё и создаёт спрос: летят те, кто иначе остался бы дома.
-      const own = Math.pow(fareMultOf(c.state), -FARE_DEMAND_ELASTICITY)
-      const pax = Math.min(seats * 0.97, (demand * weights[i] * own) / total)
-      c.route.lf = seats ? pax / seats : 0
-    })
+    splitMarket(list, demand).forEach((lf, i) => (list[i].route.lf = lf))
   }
 
   // Финансы.
@@ -231,7 +242,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
     if (playerAirlineIds.has(s.icao)) {
       const need = new Map<string, number>()
       for (const c of list) need.set(c.type.id, (need.get(c.type.id) ?? 0) + c.blockH * c.route.freq * 2 * DAYS)
-      for (const [t, h] of need) typeFactor.set(t, Math.min(1, ((s.fleet[t] ?? 0) * BLOCK_HOURS_PER_DAY * DAYS) / h))
+      for (const [t, h] of need) typeFactor.set(t, Math.min(1, (flyingCount(s, t) * BLOCK_HOURS_PER_DAY * DAYS) / h))
     }
     let plannedFlights = 0
     const flown = new Map<RouteCalc, number>()
@@ -249,7 +260,7 @@ function computeMonth(states: Map<string, AirlineState>, ctx: MonthContext): Map
         r.fare = 0
       } else {
         paxFlight = c.type.seats * r.lf
-        r.fare = Math.round(averageFare(c.km, c.al.archetype, r.lf, level) * fareMultOf(s))
+        r.fare = Math.round(averageFare(c.km, c.al.archetype, r.lf, level) * routeFareMult(s, r))
         revFlight = paxFlight * r.fare + c.type.cargoKg * 0.45 * cargoRatePerKg(c.km, level)
       }
       const fc = flightCost(c.type, c.km, c.blockH, paxFlight, r.dest, jet, level)
@@ -317,7 +328,7 @@ export function planBlockHours(s: AirlineState): {
   const al = withState(airlines.get(s.icao)!, s)
   const routes = new Map<RouteState, { type: AircraftType | null; km: number; blockHours: number }>()
   const byType = new Map<string, { needed: number; available: number }>()
-  for (const [t, n] of Object.entries(s.fleet)) if (n > 0) byType.set(t, { needed: 0, available: n * BLOCK_HOURS_PER_DAY * DAYS })
+  for (const [t, n] of Object.entries(s.fleet)) if (n > 0) byType.set(t, { needed: 0, available: flyingCount(s, t) * BLOCK_HOURS_PER_DAY * DAYS })
   let needed = 0
   for (const r of s.routes) {
     const h = airports.get(r.hub)
@@ -330,8 +341,133 @@ export function planBlockHours(s: AirlineState): {
     if (type) byType.get(type.id)!.needed += blockHours
     needed += blockHours
   }
-  const fleetCount = Object.values(s.fleet).reduce((a, b) => a + b, 0)
-  return { needed, available: fleetCount * BLOCK_HOURS_PER_DAY * DAYS, routes, byType }
+  const available = [...byType.values()].reduce((a, b) => a + b.available, 0)
+  return { needed, available, routes, byType }
+}
+
+/**
+ * Рынок одного маршрута для экрана «Маршруты»: конкуренты по паре аэропортов и прогноз загрузки
+ * своего рейса при разной наценке (остальные участники рынка — как сейчас).
+ */
+export function routeFarePreview(db: Db, icao: string, hub: string, dest: string, mults: number[]): FarePreview {
+  const macro = macroState(db)
+  const month = new Date(macro.day * 86_400_000).getUTCMonth()
+  const level = macro.cpi
+  const jet = jetFuelUsdPerKg(macro.brent) * level
+  const key = pairKey(hub, dest)
+  const list: RouteCalc[] = []
+  for (const s of loadStates(db).values()) {
+    const r = s.routes.find((x) => x.freq > 0 && pairKey(x.hub, x.dest) === key)
+    if (!r) continue
+    const al = withState(airlines.get(s.icao)!, s)
+    const h = airports.get(r.hub)!
+    const d = airports.get(r.dest)!
+    const km = distanceKm(h.lat, h.lon, d.lat, d.lon)
+    const type = routeType(al, r, km)
+    if (!type || type.category === 'freighter') continue
+    list.push({ state: s, route: r, al, type, km, blockH: blockMinutes(type, km) / 60 })
+  }
+  const index = list.findIndex((c) => c.state.icao === icao)
+  if (index < 0) throw new Error('Маршрут не найден')
+  const me = list[index]
+  const demand = dailyDemand(hub, dest, me.km, SEASONALITY[month], macro.demandIndex)
+  const ops = COST_PROFILE[me.al.archetype].ops
+  const curve = mults.map((mult) => {
+    const lf = splitMarket(list, demand, { index, mult })[index]
+    const fare = Math.round(averageFare(me.km, me.al.archetype, lf, level) * mult)
+    const flights = me.route.freq * 2 * DAYS
+    const pax = me.type.seats * lf
+    const fc = flightCost(me.type, me.km, me.blockH, pax, me.route.dest, jet, level)
+    const cost = fc.fuel + fc.maintenance + fc.navigation + (fc.crew + fc.airport + fc.handling) * ops
+    const revenue = (pax * fare + me.type.cargoKg * 0.45 * cargoRatePerKg(me.km, level)) * flights
+    return { mult, lf: +lf.toFixed(3), fare, paxPerDay: Math.round(pax * me.route.freq * 2), revenue: Math.round(revenue), profit: Math.round(revenue - cost * flights) }
+  })
+  return {
+    demand: Math.round(demand),
+    current: routeFareMult(me.state, me.route),
+    own: me.route.fareMult !== undefined,
+    competitors: list
+      .filter((_, i) => i !== index)
+      .map((c) => ({
+        icao: c.state.icao,
+        iata: c.al.iata,
+        name: c.al.name,
+        archetype: c.al.archetype,
+        freq: c.route.freq,
+        typeName: c.type.name,
+        fare: c.route.fare,
+        lf: c.route.lf,
+        reputation: Math.round(c.state.reputation)
+      }))
+      .sort((a, b) => a.fare - b.fare),
+    curve
+  }
+}
+
+/**
+ * Прогноз рейса компании на паре аэропортов: загрузка, тариф, выручка и прибыль в месяц (без лизинга и накладных).
+ * Рынок — нынешние конкуренты; свой рейс на этой паре (если есть) заменяется предложенным.
+ */
+export function estimateRoute(
+  db: Db,
+  icao: string,
+  hub: string,
+  dest: string,
+  typeId: string,
+  freq: number
+): { lf: number; fare: number; revenue: number; profit: number; competitors: number } | null {
+  const macro = macroState(db)
+  const month = new Date(macro.day * 86_400_000).getUTCMonth()
+  const level = macro.cpi
+  const jet = jetFuelUsdPerKg(macro.brent) * level
+  const states = loadStates(db)
+  const me = states.get(icao)
+  const type = aircraftTypes.get(typeId)
+  const h = airports.get(hub)
+  const d = airports.get(dest)
+  if (!me || !type || !h || !d || type.category === 'freighter') return null
+  const key = pairKey(hub, dest)
+  const list: RouteCalc[] = []
+  for (const s of states.values()) {
+    if (s.icao === icao) continue
+    const r = s.routes.find((x) => x.freq > 0 && pairKey(x.hub, x.dest) === key)
+    if (!r) continue
+    const al = withState(airlines.get(s.icao)!, s)
+    const km = distanceKm(airports.get(r.hub)!.lat, airports.get(r.hub)!.lon, airports.get(r.dest)!.lat, airports.get(r.dest)!.lon)
+    const t = routeType(al, r, km)
+    if (t && t.category !== 'freighter') list.push({ state: s, route: r, al, type: t, km, blockH: blockMinutes(t, km) / 60 })
+  }
+  const km = distanceKm(h.lat, h.lon, d.lat, d.lon)
+  const al = withState(airlines.get(icao)!, me)
+  const own = me.routes.find((x) => pairKey(x.hub, x.dest) === key)
+  const route: RouteState = { hub, dest, freq, lf: 0.6, fare: 0, profit: 0, badMonths: 0, ...(own?.fareMult ? { fareMult: own.fareMult } : {}) }
+  const mine: RouteCalc = { state: me, route, al, type, km, blockH: blockMinutes(type, km) / 60 }
+  list.push(mine)
+  const demand = dailyDemand(hub, dest, km, SEASONALITY[month], macro.demandIndex)
+  const lf = splitMarket(list, demand)[list.length - 1]
+  const fare = Math.round(averageFare(km, al.archetype, lf, level) * routeFareMult(me, route))
+  const flights = freq * 2 * DAYS
+  const pax = type.seats * lf
+  const fc = flightCost(type, km, mine.blockH, pax, dest, jet, level)
+  const ops = COST_PROFILE[al.archetype].ops
+  const cost = fc.fuel + fc.maintenance + fc.navigation + (fc.crew + fc.airport + fc.handling) * ops
+  const revenue = (pax * fare + type.cargoKg * 0.45 * cargoRatePerKg(km, level)) * flights
+  return { lf: +lf.toFixed(3), fare, revenue: Math.round(revenue), profit: Math.round(revenue - cost * flights), competitors: list.length - 1 }
+}
+
+/** Лучшие новые направления из баз компании для типа самолёта — по спросу и числу конкурентов. */
+export function routeCandidates(db: Db, s: AirlineState, typeId: string, limit: number): { hub: string; dest: string; km: number }[] {
+  const al = withState(airlines.get(s.icao)!, s)
+  const type = aircraftTypes.get(typeId)
+  if (!type) return []
+  const pairs = servedPairs(loadStates(db))
+  const hubs = [...new Set([...s.routes.filter((r) => r.freq > 0).map((r) => r.hub), ...airlines.get(s.icao)!.network.map((n) => n.hub)])]
+  const served = new Set(s.routes.filter((r) => r.freq > 0).map((r) => pairKey(r.hub, r.dest)))
+  return hubs
+    .flatMap((hub) => newRouteCandidates(al, type, hub, pairs).slice(0, limit * 2).map((c) => ({ ...c, hub })))
+    .filter((c) => !served.has(pairKey(c.hub, c.dest)))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
 }
 
 /** Доля расходов на экипаж — в прибыль маршрута. */
@@ -523,7 +659,8 @@ export function simulateAirlinesMonth(db: Db, macro: MacroState, monthStart: num
     const qProfit = s.recentProfit.reduce((a, b) => a + b, 0)
     const payout = s.payout ?? 0.3
     if (quarter && payout > 0 && qProfit > 0 && s.cash > s.debt * 0.3 && s.status === 'ok') {
-      const total = qProfit * payout
+      // Выплата не опустошает кассу: месяц расходов остаётся в компании.
+      const total = Math.min(qProfit * payout, Math.max(0, s.cash - monthlyCosts))
       s.cash -= total
       dividends[s.icao] = +(total / (s.shares * 1e6)).toFixed(4)
     }

@@ -1,3 +1,4 @@
+import { FL100_SPEED_LIMIT, LANDING_LIGHTS_BELOW_FT, OVERSPEED_GRACE_S, SPEED_TOLERANCE_KT } from '@shared/sim'
 import type { EventSeverity, FlightPhase, SimSample, TrackerEvent } from '@shared/sim'
 
 export interface RuleContext {
@@ -26,9 +27,9 @@ const RULES: Rule[] = [
     severity: 'violation',
     penalty: 5,
     maxPenalized: 2,
-    holdMs: 5000,
+    holdMs: OVERSPEED_GRACE_S * 1000,
     message: 'Скорость больше 250 узлов ниже FL100',
-    when: (s) => airborne(s) && s.altFt < 10000 && s.iasKt > 260
+    when: (s) => airborne(s) && s.altFt < 10000 && s.iasKt > FL100_SPEED_LIMIT + SPEED_TOLERANCE_KT
   },
   {
     code: 'overspeed',
@@ -79,9 +80,9 @@ const RULES: Rule[] = [
     penalty: 2,
     maxPenalized: 2,
     holdMs: 15000,
-    message: 'Посадочные фары выключены ниже 10 000 ft',
+    message: 'Посадочные фары выключены ниже 5 000 ft',
     when: (s, ctx) =>
-      airborne(s) && s.altFt < 10000 && AIRBORNE_PHASES.includes(ctx.phase) && s.lights.landing === false
+      airborne(s) && s.altFt < LANDING_LIGHTS_BELOW_FT && AIRBORNE_PHASES.includes(ctx.phase) && s.lights.landing === false
   },
   {
     code: 'taxi_speed',

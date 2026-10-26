@@ -4,6 +4,8 @@ import type { PayMultiplier, Settings } from '@shared/types'
 import type { Family } from '@shared/lifestyle'
 import { errMsg, notifyCareerChanged } from '../lib'
 import { CheatPanel } from '../components/CheatPanel'
+import { UpdateCard } from '../components/Update'
+import { ChangelogCard } from '../components/Changelog'
 
 export function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -55,6 +57,8 @@ export function SettingsScreen() {
         </Stack>
       </Card>
       <FamilyCard />
+      <UpdateCard />
+      <ChangelogCard />
       <Card withBorder>
         <Stack gap="xs">
           <Text fw={600}>Игровой множитель заработка</Text>

@@ -38,7 +38,7 @@ function toStake(r: StakeRow, s: AirlineState | undefined): Stake {
   return {
     icao: r.icao,
     name: airlines.get(r.icao)?.name ?? r.icao,
-    pct: r.pct,
+    pct: Math.round(r.pct * 10) / 10,
     cost: Math.round(r.cost),
     value: s ? Math.round((marketCap(s) * r.pct) / 100) : 0,
     dividends: Math.round(r.dividends),
